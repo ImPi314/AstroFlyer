@@ -1,0 +1,29 @@
+{
+  "mission_name": "Geostationary Transfer Orbit (GTO Baseline)",
+  "mission_type": "GTO",
+  "review_stage": "Zeroeth Review",
+  "orbit_parameters": {
+    "semi_major_axis_km": 24389.0,
+    "eccentricity": 0.728525,
+    "inclination_deg": 28.5,
+    "raan_deg": 45.0,
+    "argument_of_perigee_deg": 30.0,
+    "true_anomaly_deg": 0.0,
+    "perigee_altitude_km": 250.0,
+    "apogee_altitude_km": 35786.0,
+    "period_hours": 10.529
+  },
+  "ecr_mf_settings": {
+    "default_mode": "REGULARIZED",
+    "event_certification_enabled": true,
+    "max_event_time_tolerance_s": 0.5,
+    "max_energy_relative_error": 1e-10,
+    "covariance_threshold_sigmas": 3.0
+  },
+  "active_perturbations": {
+    "j2_oblateness": true,
+    "j3_j4_higher_order": false,
+    "lunisolar_third_body": false,
+    "atmospheric_drag": false
+  }
+}

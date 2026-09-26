@@ -1,0 +1,190 @@
+--- Page 1 ---
+Preliminary formal prior-art confirmation for ECR-MF
+Scope and conclusion
+This is a preliminary patent-and-literature prior-art assessment , not a legal opinion, claim-construction opinion,
+patentability opinion, or freedom-to-operate clearance. The searched concept was ECR-MF: an HEO-specific con-
+troller that switches among semi-analytical, regularized, and high-fidelity numerical propagation using predicted
+state, event-time, and covariance risk; performs local dual propagation at critical events; escalates fidelity when the
+risk budget is exceeded; and emits a machine-checkable certificate.
+The search found substantial partial prior art for the ingredients, but not, in the retrieved records, a single reference
+that discloses the full combination as narrowly framed for highly eccentric Earth orbits. The strongest prior-art risk
+is therefore not that “adaptive propagation” is new; it is that broad claims covering multifidelity orbit propagation,
+model selection, error correction, uncertainty ensembles, or event-aware switching may read on existing work.
+The defensible position is: ECR-MF may have a patentable or publishable distinction as a specific HEO event-
+risk/covariance-aware switching and certification policy, but novelty is not confirmed until the claims are nar-
+rowed and a professional search covers claims, continuations, family members, non-patent literature, and rele-
+vant CPC classes.
+Closest retrieved prior art
+1. Non-averaged regularized propagation for HEO
+Amato et al. compare semi-analytical and non-averaged regularized propagation, decompose integration error into
+dynamical, model-truncation, short-periodic, and numerical components, and test regularized methods on LEO, GTO,
+and high-altitude HEO. They report that regularized non-averaged methods can be substantially faster than semi-
+analytical methods for the tested HEO case.[1]
+ECR-MF implication: regularized/non-averaged propagation and the HEO use case are not new. Do not claim those
+elements alone.
+2. Adaptive multifidelity uncertainty propagation
+Jones and Weisman use low-fidelity propagation to construct a surrogate, selectively re-propagate important samples
+with a high-fidelity model, and correct the surrogate for orbit uncertainty propagation.[2] Related multifidelity orbit-
+determination work uses a hierarchy of force models and propagation methods and reports a twelve-fold filter-
+runtime reduction in the tested case without statistically significant filter-performance change.[3]
+ECR-MF implication: broad claims for low/high-fidelity switching, selective high-fidelity samples, uncertainty-
+aware acceleration, or orbit-determination runtime reduction are high-risk.
+3. Multisegment propagation for highly elliptical orbits
+A modified Chebyshev–Picard approach uses nonuniform Chebyshev–Gauss–Lobatto sampling and multiple true-
+anomaly-based segments to obtain accurate solutions across eccentric orbits.[4]
+ECR-MF implication: segmentation by orbital phase is not new. A claim should require the particular event-risk
+and covariance-driven switching rule, not merely true-anomaly segmentation.
+4. Verified interval orbit propagation
+Verified regularized interval propagation provides mathematically guaranteed position and velocity solutions over
+time and is positioned for conjunction analysis and related applications.[5]
+ECR-MF implication: machine-verifiable enclosures are not new in isolation. The potential distinction is selective
+use of verification at HEO event-risk boundaries, tied to a propagation-mode decision and covariance criterion.
+1
+
+--- Page 2 ---
+5. Patent: multi-model ensemble atmospheric-density propagation
+US20240037297A1 discloses multiple trained density-prediction models, orbit propagation using the respective den-
+sity outputs, and ensemble analysis of predicted orbit states to quantify uncertainty and determine an orbit state.[6]
+ECR-MF implication: claims covering multiple environmental models, ensemble orbit propagation, or uncertainty-
+aware state prediction are exposed. The retrieved disclosure is focused on atmospheric-density model ensembles
+rather than HEO event-certified switching among propagation formulations.
+6. Patent: physics-plus-machine-learning trajectory correction
+US12046129B2 discloses an iterative physics trajectory prediction refined by a machine-learning trajectory-error
+model, with a pseudo-measurement and pseudo-measurement noise used to update the future trajectory.[7]
+ECR-MF implication: claims covering a physics baseline plus learned error correction, pseudo-measurements, or
+model-error-based trajectory updates are exposed. ECR-MF should not require machine learning unless the specific
+trained error model is itself the intended contribution.
+7. Patent: transformer-based orbital prediction
+WO2025065111A1 discloses transformer-based resident-space-object trajectory prediction using state vectors and
+Keplerian data, including a forecast horizon and recursive use of predictions.[8]
+ECR-MF implication: generic claims to AI-based orbital prediction are exposed and should be avoided. This reference
+does not, from the retrieved summary, disclose HEO event-risk switching, high-fidelity certification, or covariance-
+gated mode selection.
+8. Patent: distributed local orbit propagation
+US7612712B2 discloses a server/client architecture in which a server distributes seed state vectors and propagation-
+model coefficients so a client can locally propagate satellite orbits.[9]
+ECR-MF implication: distributed deployment and local propagation are not new. They should be treated as imple-
+mentation context, not the inventive core.
+Element-by-element assessment
+Proposed ECR-MF element Prior-art exposure Assessment
+Semi-analytical, regularized, and
+high-fidelity propagation modes
+High Known individually and in
+combinations; not a defensible
+standalone novelty point.
+Switching between low- and
+high-fidelity propagation
+High Multifidelity orbit uncertainty and
+OD literature directly covers
+selective high-fidelity correction.[2,
+3]
+HEO-specific true-anomaly or
+event-based segmentation
+Medium–high Multisegment HEO propagation is
+known.[4]
+Predicted event-time error as a
+switching variable
+Medium The search found evidence that
+event-time error is a real
+regularization issue, but not a single
+retrieved patent disclosing the
+proposed ECR-MF decision
+policy.[10]
+2
+
+--- Page 3 ---
+Proposed ECR-MF element Prior-art exposure Assessment
+Covariance consistency as a
+switching variable
+Medium Multifidelity uncertainty and OD
+methods are known; the specific
+joint rule with HEO event-time risk
+was not identified in the retrieved
+set.[2, 3]
+Short dual propagation at perigee,
+burns, eclipse, and covariance-risk
+boundaries
+Medium–low in the retrieved set This is the most promising
+differentiator, but the search does
+not prove absence of closer patent
+or paper disclosures.
+Rollback to the last certified state
+when disagreement exceeds a local
+budget
+Medium–low in the retrieved set Potentially differentiating as a
+control policy; must be claimed
+with precise state, event, and
+certification conditions.
+Machine-checkable certificate
+containing mode, force model, event
+bound, covariance status, and
+switch reason
+Medium–low in the retrieved set Potentially useful as a
+system/method limitation, but
+“certificate” alone is unlikely to
+establish novelty.
+Selective verified interval
+propagation only at critical HEO
+segments
+Medium Verified interval propagation exists;
+the selective coupling to event-risk
+switching may be the differentiating
+combination.[5]
+Recommended claim strategy
+Avoid an independent claim framed as “an adaptive multifidelity orbit propagator. ” That is too broad and directly
+exposed by the multifidelity literature and related patents.
+A stronger independent method claim should require all of the following as a linked sequence:
+1. receiving a highly eccentric Earth-orbit state, force-model configuration, covariance, and mission event thresh-
+olds;
+2. propagating a first segment using a selected low-cost or regularized method;
+3. predicting both state error and event-time/covariance risk for a future perigee, maneuver, eclipse, apogee, or
+ground-contact event;
+4. initiating a second, independent certification propagation only when the predicted risk reaches a defined
+boundary;
+5. comparing state, event-time, and covariance outputs from the two methods;
+6. accepting the low-cost propagation only when all three error conditions remain within budget, otherwise
+rolling back or escalating fidelity; and
+7. emitting a machine-readable certificate recording the selected mode, force model, event bound, covariance test,
+and escalation decision.
+The claim should specify how the event-time bound is computed, how covariance inconsistency is detected, what
+triggers rollback, and how the certified state is transferred between formulations. Those details—not the labels
+“adaptive, ” “multifidelity, ” “regularized, ” or “AI”—are where technical distinction is most likely to reside.
+Confirmation status
+Preliminary confirmation: partial prior art found; full-combination anticipation not found in the retrieved set.
+The ECR-MF concept is not cleanly clear of prior art. Its broad ingredients are substantially occupied, while the nar-
+rower combination of HEO event-risk prediction, covariance-aware mode switching, local dual certification, rollback,
+and machine-readable proof remains a plausible research and patent angle.
+Before filing or making a definitive novelty statement, perform:
+3
+
+--- Page 4 ---
+• a professional patent search of US, WO, EP, CN, JP, and KR families;
+• family and continuation analysis for the closest patents;
+• full claim-chart review, not abstract-only review;
+• CPC/IPC searches for orbit determination, space-object tracking, uncertainty propagation, numerical integra-
+tion, and spacecraft guidance;
+• non-patent literature search through the earliest priority dates;
+• an attorney-led novelty, inventive-step, and freedom-to-operate assessment.
+References
+1. Amato D, Bombardelli C, Baù G, et al (2018) Non-averaged regularized formulations as an alternative to semi-
+analytical orbit propagation methods. Celestial mechanics & dynamical astronomy. https://doi.org/10.1007/
+s10569-019-9897-1
+2. Jones B, Weisman R (2019) Multi-fidelity orbit uncertainty propagation. Acta Astronautica. https://doi.org/
+10.1016/J.ACTAASTRO.2018.10.023
+3. Jones B (2018) Multi-Fidelity Methods for Orbit Determination
+4. Kim D, Junkins J, Turner J (2015) Multisegment Scheme Applications to Modified Chebyshev Picard Iteration
+Method for Highly Elliptical Orbits. Mathematical Problems in Engineering. https://doi.org/10.1155/2015/2
+90781
+5. Geul J, Mooij E, Noomen R (2021) Verified Regularized Interval Orbit Propagation. Journal of Guidance
+Control and Dynamics. https://doi.org/10.2514/1.G004947
+6. System to Determine the State of an Orbiting Object Using Multi-Model Ensemble Techniques for Drag and
+Methods Thereof. https://patents.google.com/patent/US20240037297A1/en
+7. Computer-based systems configured for space object orbital trajectory predictions and methods thereof. ht
+tps://patents.google.com/patent/US12046129B2/en
+8. Transformer neural network systems and methods for enhanced orbital prediction accuracy. https://patents.
+google.com/patent/WO2025065111A1/en
+9. Distributed orbit modeling and propagation method for a predicted and real-time assisted GPS system. https:
+//patents.google.com/patent/US7612712B2/en
+10. Urrutxua H, Álvarez J, Bombardelli C (2016) Impact of the integration stop-condition on the accuracy of
+regularized orbit formulations
+4

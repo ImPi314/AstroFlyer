@@ -1,0 +1,399 @@
+/* ==============================================================================
+   ASTROFLYER HEO - AEROSPACE FLIGHT DYNAMICS STUDIO STYLESHEET
+   Pure Vanilla CSS Architecture with OKLCH Design Tokens & Dark/Light Themes
+   Zero Build Dependencies • Zero Linter Warnings • Hardware-Accelerated 60 FPS
+   ============================================================================== */
+
+/* ==============================================================================
+   1. DESIGN TOKENS (OKLCH PALETTES)
+   ============================================================================== */
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.1450 0 0);
+  --card: oklch(0.9950 0 0);
+  --card-foreground: oklch(0.1450 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.1450 0 0);
+  --primary: oklch(0.2050 0 0);
+  --primary-foreground: oklch(0.9850 0 0);
+  --secondary: oklch(0.8700 0 0);
+  --secondary-foreground: oklch(0.1450 0 0);
+  --muted: oklch(0.9500 0 0);
+  --muted-foreground: oklch(0.5560 0 0);
+  --accent: oklch(0.9500 0 0);
+  --accent-foreground: oklch(0.2050 0 0);
+  --destructive: oklch(0.5770 0.2450 27.3250);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.9500 0 0);
+  --input: oklch(0.9700 0 0);
+  --ring: oklch(0.7080 0 0);
+
+  --chart-1: oklch(0.8100 0.1000 252);
+  --chart-2: oklch(0.6200 0.1900 260);
+  --chart-3: oklch(0.5500 0.2200 263);
+  --chart-4: oklch(0.4900 0.2200 264);
+  --chart-5: oklch(0.4200 0.1800 266);
+
+  --sidebar: oklch(0.9850 0 0);
+  --sidebar-foreground: oklch(0.1450 0 0);
+  --sidebar-primary: oklch(0.2050 0 0);
+  --sidebar-primary-foreground: oklch(0.9850 0 0);
+  --sidebar-accent: oklch(0.9700 0 0);
+  --sidebar-accent-foreground: oklch(0.2050 0 0);
+  --sidebar-border: oklch(0.9220 0 0);
+  --sidebar-ring: oklch(0.7080 0 0);
+
+  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-full: 9999px;
+
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+}
+
+.dark {
+  --background: oklch(0.2050 0 0);
+  --foreground: oklch(0.9850 0 0);
+  --card: oklch(0.1650 0 0);
+  --card-foreground: oklch(0.9850 0 0);
+  --popover: oklch(0.2050 0 0);
+  --popover-foreground: oklch(0.9850 0 0);
+  --primary: oklch(0.9220 0 0);
+  --primary-foreground: oklch(0.2050 0 0);
+  --secondary: oklch(0.2690 0 0);
+  --secondary-foreground: oklch(0.9850 0 0);
+  --muted: oklch(0.2690 0 0);
+  --muted-foreground: oklch(0.7080 0 0);
+  --accent: oklch(0.3710 0 0);
+  --accent-foreground: oklch(0.9850 0 0);
+  --destructive: oklch(0.7040 0.1910 22.2160);
+  --destructive-foreground: oklch(0.9850 0 0);
+  --border: oklch(0.2690 0 0);
+  --input: oklch(0.2690 0 0);
+  --ring: oklch(0.5560 0 0);
+
+  --chart-1: oklch(0.8100 0.1000 252);
+  --chart-2: oklch(0.6200 0.1900 260);
+  --chart-3: oklch(0.5500 0.2200 263);
+  --chart-4: oklch(0.4900 0.2200 264);
+  --chart-5: oklch(0.4200 0.1800 266);
+
+  --sidebar: oklch(0.2690 0 0);
+  --sidebar-foreground: oklch(0.9850 0 0);
+  --sidebar-primary: oklch(0.4880 0.2430 264.3760);
+  --sidebar-primary-foreground: oklch(0.9850 0 0);
+  --sidebar-accent: oklch(0.2690 0 0);
+  --sidebar-accent-foreground: oklch(0.9850 0 0);
+  --sidebar-border: oklch(0.2750 0 0);
+  --sidebar-ring: oklch(0.4390 0 0);
+}
+
+/* ==============================================================================
+   2. BASE RESET & GLOBAL STYLES
+   ============================================================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border-color: var(--border);
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}
+
+/* ==============================================================================
+   3. STRUCTURAL LAYOUT ENGINE
+   ============================================================================== */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+header {
+  height: 54px;
+  flex-shrink: 0;
+}
+
+.main-workspace {
+  display: grid;
+  grid-template-columns: 290px 1fr 330px;
+  flex: 1;
+  overflow: hidden;
+  background-color: var(--background);
+}
+
+footer {
+  height: 52px;
+  flex-shrink: 0;
+}
+
+/* ==============================================================================
+   4. UTILITY SYSTEM (FLEXBOX, GRID, SPACING, SIZING)
+   ============================================================================== */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.flex-1 { flex: 1 1 0%; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+
+.grid { display: grid; }
+.grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.col-span-2 { grid-column: span 2 / span 2; }
+.gap-2 { gap: 0.5rem; }
+
+.relative { position: relative; }
+.block { display: block; }
+.hidden { display: none !important; }
+
+.w-full { width: 100%; }
+.w-8 { width: 2rem; }
+.w-36 { width: 9rem; }
+.w-2 { width: 0.5rem; }
+.max-w-3xl { max-width: 48rem; }
+
+.h-full { height: 100%; }
+.h-8 { height: 2rem; }
+.h-1\.5 { height: 0.375rem; }
+.h-2 { height: 0.5rem; }
+
+.p-0\.5 { padding: 0.125rem; }
+.p-2 { padding: 0.5rem; }
+.p-3 { padding: 0.75rem; }
+.p-4 { padding: 1rem; }
+.p-6 { padding: 1.5rem; }
+
+.px-1\.5 { padding-left: 0.375rem; padding-right: 0.375rem; }
+.px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+.px-2\.5 { padding-left: 0.625rem; padding-right: 0.625rem; }
+.px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+.px-4 { padding-left: 1rem; padding-right: 1rem; }
+.px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+
+.py-0\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+.py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+.py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+.py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+
+.pt-1 { padding-top: 0.25rem; }
+.pb-1 { padding-bottom: 0.25rem; }
+.pl-2 { padding-left: 0.5rem; }
+
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-3 { margin-bottom: 0.75rem; }
+.mb-4 { margin-bottom: 1rem; }
+
+.space-x-1 > * + * { margin-left: 0.25rem; }
+.space-x-1\.5 > * + * { margin-left: 0.375rem; }
+.space-x-2 > * + * { margin-left: 0.5rem; }
+.space-x-3 > * + * { margin-left: 0.75rem; }
+.space-x-4 > * + * { margin-left: 1rem; }
+
+.space-y-1 > * + * { margin-top: 0.25rem; }
+.space-y-1\.5 > * + * { margin-top: 0.375rem; }
+.space-y-2 > * + * { margin-top: 0.5rem; }
+.space-y-3 > * + * { margin-top: 0.75rem; }
+.space-y-4 > * + * { margin-top: 1rem; }
+.space-y-5 > * + * { margin-top: 1.25rem; }
+
+/* ==============================================================================
+   5. BORDERS, SHADOWS & ROUNDED CORNERS
+   ============================================================================== */
+.border { border: 1px solid var(--border); }
+.border-t { border-top: 1px solid var(--border); }
+.border-b { border-bottom: 1px solid var(--border); }
+.border-l { border-left: 1px solid var(--border); }
+.border-r { border-right: 1px solid var(--border); }
+.border-l-4 { border-left-width: 4px; border-left-style: solid; }
+.border-l-primary { border-left-color: var(--primary); }
+.border-border { border-color: var(--border); }
+.border-border\/50 { border-color: color-mix(in oklch, var(--border) 50%, transparent); }
+.border-primary\/40 { border-color: color-mix(in oklch, var(--primary) 40%, transparent); }
+.border-collapse { border-collapse: collapse; }
+
+.rounded { border-radius: var(--radius-sm); }
+.rounded-md { border-radius: var(--radius-md); }
+.rounded-lg { border-radius: var(--radius-lg); }
+.rounded-full { border-radius: var(--radius-full); }
+
+.shadow-xs { box-shadow: var(--shadow-xs); }
+.shadow-sm { box-shadow: var(--shadow-sm); }
+
+/* ==============================================================================
+   6. BACKGROUND & TEXT COLORS
+   ============================================================================== */
+.bg-background { background-color: var(--background); }
+.bg-card { background-color: var(--card); }
+.bg-card\/30 { background-color: color-mix(in oklch, var(--card) 30%, transparent); }
+.bg-card\/50 { background-color: color-mix(in oklch, var(--card) 50%, transparent); }
+.bg-muted { background-color: var(--muted); }
+.bg-muted\/40 { background-color: color-mix(in oklch, var(--muted) 40%, transparent); }
+.bg-muted\/60 { background-color: color-mix(in oklch, var(--muted) 60%, transparent); }
+.bg-primary { background-color: var(--primary); }
+.bg-primary\/5 { background-color: color-mix(in oklch, var(--primary) 5%, transparent); }
+.bg-emerald-500 { background-color: oklch(0.7040 0.1910 140); }
+.bg-emerald-500\/20 { background-color: color-mix(in oklch, oklch(0.7040 0.1910 140) 20%, transparent); }
+.bg-sky-500 { background-color: oklch(0.7000 0.1600 230); }
+
+.text-foreground { color: var(--foreground); }
+.text-muted-foreground { color: var(--muted-foreground); }
+.text-primary { color: var(--primary); }
+.text-primary-foreground { color: var(--primary-foreground); }
+.text-emerald-400 { color: oklch(0.7800 0.1700 140); }
+.text-emerald-500 { color: oklch(0.7040 0.1910 140); }
+.text-sky-400 { color: oklch(0.7500 0.1500 230); }
+.text-amber-400 { color: oklch(0.8000 0.1800 85); }
+
+/* ==============================================================================
+   7. TYPOGRAPHY
+   ============================================================================== */
+.font-sans { font-family: var(--font-sans); }
+.font-mono { font-family: var(--font-mono); }
+.font-mono-num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+
+.text-3xs { font-size: 0.625rem; line-height: 0.875rem; }
+.text-2xs { font-size: 0.6875rem; line-height: 0.9375rem; }
+.text-xs { font-size: 0.75rem; line-height: 1rem; }
+.text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+.text-left { text-align: left; }
+
+.tracking-wide { letter-spacing: 0.025em; }
+.tracking-wider { letter-spacing: 0.05em; }
+.uppercase { text-transform: uppercase; }
+
+/* ==============================================================================
+   8. INTERACTION, STATES & ANIMATIONS
+   ============================================================================== */
+.cursor-pointer { cursor: pointer; }
+.cursor-grab { cursor: grab; }
+.cursor-not-allowed { cursor: not-allowed; }
+.active\:cursor-grabbing:active { cursor: grabbing; }
+
+.opacity-50 { opacity: 0.5; }
+
+.transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+.transition-colors { transition-property: color, background-color, border-color; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+.transition-opacity { transition-property: opacity; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+
+.hover\:bg-accent:hover { background-color: var(--accent); color: var(--accent-foreground); }
+.hover\:bg-muted:hover { background-color: var(--muted); }
+.hover\:opacity-90:hover { opacity: 0.9; }
+.hover\:text-foreground:hover { color: var(--foreground); }
+
+.focus\:ring-2:focus { outline: 2px solid transparent; outline-offset: 2px; box-shadow: 0 0 0 2px var(--ring); }
+.focus\:ring-ring:focus { --tw-ring-color: var(--ring); }
+
+.overflow-hidden { overflow: hidden; }
+.overflow-auto { overflow: auto; }
+.overflow-y-auto { overflow-y: auto; }
+
+.appearance-none { -webkit-appearance: none; appearance: none; }
+.accent-primary { accent-color: var(--primary); }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ==============================================================================
+   9. AEROSPACE COMPONENTS (PANELS, BADGES, CONTROLS)
+   ============================================================================== */
+.panel-card {
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.badge-mode {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.badge-certification {
+  background-color: oklch(0.7040 0.1910 140);
+  color: #000;
+}
+
+.badge-regularized {
+  background-color: oklch(0.8100 0.1000 252);
+  color: #000;
+}
+
+.badge-fast {
+  background-color: oklch(0.8700 0 0);
+  color: #000;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+input[type="range"] {
+  width: 100%;
+  cursor: pointer;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--foreground);
+}

@@ -1,0 +1,3067 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<FreeFlyerMissionPlan schemaVersion="8.0.0.12" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <ProjectObjects>
+    <Object>
+      <MissionPlanSettings isConstant="false" isGlobal="true" name="MissionPlan">
+        <Name>MissionPlan</Name>
+        <Title>Solar Radiation Pressure and Other Accelerations</Title>
+        <Description/>
+        <Notes/>
+      </MissionPlanSettings>
+    </Object>
+    <Object>
+      <SimulationSettings isConstant="false" isGlobal="true" name="Simulation">
+        <Name>Simulation</Name>
+        <DataFiles>
+          <DataFileSettings isConstant="false" isGlobal="true" name="Simulation_|dataFiles|">
+            <Name>Simulation_|dataFiles|</Name>
+            <EarthOrientationParametersFile>DEFAULT</EarthOrientationParametersFile>
+            <PlanetaryEphemerisFile>DEFAULT</PlanetaryEphemerisFile>
+            <MagneticFieldFile>DEFAULT</MagneticFieldFile>
+            <ElectronDensityFile>DEFAULT</ElectronDensityFile>
+            <DaylightSavingTimeFile>DEFAULT</DaylightSavingTimeFile>
+            <StarFieldFile>DEFAULT</StarFieldFile>
+            <DefaultAtmosphereModelFile>DEFAULT</DefaultAtmosphereModelFile>
+            <DefaultGeopotentialFile>DEFAULT</DefaultGeopotentialFile>
+            <DefaultHarrisPriesterDragFile>DEFAULT</DefaultHarrisPriesterDragFile>
+            <DefaultGroundStationGeodeticsFile>DEFAULT</DefaultGroundStationGeodeticsFile>
+            <DefaultSolidTideModelFile>DEFAULT</DefaultSolidTideModelFile>
+          </DataFileSettings>
+        </DataFiles>
+        <IntervalMethods>
+          <IntervalMethodSettings isConstant="false" isGlobal="true" name="Simulation_|intervalMethodSettings|">
+            <Name>Simulation_|intervalMethodSettings|</Name>
+            <SearchResolution displayed_units="s" units="s">10.0</SearchResolution>
+            <ConvergenceTolerance displayed_units="s" units="s">0.1</ConvergenceTolerance>
+            <ReportingBehavior>0</ReportingBehavior>
+          </IntervalMethodSettings>
+        </IntervalMethods>
+        <Tolerances>
+          <ToleranceSettings isConstant="false" isGlobal="true" name="Simulation_|toleranceSettings|">
+            <Name>Simulation_|toleranceSettings|</Name>
+            <CelestialObjectUpdateInterval displayed_units="s" units="s">0</CelestialObjectUpdateInterval>
+            <LightTimeTolerance displayed_units="ns" units="ns">1000</LightTimeTolerance>
+            <OrbitPointTolerance displayed_units="s" units="s">0.010</OrbitPointTolerance>
+            <PropagationStoppingConditionTolerance displayed_units="s" units="s">1e-9</PropagationStoppingConditionTolerance>
+          </ToleranceSettings>
+        </Tolerances>
+        <SGP4>
+          <SGP4Settings isConstant="false" isGlobal="true" name="Simulation_|sgp4Settings|">
+            <Name>Simulation_|sgp4Settings|</Name>
+            <Path/>
+            <LicensePath/>
+            <LogFilePath/>
+          </SGP4Settings>
+        </SGP4>
+        <Earth>
+          <EarthModelSettings isConstant="false" isGlobal="true" name="Simulation_|earthSettings|">
+            <Name>Simulation_|earthSettings|</Name>
+            <OrientationModel>1</OrientationModel>
+            <CIRFEvaluationMode>1</CIRFEvaluationMode>
+            <ModelPolarMotion>true</ModelPolarMotion>
+            <ModelCelestialPoleOffsets>true</ModelCelestialPoleOffsets>
+            <ModelUT1Correction>true</ModelUT1Correction>
+            <IonosphereOptions>
+              <IonosphereOptions isConstant="false" isGlobal="true" name="Simulation_|earthSettings|_|ionoOptions|">
+                <Name>Simulation_|earthSettings|_|ionoOptions|</Name>
+                <MaximumHeight displayed_units="km" units="km">1000</MaximumHeight>
+                <MinimumHeight displayed_units="km" units="km">80</MinimumHeight>
+                <IntegrationStepSize displayed_units="km" units="km">25</IntegrationStepSize>
+                <ScaleFactor displayed_units="" units="">1</ScaleFactor>
+                <Model>0</Model>
+                <IRIDataDirectory>DEFAULT</IRIDataDirectory>
+              </IonosphereOptions>
+            </IonosphereOptions>
+          </EarthModelSettings>
+        </Earth>
+      </SimulationSettings>
+    </Object>
+    <Object>
+      <ConsoleWindow isConstant="false" isGlobal="true" name="Console">
+        <Name>Console</Name>
+        <WindowTitle>Console</WindowTitle>
+        <WordWrap>false</WordWrap>
+        <CurrentTextColor>16777215</CurrentTextColor>
+        <BackColor>2039583</BackColor>
+        <Dimension displayed_units="" units="">10</Dimension>
+        <DockMode>1</DockMode>
+        <CurrentFontType>0</CurrentFontType>
+        <UseStdOut>false</UseStdOut>
+        <ShowOnRun>false</ShowOnRun>
+      </ConsoleWindow>
+    </Object>
+    <Object>
+      <Spacecraft isConstant="false" isGlobal="false" name="ScNoSRP">
+        <Name>ScNoSRP</Name>
+        <EpochDetails>
+          <EpochSystem>UTC</EpochSystem>
+          <EpochTimeZone>UTC +/- 00:00</EpochTimeZone>
+          <EpochFormat>Calendar</EpochFormat>
+          <EpochType>Absolute</EpochType>
+          <EpochTypeInfo/>
+        </EpochDetails>
+        <Epoch>Oct 01 2012 00:00:00.000000000</Epoch>
+        <ReferenceFrame>International Celestial Reference Frame</ReferenceFrame>
+        <CentralBody>Earth</CentralBody>
+        <ElementType>Keplerian</ElementType>
+        <OrbitState>
+          <Keplerian>
+            <A displayed_units="km" units="km">42162</A>
+            <E displayed_units="" units="">.00059</E>
+            <I displayed_units="deg" units="deg">2</I>
+            <RAAN displayed_units="deg" units="deg">262</RAAN>
+            <W displayed_units="deg" units="deg">289</W>
+            <TA displayed_units="deg" units="deg">342</TA>
+          </Keplerian>
+        </OrbitState>
+        <Orientation>
+          <AttitudeCoordinateSystem/>
+          <AttitudeRefFrame>LVLH</AttitudeRefFrame>
+          <AttitudeSystem>EulerAngles</AttitudeSystem>
+          <AttitudeState>
+            <EulerAngles>
+              <EulerAngles dim="3" displayed_units="deg" units="deg">
+                <value>0</value>
+                <value>0</value>
+                <value>0</value>
+              </EulerAngles>
+              <EulerRates dim="3" displayed_units="deg/s" units="deg/s">
+                <value>0</value>
+                <value>0</value>
+                <value>0</value>
+              </EulerRates>
+              <EulerSequence dim="3" displayed_units="" units="">
+                <value>3</value>
+                <value>1</value>
+                <value>2</value>
+              </EulerSequence>
+            </EulerAngles>
+          </AttitudeState>
+        </Orientation>
+        <PhysicalProperties>
+          <ForceCoefficientType>0</ForceCoefficientType>
+          <ForceCoefficientTypes>
+            <Standard>
+              <Cd displayed_units="" units="">2.2</Cd>
+              <Cr displayed_units="" units="">1.4</Cr>
+            </Standard>
+          </ForceCoefficientTypes>
+          <Cl displayed_units="" units="">1.2</Cl>
+          <DragArea displayed_units="m^2" units="m^2">1</DragArea>
+          <LiftArea displayed_units="m^2" units="m^2">1</LiftArea>
+          <SRPArea displayed_units="m^2" units="m^2">1</SRPArea>
+          <SatelliteId>1</SatelliteId>
+        </PhysicalProperties>
+        <Visualization>
+          <Color>8454016</Color>
+          <BodyScale displayed_units="" units="">3</BodyScale>
+          <TailLength displayed_units="" units="">100</TailLength>
+          <HistoryMode>0</HistoryMode>
+          <HistoryGradientColors dim="0"/>
+          <HistoryGradientFadeRate>1</HistoryGradientFadeRate>
+          <HistoryGradientExponentialFadeParameter displayed_units="" units="">10.0</HistoryGradientExponentialFadeParameter>
+          <HistoryGradientOpacityRange dim="2" displayed_units="" units="">
+            <value>0.0</value>
+            <value>1.0</value>
+          </HistoryGradientOpacityRange>
+          <TickType>None</TickType>
+          <Annotation/>
+          <ModelDefinitionType>0</ModelDefinitionType>
+          <ModelDefinition>
+            <ThreeDModelFilename>
+              <ThreeDModelFile>Internal::globalstar</ThreeDModelFile>
+            </ThreeDModelFilename>
+          </ModelDefinition>
+        </Visualization>
+        <LaunchCoordinates>
+          <LCSEpochDetails>
+            <LCSEpochSystem>UTC</LCSEpochSystem>
+            <LCSEpochTimeZone>UTC +/- 00:00</LCSEpochTimeZone>
+            <LCSEpochFormat>Calendar</LCSEpochFormat>
+            <LCSEpochType>Absolute</LCSEpochType>
+            <LCSEpochTypeInfo/>
+          </LCSEpochDetails>
+          <LCSEpoch>Jan 01 2010 00:00:00.000000000</LCSEpoch>
+          <LCSLongitude displayed_units="deg" units="deg">0</LCSLongitude>
+          <LCSLatitude displayed_units="deg" units="deg">0</LCSLatitude>
+        </LaunchCoordinates>
+        <InertialData>
+          <VehicleDryMass displayed_units="kg" units="kg">1000</VehicleDryMass>
+          <VehicleDryMOI dim="3,3" displayed_units="kg m^2" units="kg m^2">
+            <value>1200</value>
+            <value>0</value>
+            <value>0</value>
+            <value>0</value>
+            <value>1200</value>
+            <value>0</value>
+            <value>0</value>
+            <value>0</value>
+            <value>1200</value>
+          </VehicleDryMOI>
+          <MassTotal displayed_units="kg" units="kg">1990.18</MassTotal>
+          <VehicleDryCenterOfMass dim="3" displayed_units="m" units="m">
+            <value>0</value>
+            <value>0</value>
+            <value>0</value>
+          </VehicleDryCenterOfMass>
+        </InertialData>
+        <OrbitNumberCumulative displayed_units="" units="">1</OrbitNumberCumulative>
+        <OrbitNumberBounded displayed_units="" units="">1</OrbitNumberBounded>
+        <OrbitNumberResetNumber displayed_units="" units="">0</OrbitNumberResetNumber>
+        <OrbitNumberDaily displayed_units="" units="">1</OrbitNumberDaily>
+        <OrbitNumberResetLongitude displayed_units="" units="">20</OrbitNumberResetLongitude>
+        <StateAdvancerType>PropFM</StateAdvancerType>
+        <StateAdvancer>
+          <PropFM>
+            <Prop>
+              <RK89 isConstant="false" isGlobal="false" name="ScNoSRP_Propagator">
+                <Name>ScNoSRP_Propagator</Name>
+                <StepSize displayed_units="s" units="s">60</StepSize>
+                <StepJustTaken displayed_units="s" units="s">300.0</StepJustTaken>
+                <StepToTake displayed_units="s" units="s">300.0</StepToTake>
+                <LargeCurvature displayed_units="" units="">0</LargeCurvature>
+                <FixedStep>1</FixedStep>
+                <Tolerance displayed_units="" units="">1e-009</Tolerance>
+                <AllowErrorViolation>false</AllowErrorViolation>
+                <CalculateSTM>false</CalculateSTM>
+                <STMCalculationMethod>2</STMCalculationMethod>
+                <FM>
+                  <ForceModel isConstant="false" isGlobal="false" name="ScNoSRP_Propagator_ForceModel">
+                    <Name>ScNoSRP_Propagator_ForceModel</Name>
+                    <GravitatingBodies>
+                      <CelestialObjects dim="11">
+                        <value>Mercury</value>
+                        <value>Venus</value>
+                        <value>Earth</value>
+                        <value>Mars</value>
+                        <value>Jupiter</value>
+                        <value>Saturn</value>
+                        <value>Uranus</value>
+                        <value>Neptune</value>
+                        <value>Pluto</value>
+                        <value>Moon</value>
+                        <value>Sun</value>
+                      </CelestialObjects>
+                      <UseBodyForce dim="11">
+                        <value>false</value>
+                        <value>false</value>
+                        <value>true</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>true</value>
+                        <value>true</value>
+                      </UseBodyForce>
+                      <PlanetFieldType dim="11" displayed_units="" units="">
+                        <value>0</value>
+                        <value>0</value>
+                        <value>2</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                      </PlanetFieldType>
+                      <PlanetFieldDegree dim="11" displayed_units="" units="">
+                        <value>0</value>
+                        <value>0</value>
+                        <value>4</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                      </PlanetFieldDegree>
+                      <PlanetFieldOrder dim="11" displayed_units="" units="">
+                        <value>0</value>
+                        <value>0</value>
+                        <value>4</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                      </PlanetFieldOrder>
+                      <PlanetoPotentialFilename dim="11">
+                        <value/>
+                        <value/>
+                        <value>DEFAULT</value>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                      </PlanetoPotentialFilename>
+                      <SolidTideFilename dim="11">
+                        <value/>
+                        <value/>
+                        <value>DEFAULT</value>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                      </SolidTideFilename>
+                      <UseZeroTideModel dim="11">
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                      </UseZeroTideModel>
+                      <SolidTideDegree dim="11" displayed_units="" units="">
+                        <value>0</value>
+                        <value>0</value>
+                        <value>2</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                      </SolidTideDegree>
+                      <SolidTideOrder dim="11" displayed_units="" units="">
+                        <value>0</value>
+                        <value>0</value>
+                        <value>2</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                      </SolidTideOrder>
+                    </GravitatingBodies>
+                    <SRP>false</SRP>
+                    <SRPForceGeometry>0</SRPForceGeometry>
+                    <Atmospheric>
+                      <Drag>true</Drag>
+                      <AtmosphericDensityModel>1</AtmosphericDensityModel>
+                      <SolarFluxFilename>DEFAULT</SolarFluxFilename>
+                      <HarrisPriesterF107Index>65</HarrisPriesterF107Index>
+                      <Lift>false</Lift>
+                      <Rho1 displayed_units="" units="">0</Rho1>
+                      <HarrisPriesterDensityFilename>DEFAULT</HarrisPriesterDensityFilename>
+                    </Atmospheric>
+                    <OtherAccelerations>
+                      <UseOtherAcceleration>false</UseOtherAcceleration>
+                      <OtherAccelerations dim="3" displayed_units="km/s^2" units="km/s^2">
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                      </OtherAccelerations>
+                      <OtherAccelerationsRate dim="3" displayed_units="km/s^3" units="km/s^3">
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                      </OtherAccelerationsRate>
+                    </OtherAccelerations>
+                  </ForceModel>
+                </FM>
+                <ToleranceMode>1</ToleranceMode>
+                <RelativeErrorThreshold displayed_units="" units="">0.1</RelativeErrorThreshold>
+              </RK89>
+            </Prop>
+          </PropFM>
+        </StateAdvancer>
+        <AHFParms>
+          <AHF xsi:nil="true"/>
+          <AHFFilename/>
+        </AHFParms>
+        <Hardware>
+          <Sensors dim="0"/>
+          <Tanks dim="0"/>
+          <Thrusters dim="0"/>
+          <ProximityZones dim="0"/>
+          <GNSSReceivers dim="0"/>
+          <Transponders dim="0"/>
+        </Hardware>
+        <PlateModel>
+          <PlateModel isConstant="false" isGlobal="false" name="ScNoSRP_|PlateModel|">
+            <Name>ScNoSRP_|PlateModel|</Name>
+            <Plates dim="0"/>
+            <DrawMethod>2</DrawMethod>
+            <DrawNormals>false</DrawNormals>
+            <DrawRotationAxes>false</DrawRotationAxes>
+            <Visible>true</Visible>
+            <VisualScale displayed_units="" units="">100000</VisualScale>
+          </PlateModel>
+        </PlateModel>
+        <OD>
+          <SpacecraftODProperties isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|">
+            <Name>ScNoSRP_|SpacecraftODProperties|</Name>
+            <ElementSetToProcess>Cartesian</ElementSetToProcess>
+            <Cartesian>
+              <CartesianOrbitStateEstimablePropertyContainer isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|Cartesian|">
+                <Name>ScNoSRP_|SpacecraftODProperties|_|Cartesian|</Name>
+                <X>
+                  <EstimablePosition isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|Cartesian|_|X|">
+                    <Name>ScNoSRP_|SpacecraftODProperties|_|Cartesian|_|X|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="km" units="km">0.05</Sigma>
+                    <ProcessNoiseRate displayed_units="km^2/s" units="km^2/s">1e-15</ProcessNoiseRate>
+                  </EstimablePosition>
+                </X>
+                <Y>
+                  <EstimablePosition isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|Cartesian|_|Y|">
+                    <Name>ScNoSRP_|SpacecraftODProperties|_|Cartesian|_|Y|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="km" units="km">0.05</Sigma>
+                    <ProcessNoiseRate displayed_units="km^2/s" units="km^2/s">1e-15</ProcessNoiseRate>
+                  </EstimablePosition>
+                </Y>
+                <Z>
+                  <EstimablePosition isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|Cartesian|_|Z|">
+                    <Name>ScNoSRP_|SpacecraftODProperties|_|Cartesian|_|Z|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="km" units="km">0.05</Sigma>
+                    <ProcessNoiseRate displayed_units="km^2/s" units="km^2/s">1e-15</ProcessNoiseRate>
+                  </EstimablePosition>
+                </Z>
+                <VX>
+                  <EstimableVelocity isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|Cartesian|_|VX|">
+                    <Name>ScNoSRP_|SpacecraftODProperties|_|Cartesian|_|VX|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="km/s" units="km/s">2e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="km^2/s^3" units="km^2/s^3">1e-18</ProcessNoiseRate>
+                  </EstimableVelocity>
+                </VX>
+                <VY>
+                  <EstimableVelocity isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|Cartesian|_|VY|">
+                    <Name>ScNoSRP_|SpacecraftODProperties|_|Cartesian|_|VY|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="km/s" units="km/s">2e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="km^2/s^3" units="km^2/s^3">1e-18</ProcessNoiseRate>
+                  </EstimableVelocity>
+                </VY>
+                <VZ>
+                  <EstimableVelocity isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|Cartesian|_|VZ|">
+                    <Name>ScNoSRP_|SpacecraftODProperties|_|Cartesian|_|VZ|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="km/s" units="km/s">2e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="km^2/s^3" units="km^2/s^3">1e-18</ProcessNoiseRate>
+                  </EstimableVelocity>
+                </VZ>
+              </CartesianOrbitStateEstimablePropertyContainer>
+            </Cartesian>
+            <Equinoctial>
+              <EquinoctialOrbitStateEstimablePropertyContainer isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|Equinoctial|">
+                <Name>ScNoSRP_|SpacecraftODProperties|_|Equinoctial|</Name>
+                <A>
+                  <EstimableEquinoctialA isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|Equinoctial|_|A|">
+                    <Name>ScNoSRP_|SpacecraftODProperties|_|Equinoctial|_|A|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="km" units="km">0.05</Sigma>
+                    <ProcessNoiseRate displayed_units="km^2/s" units="km^2/s">1e-15</ProcessNoiseRate>
+                  </EstimableEquinoctialA>
+                </A>
+                <H>
+                  <EstimablePositionComponent isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|Equinoctial|_|H|">
+                    <Name>ScNoSRP_|SpacecraftODProperties|_|Equinoctial|_|H|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="" units="">1e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-20</ProcessNoiseRate>
+                  </EstimablePositionComponent>
+                </H>
+                <K>
+                  <EstimablePositionComponent isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|Equinoctial|_|K|">
+                    <Name>ScNoSRP_|SpacecraftODProperties|_|Equinoctial|_|K|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="" units="">1e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-20</ProcessNoiseRate>
+                  </EstimablePositionComponent>
+                </K>
+                <P>
+                  <EstimablePositionComponent isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|Equinoctial|_|P|">
+                    <Name>ScNoSRP_|SpacecraftODProperties|_|Equinoctial|_|P|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="" units="">1e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-20</ProcessNoiseRate>
+                  </EstimablePositionComponent>
+                </P>
+                <Q>
+                  <EstimablePositionComponent isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|Equinoctial|_|Q|">
+                    <Name>ScNoSRP_|SpacecraftODProperties|_|Equinoctial|_|Q|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="" units="">1e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-20</ProcessNoiseRate>
+                  </EstimablePositionComponent>
+                </Q>
+                <Longitude>
+                  <EstimableEquinoctialLongitude isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|Equinoctial|_|Longitude|">
+                    <Name>ScNoSRP_|SpacecraftODProperties|_|Equinoctial|_|Longitude|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="deg" units="deg">0.001</Sigma>
+                    <ProcessNoiseRate displayed_units="deg^2/s" units="deg^2/s">1e-16</ProcessNoiseRate>
+                  </EstimableEquinoctialLongitude>
+                </Longitude>
+              </EquinoctialOrbitStateEstimablePropertyContainer>
+            </Equinoctial>
+            <SGP4>
+              <Sgp4OrbitStateEstimablePropertyContainer isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|SGP4|">
+                <Name>ScNoSRP_|SpacecraftODProperties|_|SGP4|</Name>
+                <H>
+                  <EstimablePositionComponent isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|SGP4|_|H|">
+                    <Name>ScNoSRP_|SpacecraftODProperties|_|SGP4|_|H|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="" units="">1e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-20</ProcessNoiseRate>
+                  </EstimablePositionComponent>
+                </H>
+                <K>
+                  <EstimablePositionComponent isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|SGP4|_|K|">
+                    <Name>ScNoSRP_|SpacecraftODProperties|_|SGP4|_|K|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="" units="">1e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-20</ProcessNoiseRate>
+                  </EstimablePositionComponent>
+                </K>
+                <P>
+                  <EstimablePositionComponent isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|SGP4|_|P|">
+                    <Name>ScNoSRP_|SpacecraftODProperties|_|SGP4|_|P|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="" units="">1e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-20</ProcessNoiseRate>
+                  </EstimablePositionComponent>
+                </P>
+                <Q>
+                  <EstimablePositionComponent isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|SGP4|_|Q|">
+                    <Name>ScNoSRP_|SpacecraftODProperties|_|SGP4|_|Q|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="" units="">1e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-20</ProcessNoiseRate>
+                  </EstimablePositionComponent>
+                </Q>
+                <Longitude>
+                  <EstimableEquinoctialLongitude isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|SGP4|_|Longitude|">
+                    <Name>ScNoSRP_|SpacecraftODProperties|_|SGP4|_|Longitude|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="deg" units="deg">0.001</Sigma>
+                    <ProcessNoiseRate displayed_units="deg^2/s" units="deg^2/s">1e-16</ProcessNoiseRate>
+                  </EstimableEquinoctialLongitude>
+                </Longitude>
+                <MeanMotion>
+                  <EstimableMeanMotion isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|SGP4|_|MeanMotion|">
+                    <Name>ScNoSRP_|SpacecraftODProperties|_|SGP4|_|MeanMotion|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="orbits/day" units="orbits/day">1e-006</Sigma>
+                    <ProcessNoiseRate displayed_units="(orbits/day)^2/s" units="(orbits/day)^2/s">1e-17</ProcessNoiseRate>
+                  </EstimableMeanMotion>
+                </MeanMotion>
+              </Sgp4OrbitStateEstimablePropertyContainer>
+            </SGP4>
+            <Cd>
+              <EstimableCoefficient isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|OD_Cd|">
+                <Name>ScNoSRP_|SpacecraftODProperties|_|OD_Cd|</Name>
+                <ProcessAction>0</ProcessAction>
+                <Sigma displayed_units="" units="">0.05</Sigma>
+                <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-10</ProcessNoiseRate>
+              </EstimableCoefficient>
+            </Cd>
+            <Rho1>
+              <EstimableCoefficient isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|OD_Rho1|">
+                <Name>ScNoSRP_|SpacecraftODProperties|_|OD_Rho1|</Name>
+                <ProcessAction>0</ProcessAction>
+                <Sigma displayed_units="" units="">0.05</Sigma>
+                <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-10</ProcessNoiseRate>
+              </EstimableCoefficient>
+            </Rho1>
+            <BStar>
+              <EstimableBStar isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|OD_BStar|">
+                <Name>ScNoSRP_|SpacecraftODProperties|_|OD_BStar|</Name>
+                <ProcessAction>0</ProcessAction>
+                <Sigma displayed_units="er^-1" units="er^-1">1e-005</Sigma>
+                <ProcessNoiseRate displayed_units="er^-2/s" units="er^-2/s">1e-13</ProcessNoiseRate>
+              </EstimableBStar>
+            </BStar>
+            <AGOM>
+              <EstimableAGOM isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|OD_AGOM|">
+                <Name>ScNoSRP_|SpacecraftODProperties|_|OD_AGOM|</Name>
+                <ProcessAction>0</ProcessAction>
+                <Sigma displayed_units="m^2/kg" units="m^2/kg">1e-5</Sigma>
+                <ProcessNoiseRate displayed_units="m^4/(kg^2 s)" units="m^4/(kg^2 s)">1e-13</ProcessNoiseRate>
+              </EstimableAGOM>
+            </AGOM>
+            <DragEstimateOption>0</DragEstimateOption>
+            <Cr>
+              <EstimableCoefficient isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|OD_Cr|">
+                <Name>ScNoSRP_|SpacecraftODProperties|_|OD_Cr|</Name>
+                <ProcessAction>0</ProcessAction>
+                <Sigma displayed_units="" units="">0.05</Sigma>
+                <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-10</ProcessNoiseRate>
+              </EstimableCoefficient>
+            </Cr>
+            <OtherAccelerationsX>
+              <EstimableAcceleration isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|OD_UX|">
+                <Name>ScNoSRP_|SpacecraftODProperties|_|OD_UX|</Name>
+                <ProcessAction>0</ProcessAction>
+                <Sigma displayed_units="km/s^2" units="km/s^2">1e-006</Sigma>
+                <ProcessNoiseRate displayed_units="km^2/s^5" units="km^2/s^5">1e-16</ProcessNoiseRate>
+              </EstimableAcceleration>
+            </OtherAccelerationsX>
+            <OtherAccelerationsY>
+              <EstimableAcceleration isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|OD_UY|">
+                <Name>ScNoSRP_|SpacecraftODProperties|_|OD_UY|</Name>
+                <ProcessAction>0</ProcessAction>
+                <Sigma displayed_units="km/s^2" units="km/s^2">1e-006</Sigma>
+                <ProcessNoiseRate displayed_units="km^2/s^5" units="km^2/s^5">1e-16</ProcessNoiseRate>
+              </EstimableAcceleration>
+            </OtherAccelerationsY>
+            <OtherAccelerationsZ>
+              <EstimableAcceleration isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|OD_UZ|">
+                <Name>ScNoSRP_|SpacecraftODProperties|_|OD_UZ|</Name>
+                <ProcessAction>0</ProcessAction>
+                <Sigma displayed_units="km/s^2" units="km/s^2">1e-006</Sigma>
+                <ProcessNoiseRate displayed_units="km^2/s^5" units="km^2/s^5">1e-16</ProcessNoiseRate>
+              </EstimableAcceleration>
+            </OtherAccelerationsZ>
+            <PropagateCovariance>false</PropagateCovariance>
+            <CovariancePropagationModel>0</CovariancePropagationModel>
+            <Covariance>
+              <SpacecraftCovariance isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|Covariance|">
+                <Name>ScNoSRP_|SpacecraftODProperties|_|Covariance|</Name>
+                <Matrix dim="0,0" displayed_units="" units=""/>
+              </SpacecraftCovariance>
+            </Covariance>
+            <CustomObservations dim="0"/>
+            <ProcessNoise>
+              <SpacecraftProcessNoise isConstant="false" isGlobal="false" name="ScNoSRP_|SpacecraftODProperties|_|ProcessNoise|">
+                <Name>ScNoSRP_|SpacecraftODProperties|_|ProcessNoise|</Name>
+                <ReferenceFrame>ICRF</ReferenceFrame>
+                <RateMatrix dim="0,0" displayed_units="" units=""/>
+                <ReferenceFrameSupportData>
+                  <ICRF/>
+                </ReferenceFrameSupportData>
+              </SpacecraftProcessNoise>
+            </ProcessNoise>
+          </SpacecraftODProperties>
+        </OD>
+        <RefFrameEpochDetails>
+          <RefFrameEpochSystem>UTC</RefFrameEpochSystem>
+          <RefFrameEpochTimeZone>UTC +/- 00:00</RefFrameEpochTimeZone>
+          <RefFrameEpochFormat>Calendar</RefFrameEpochFormat>
+          <RefFrameEpochType>Absolute</RefFrameEpochType>
+          <RefFrameEpochTypeInfo/>
+        </RefFrameEpochDetails>
+        <RefFrameEpoch>Jan 01 2020 00:00:00.000000000</RefFrameEpoch>
+        <OrbitNumberCalculationsEnabled>false</OrbitNumberCalculationsEnabled>
+      </Spacecraft>
+    </Object>
+    <Object>
+      <Spacecraft isConstant="false" isGlobal="false" name="ScOtherAccels">
+        <Name>ScOtherAccels</Name>
+        <EpochDetails>
+          <EpochSystem>UTC</EpochSystem>
+          <EpochTimeZone>UTC +/- 00:00</EpochTimeZone>
+          <EpochFormat>Calendar</EpochFormat>
+          <EpochType>Absolute</EpochType>
+          <EpochTypeInfo/>
+        </EpochDetails>
+        <Epoch>Oct 01 2012 00:00:00.000000000</Epoch>
+        <ReferenceFrame>International Celestial Reference Frame</ReferenceFrame>
+        <CentralBody>Earth</CentralBody>
+        <ElementType>Keplerian</ElementType>
+        <OrbitState>
+          <Keplerian>
+            <A displayed_units="km" units="km">42162</A>
+            <E displayed_units="" units="">.00059</E>
+            <I displayed_units="deg" units="deg">2</I>
+            <RAAN displayed_units="deg" units="deg">262</RAAN>
+            <W displayed_units="deg" units="deg">289</W>
+            <TA displayed_units="deg" units="deg">342</TA>
+          </Keplerian>
+        </OrbitState>
+        <Orientation>
+          <AttitudeCoordinateSystem/>
+          <AttitudeRefFrame>LVLH</AttitudeRefFrame>
+          <AttitudeSystem>EulerAngles</AttitudeSystem>
+          <AttitudeState>
+            <EulerAngles>
+              <EulerAngles dim="3" displayed_units="deg" units="deg">
+                <value>0</value>
+                <value>0</value>
+                <value>0</value>
+              </EulerAngles>
+              <EulerRates dim="3" displayed_units="deg/s" units="deg/s">
+                <value>0</value>
+                <value>0</value>
+                <value>0</value>
+              </EulerRates>
+              <EulerSequence dim="3" displayed_units="" units="">
+                <value>3</value>
+                <value>1</value>
+                <value>2</value>
+              </EulerSequence>
+            </EulerAngles>
+          </AttitudeState>
+        </Orientation>
+        <PhysicalProperties>
+          <ForceCoefficientType>0</ForceCoefficientType>
+          <ForceCoefficientTypes>
+            <Standard>
+              <Cd displayed_units="" units="">2.2</Cd>
+              <Cr displayed_units="" units="">1.4</Cr>
+            </Standard>
+          </ForceCoefficientTypes>
+          <Cl displayed_units="" units="">1.2</Cl>
+          <DragArea displayed_units="m^2" units="m^2">1</DragArea>
+          <LiftArea displayed_units="m^2" units="m^2">1</LiftArea>
+          <SRPArea displayed_units="m^2" units="m^2">1</SRPArea>
+          <SatelliteId>1</SatelliteId>
+        </PhysicalProperties>
+        <Visualization>
+          <Color>255</Color>
+          <BodyScale displayed_units="" units="">3</BodyScale>
+          <TailLength displayed_units="" units="">100</TailLength>
+          <HistoryMode>0</HistoryMode>
+          <HistoryGradientColors dim="0"/>
+          <HistoryGradientFadeRate>1</HistoryGradientFadeRate>
+          <HistoryGradientExponentialFadeParameter displayed_units="" units="">10.0</HistoryGradientExponentialFadeParameter>
+          <HistoryGradientOpacityRange dim="2" displayed_units="" units="">
+            <value>0.0</value>
+            <value>1.0</value>
+          </HistoryGradientOpacityRange>
+          <TickType>None</TickType>
+          <Annotation/>
+          <ModelDefinitionType>0</ModelDefinitionType>
+          <ModelDefinition>
+            <ThreeDModelFilename>
+              <ThreeDModelFile>Internal::globalstar</ThreeDModelFile>
+            </ThreeDModelFilename>
+          </ModelDefinition>
+        </Visualization>
+        <LaunchCoordinates>
+          <LCSEpochDetails>
+            <LCSEpochSystem>UTC</LCSEpochSystem>
+            <LCSEpochTimeZone>UTC +/- 00:00</LCSEpochTimeZone>
+            <LCSEpochFormat>Calendar</LCSEpochFormat>
+            <LCSEpochType>Absolute</LCSEpochType>
+            <LCSEpochTypeInfo/>
+          </LCSEpochDetails>
+          <LCSEpoch>Jan 01 2010 00:00:00.000000000</LCSEpoch>
+          <LCSLongitude displayed_units="deg" units="deg">0</LCSLongitude>
+          <LCSLatitude displayed_units="deg" units="deg">0</LCSLatitude>
+        </LaunchCoordinates>
+        <InertialData>
+          <VehicleDryMass displayed_units="kg" units="kg">1000</VehicleDryMass>
+          <VehicleDryMOI dim="3,3" displayed_units="kg m^2" units="kg m^2">
+            <value>1200</value>
+            <value>0</value>
+            <value>0</value>
+            <value>0</value>
+            <value>1200</value>
+            <value>0</value>
+            <value>0</value>
+            <value>0</value>
+            <value>1200</value>
+          </VehicleDryMOI>
+          <MassTotal displayed_units="kg" units="kg">1990.18</MassTotal>
+          <VehicleDryCenterOfMass dim="3" displayed_units="m" units="m">
+            <value>0</value>
+            <value>0</value>
+            <value>0</value>
+          </VehicleDryCenterOfMass>
+        </InertialData>
+        <OrbitNumberCumulative displayed_units="" units="">1</OrbitNumberCumulative>
+        <OrbitNumberBounded displayed_units="" units="">1</OrbitNumberBounded>
+        <OrbitNumberResetNumber displayed_units="" units="">0</OrbitNumberResetNumber>
+        <OrbitNumberDaily displayed_units="" units="">1</OrbitNumberDaily>
+        <OrbitNumberResetLongitude displayed_units="" units="">20</OrbitNumberResetLongitude>
+        <StateAdvancerType>PropFM</StateAdvancerType>
+        <StateAdvancer>
+          <PropFM>
+            <Prop>
+              <RK89 isConstant="false" isGlobal="false" name="ScOtherAccels_Propagator">
+                <Name>ScOtherAccels_Propagator</Name>
+                <StepSize displayed_units="s" units="s">60</StepSize>
+                <StepJustTaken displayed_units="s" units="s">300.0</StepJustTaken>
+                <StepToTake displayed_units="s" units="s">300.0</StepToTake>
+                <LargeCurvature displayed_units="" units="">0</LargeCurvature>
+                <FixedStep>1</FixedStep>
+                <Tolerance displayed_units="" units="">1e-009</Tolerance>
+                <AllowErrorViolation>false</AllowErrorViolation>
+                <CalculateSTM>false</CalculateSTM>
+                <STMCalculationMethod>2</STMCalculationMethod>
+                <FM>
+                  <ForceModel isConstant="false" isGlobal="false" name="ScOtherAccels_Propagator_ForceModel">
+                    <Name>ScOtherAccels_Propagator_ForceModel</Name>
+                    <GravitatingBodies>
+                      <CelestialObjects dim="11">
+                        <value>Mercury</value>
+                        <value>Venus</value>
+                        <value>Earth</value>
+                        <value>Mars</value>
+                        <value>Jupiter</value>
+                        <value>Saturn</value>
+                        <value>Uranus</value>
+                        <value>Neptune</value>
+                        <value>Pluto</value>
+                        <value>Moon</value>
+                        <value>Sun</value>
+                      </CelestialObjects>
+                      <UseBodyForce dim="11">
+                        <value>false</value>
+                        <value>false</value>
+                        <value>true</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>true</value>
+                        <value>true</value>
+                      </UseBodyForce>
+                      <PlanetFieldType dim="11" displayed_units="" units="">
+                        <value>0</value>
+                        <value>0</value>
+                        <value>2</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                      </PlanetFieldType>
+                      <PlanetFieldDegree dim="11" displayed_units="" units="">
+                        <value>0</value>
+                        <value>0</value>
+                        <value>4</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                      </PlanetFieldDegree>
+                      <PlanetFieldOrder dim="11" displayed_units="" units="">
+                        <value>0</value>
+                        <value>0</value>
+                        <value>4</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                      </PlanetFieldOrder>
+                      <PlanetoPotentialFilename dim="11">
+                        <value/>
+                        <value/>
+                        <value>DEFAULT</value>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                      </PlanetoPotentialFilename>
+                      <SolidTideFilename dim="11">
+                        <value/>
+                        <value/>
+                        <value>DEFAULT</value>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                      </SolidTideFilename>
+                      <UseZeroTideModel dim="11">
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                      </UseZeroTideModel>
+                      <SolidTideDegree dim="11" displayed_units="" units="">
+                        <value>0</value>
+                        <value>0</value>
+                        <value>2</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                      </SolidTideDegree>
+                      <SolidTideOrder dim="11" displayed_units="" units="">
+                        <value>0</value>
+                        <value>0</value>
+                        <value>2</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                      </SolidTideOrder>
+                    </GravitatingBodies>
+                    <SRP>false</SRP>
+                    <SRPForceGeometry>0</SRPForceGeometry>
+                    <Atmospheric>
+                      <Drag>true</Drag>
+                      <AtmosphericDensityModel>1</AtmosphericDensityModel>
+                      <SolarFluxFilename>DEFAULT</SolarFluxFilename>
+                      <HarrisPriesterF107Index>65</HarrisPriesterF107Index>
+                      <Lift>false</Lift>
+                      <Rho1 displayed_units="" units="">0</Rho1>
+                      <HarrisPriesterDensityFilename>DEFAULT</HarrisPriesterDensityFilename>
+                    </Atmospheric>
+                    <OtherAccelerations>
+                      <UseOtherAcceleration>false</UseOtherAcceleration>
+                      <OtherAccelerations dim="3" displayed_units="km/s^2" units="km/s^2">
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                      </OtherAccelerations>
+                      <OtherAccelerationsRate dim="3" displayed_units="km/s^3" units="km/s^3">
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                      </OtherAccelerationsRate>
+                    </OtherAccelerations>
+                  </ForceModel>
+                </FM>
+                <ToleranceMode>1</ToleranceMode>
+                <RelativeErrorThreshold displayed_units="" units="">0.1</RelativeErrorThreshold>
+              </RK89>
+            </Prop>
+          </PropFM>
+        </StateAdvancer>
+        <AHFParms>
+          <AHF xsi:nil="true"/>
+          <AHFFilename/>
+        </AHFParms>
+        <Hardware>
+          <Sensors dim="0"/>
+          <Tanks dim="0"/>
+          <Thrusters dim="0"/>
+          <ProximityZones dim="0"/>
+          <GNSSReceivers dim="0"/>
+          <Transponders dim="0"/>
+        </Hardware>
+        <PlateModel>
+          <PlateModel isConstant="false" isGlobal="false" name="ScOtherAccels_|PlateModel|">
+            <Name>ScOtherAccels_|PlateModel|</Name>
+            <Plates dim="0"/>
+            <DrawMethod>2</DrawMethod>
+            <DrawNormals>false</DrawNormals>
+            <DrawRotationAxes>false</DrawRotationAxes>
+            <Visible>true</Visible>
+            <VisualScale displayed_units="" units="">100000</VisualScale>
+          </PlateModel>
+        </PlateModel>
+        <OD>
+          <SpacecraftODProperties isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|">
+            <Name>ScOtherAccels_|SpacecraftODProperties|</Name>
+            <ElementSetToProcess>Cartesian</ElementSetToProcess>
+            <Cartesian>
+              <CartesianOrbitStateEstimablePropertyContainer isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|Cartesian|">
+                <Name>ScOtherAccels_|SpacecraftODProperties|_|Cartesian|</Name>
+                <X>
+                  <EstimablePosition isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|Cartesian|_|X|">
+                    <Name>ScOtherAccels_|SpacecraftODProperties|_|Cartesian|_|X|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="km" units="km">0.05</Sigma>
+                    <ProcessNoiseRate displayed_units="km^2/s" units="km^2/s">1e-15</ProcessNoiseRate>
+                  </EstimablePosition>
+                </X>
+                <Y>
+                  <EstimablePosition isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|Cartesian|_|Y|">
+                    <Name>ScOtherAccels_|SpacecraftODProperties|_|Cartesian|_|Y|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="km" units="km">0.05</Sigma>
+                    <ProcessNoiseRate displayed_units="km^2/s" units="km^2/s">1e-15</ProcessNoiseRate>
+                  </EstimablePosition>
+                </Y>
+                <Z>
+                  <EstimablePosition isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|Cartesian|_|Z|">
+                    <Name>ScOtherAccels_|SpacecraftODProperties|_|Cartesian|_|Z|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="km" units="km">0.05</Sigma>
+                    <ProcessNoiseRate displayed_units="km^2/s" units="km^2/s">1e-15</ProcessNoiseRate>
+                  </EstimablePosition>
+                </Z>
+                <VX>
+                  <EstimableVelocity isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|Cartesian|_|VX|">
+                    <Name>ScOtherAccels_|SpacecraftODProperties|_|Cartesian|_|VX|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="km/s" units="km/s">2e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="km^2/s^3" units="km^2/s^3">1e-18</ProcessNoiseRate>
+                  </EstimableVelocity>
+                </VX>
+                <VY>
+                  <EstimableVelocity isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|Cartesian|_|VY|">
+                    <Name>ScOtherAccels_|SpacecraftODProperties|_|Cartesian|_|VY|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="km/s" units="km/s">2e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="km^2/s^3" units="km^2/s^3">1e-18</ProcessNoiseRate>
+                  </EstimableVelocity>
+                </VY>
+                <VZ>
+                  <EstimableVelocity isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|Cartesian|_|VZ|">
+                    <Name>ScOtherAccels_|SpacecraftODProperties|_|Cartesian|_|VZ|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="km/s" units="km/s">2e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="km^2/s^3" units="km^2/s^3">1e-18</ProcessNoiseRate>
+                  </EstimableVelocity>
+                </VZ>
+              </CartesianOrbitStateEstimablePropertyContainer>
+            </Cartesian>
+            <Equinoctial>
+              <EquinoctialOrbitStateEstimablePropertyContainer isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|Equinoctial|">
+                <Name>ScOtherAccels_|SpacecraftODProperties|_|Equinoctial|</Name>
+                <A>
+                  <EstimableEquinoctialA isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|Equinoctial|_|A|">
+                    <Name>ScOtherAccels_|SpacecraftODProperties|_|Equinoctial|_|A|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="km" units="km">0.05</Sigma>
+                    <ProcessNoiseRate displayed_units="km^2/s" units="km^2/s">1e-15</ProcessNoiseRate>
+                  </EstimableEquinoctialA>
+                </A>
+                <H>
+                  <EstimablePositionComponent isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|Equinoctial|_|H|">
+                    <Name>ScOtherAccels_|SpacecraftODProperties|_|Equinoctial|_|H|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="" units="">1e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-20</ProcessNoiseRate>
+                  </EstimablePositionComponent>
+                </H>
+                <K>
+                  <EstimablePositionComponent isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|Equinoctial|_|K|">
+                    <Name>ScOtherAccels_|SpacecraftODProperties|_|Equinoctial|_|K|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="" units="">1e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-20</ProcessNoiseRate>
+                  </EstimablePositionComponent>
+                </K>
+                <P>
+                  <EstimablePositionComponent isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|Equinoctial|_|P|">
+                    <Name>ScOtherAccels_|SpacecraftODProperties|_|Equinoctial|_|P|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="" units="">1e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-20</ProcessNoiseRate>
+                  </EstimablePositionComponent>
+                </P>
+                <Q>
+                  <EstimablePositionComponent isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|Equinoctial|_|Q|">
+                    <Name>ScOtherAccels_|SpacecraftODProperties|_|Equinoctial|_|Q|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="" units="">1e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-20</ProcessNoiseRate>
+                  </EstimablePositionComponent>
+                </Q>
+                <Longitude>
+                  <EstimableEquinoctialLongitude isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|Equinoctial|_|Longitude|">
+                    <Name>ScOtherAccels_|SpacecraftODProperties|_|Equinoctial|_|Longitude|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="deg" units="deg">0.001</Sigma>
+                    <ProcessNoiseRate displayed_units="deg^2/s" units="deg^2/s">1e-16</ProcessNoiseRate>
+                  </EstimableEquinoctialLongitude>
+                </Longitude>
+              </EquinoctialOrbitStateEstimablePropertyContainer>
+            </Equinoctial>
+            <SGP4>
+              <Sgp4OrbitStateEstimablePropertyContainer isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|SGP4|">
+                <Name>ScOtherAccels_|SpacecraftODProperties|_|SGP4|</Name>
+                <H>
+                  <EstimablePositionComponent isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|SGP4|_|H|">
+                    <Name>ScOtherAccels_|SpacecraftODProperties|_|SGP4|_|H|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="" units="">1e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-20</ProcessNoiseRate>
+                  </EstimablePositionComponent>
+                </H>
+                <K>
+                  <EstimablePositionComponent isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|SGP4|_|K|">
+                    <Name>ScOtherAccels_|SpacecraftODProperties|_|SGP4|_|K|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="" units="">1e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-20</ProcessNoiseRate>
+                  </EstimablePositionComponent>
+                </K>
+                <P>
+                  <EstimablePositionComponent isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|SGP4|_|P|">
+                    <Name>ScOtherAccels_|SpacecraftODProperties|_|SGP4|_|P|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="" units="">1e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-20</ProcessNoiseRate>
+                  </EstimablePositionComponent>
+                </P>
+                <Q>
+                  <EstimablePositionComponent isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|SGP4|_|Q|">
+                    <Name>ScOtherAccels_|SpacecraftODProperties|_|SGP4|_|Q|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="" units="">1e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-20</ProcessNoiseRate>
+                  </EstimablePositionComponent>
+                </Q>
+                <Longitude>
+                  <EstimableEquinoctialLongitude isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|SGP4|_|Longitude|">
+                    <Name>ScOtherAccels_|SpacecraftODProperties|_|SGP4|_|Longitude|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="deg" units="deg">0.001</Sigma>
+                    <ProcessNoiseRate displayed_units="deg^2/s" units="deg^2/s">1e-16</ProcessNoiseRate>
+                  </EstimableEquinoctialLongitude>
+                </Longitude>
+                <MeanMotion>
+                  <EstimableMeanMotion isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|SGP4|_|MeanMotion|">
+                    <Name>ScOtherAccels_|SpacecraftODProperties|_|SGP4|_|MeanMotion|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="orbits/day" units="orbits/day">1e-006</Sigma>
+                    <ProcessNoiseRate displayed_units="(orbits/day)^2/s" units="(orbits/day)^2/s">1e-17</ProcessNoiseRate>
+                  </EstimableMeanMotion>
+                </MeanMotion>
+              </Sgp4OrbitStateEstimablePropertyContainer>
+            </SGP4>
+            <Cd>
+              <EstimableCoefficient isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|OD_Cd|">
+                <Name>ScOtherAccels_|SpacecraftODProperties|_|OD_Cd|</Name>
+                <ProcessAction>0</ProcessAction>
+                <Sigma displayed_units="" units="">0.05</Sigma>
+                <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-10</ProcessNoiseRate>
+              </EstimableCoefficient>
+            </Cd>
+            <Rho1>
+              <EstimableCoefficient isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|OD_Rho1|">
+                <Name>ScOtherAccels_|SpacecraftODProperties|_|OD_Rho1|</Name>
+                <ProcessAction>0</ProcessAction>
+                <Sigma displayed_units="" units="">0.05</Sigma>
+                <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-10</ProcessNoiseRate>
+              </EstimableCoefficient>
+            </Rho1>
+            <BStar>
+              <EstimableBStar isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|OD_BStar|">
+                <Name>ScOtherAccels_|SpacecraftODProperties|_|OD_BStar|</Name>
+                <ProcessAction>0</ProcessAction>
+                <Sigma displayed_units="er^-1" units="er^-1">1e-005</Sigma>
+                <ProcessNoiseRate displayed_units="er^-2/s" units="er^-2/s">1e-13</ProcessNoiseRate>
+              </EstimableBStar>
+            </BStar>
+            <AGOM>
+              <EstimableAGOM isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|OD_AGOM|">
+                <Name>ScOtherAccels_|SpacecraftODProperties|_|OD_AGOM|</Name>
+                <ProcessAction>0</ProcessAction>
+                <Sigma displayed_units="m^2/kg" units="m^2/kg">1e-5</Sigma>
+                <ProcessNoiseRate displayed_units="m^4/(kg^2 s)" units="m^4/(kg^2 s)">1e-13</ProcessNoiseRate>
+              </EstimableAGOM>
+            </AGOM>
+            <DragEstimateOption>0</DragEstimateOption>
+            <Cr>
+              <EstimableCoefficient isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|OD_Cr|">
+                <Name>ScOtherAccels_|SpacecraftODProperties|_|OD_Cr|</Name>
+                <ProcessAction>0</ProcessAction>
+                <Sigma displayed_units="" units="">0.05</Sigma>
+                <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-10</ProcessNoiseRate>
+              </EstimableCoefficient>
+            </Cr>
+            <OtherAccelerationsX>
+              <EstimableAcceleration isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|OD_UX|">
+                <Name>ScOtherAccels_|SpacecraftODProperties|_|OD_UX|</Name>
+                <ProcessAction>0</ProcessAction>
+                <Sigma displayed_units="km/s^2" units="km/s^2">1e-006</Sigma>
+                <ProcessNoiseRate displayed_units="km^2/s^5" units="km^2/s^5">1e-16</ProcessNoiseRate>
+              </EstimableAcceleration>
+            </OtherAccelerationsX>
+            <OtherAccelerationsY>
+              <EstimableAcceleration isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|OD_UY|">
+                <Name>ScOtherAccels_|SpacecraftODProperties|_|OD_UY|</Name>
+                <ProcessAction>0</ProcessAction>
+                <Sigma displayed_units="km/s^2" units="km/s^2">1e-006</Sigma>
+                <ProcessNoiseRate displayed_units="km^2/s^5" units="km^2/s^5">1e-16</ProcessNoiseRate>
+              </EstimableAcceleration>
+            </OtherAccelerationsY>
+            <OtherAccelerationsZ>
+              <EstimableAcceleration isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|OD_UZ|">
+                <Name>ScOtherAccels_|SpacecraftODProperties|_|OD_UZ|</Name>
+                <ProcessAction>0</ProcessAction>
+                <Sigma displayed_units="km/s^2" units="km/s^2">1e-006</Sigma>
+                <ProcessNoiseRate displayed_units="km^2/s^5" units="km^2/s^5">1e-16</ProcessNoiseRate>
+              </EstimableAcceleration>
+            </OtherAccelerationsZ>
+            <PropagateCovariance>false</PropagateCovariance>
+            <CovariancePropagationModel>0</CovariancePropagationModel>
+            <Covariance>
+              <SpacecraftCovariance isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|Covariance|">
+                <Name>ScOtherAccels_|SpacecraftODProperties|_|Covariance|</Name>
+                <Matrix dim="0,0" displayed_units="" units=""/>
+              </SpacecraftCovariance>
+            </Covariance>
+            <CustomObservations dim="0"/>
+            <ProcessNoise>
+              <SpacecraftProcessNoise isConstant="false" isGlobal="false" name="ScOtherAccels_|SpacecraftODProperties|_|ProcessNoise|">
+                <Name>ScOtherAccels_|SpacecraftODProperties|_|ProcessNoise|</Name>
+                <ReferenceFrame>ICRF</ReferenceFrame>
+                <RateMatrix dim="0,0" displayed_units="" units=""/>
+                <ReferenceFrameSupportData>
+                  <ICRF/>
+                </ReferenceFrameSupportData>
+              </SpacecraftProcessNoise>
+            </ProcessNoise>
+          </SpacecraftODProperties>
+        </OD>
+        <RefFrameEpochDetails>
+          <RefFrameEpochSystem>UTC</RefFrameEpochSystem>
+          <RefFrameEpochTimeZone>UTC +/- 00:00</RefFrameEpochTimeZone>
+          <RefFrameEpochFormat>Calendar</RefFrameEpochFormat>
+          <RefFrameEpochType>Absolute</RefFrameEpochType>
+          <RefFrameEpochTypeInfo/>
+        </RefFrameEpochDetails>
+        <RefFrameEpoch>Jan 01 2020 00:00:00.000000000</RefFrameEpoch>
+        <OrbitNumberCalculationsEnabled>false</OrbitNumberCalculationsEnabled>
+      </Spacecraft>
+    </Object>
+    <Object>
+      <Spacecraft isConstant="false" isGlobal="false" name="ScSRP">
+        <Name>ScSRP</Name>
+        <EpochDetails>
+          <EpochSystem>UTC</EpochSystem>
+          <EpochTimeZone>UTC +/- 00:00</EpochTimeZone>
+          <EpochFormat>Calendar</EpochFormat>
+          <EpochType>Absolute</EpochType>
+          <EpochTypeInfo/>
+        </EpochDetails>
+        <Epoch>Oct 01 2012 00:00:00.000000000</Epoch>
+        <ReferenceFrame>International Celestial Reference Frame</ReferenceFrame>
+        <CentralBody>Earth</CentralBody>
+        <ElementType>Keplerian</ElementType>
+        <OrbitState>
+          <Keplerian>
+            <A displayed_units="km" units="km">42162</A>
+            <E displayed_units="" units="">.00059</E>
+            <I displayed_units="deg" units="deg">2</I>
+            <RAAN displayed_units="deg" units="deg">262</RAAN>
+            <W displayed_units="deg" units="deg">289</W>
+            <TA displayed_units="deg" units="deg">342</TA>
+          </Keplerian>
+        </OrbitState>
+        <Orientation>
+          <AttitudeCoordinateSystem/>
+          <AttitudeRefFrame>LVLH</AttitudeRefFrame>
+          <AttitudeSystem>EulerAngles</AttitudeSystem>
+          <AttitudeState>
+            <EulerAngles>
+              <EulerAngles dim="3" displayed_units="deg" units="deg">
+                <value>0</value>
+                <value>0</value>
+                <value>0</value>
+              </EulerAngles>
+              <EulerRates dim="3" displayed_units="deg/s" units="deg/s">
+                <value>0</value>
+                <value>0</value>
+                <value>0</value>
+              </EulerRates>
+              <EulerSequence dim="3" displayed_units="" units="">
+                <value>3</value>
+                <value>1</value>
+                <value>2</value>
+              </EulerSequence>
+            </EulerAngles>
+          </AttitudeState>
+        </Orientation>
+        <PhysicalProperties>
+          <ForceCoefficientType>0</ForceCoefficientType>
+          <ForceCoefficientTypes>
+            <Standard>
+              <Cd displayed_units="" units="">2.2</Cd>
+              <Cr displayed_units="" units="">1.4</Cr>
+            </Standard>
+          </ForceCoefficientTypes>
+          <Cl displayed_units="" units="">1.2</Cl>
+          <DragArea displayed_units="m^2" units="m^2">1</DragArea>
+          <LiftArea displayed_units="m^2" units="m^2">1</LiftArea>
+          <SRPArea displayed_units="m^2" units="m^2">1</SRPArea>
+          <SatelliteId>1</SatelliteId>
+        </PhysicalProperties>
+        <Visualization>
+          <Color>65535</Color>
+          <BodyScale displayed_units="" units="">3</BodyScale>
+          <TailLength displayed_units="" units="">100</TailLength>
+          <HistoryMode>0</HistoryMode>
+          <HistoryGradientColors dim="0"/>
+          <HistoryGradientFadeRate>1</HistoryGradientFadeRate>
+          <HistoryGradientExponentialFadeParameter displayed_units="" units="">10.0</HistoryGradientExponentialFadeParameter>
+          <HistoryGradientOpacityRange dim="2" displayed_units="" units="">
+            <value>0.0</value>
+            <value>1.0</value>
+          </HistoryGradientOpacityRange>
+          <TickType>None</TickType>
+          <Annotation/>
+          <ModelDefinitionType>0</ModelDefinitionType>
+          <ModelDefinition>
+            <ThreeDModelFilename>
+              <ThreeDModelFile>Internal::globalstar</ThreeDModelFile>
+            </ThreeDModelFilename>
+          </ModelDefinition>
+        </Visualization>
+        <LaunchCoordinates>
+          <LCSEpochDetails>
+            <LCSEpochSystem>UTC</LCSEpochSystem>
+            <LCSEpochTimeZone>UTC +/- 00:00</LCSEpochTimeZone>
+            <LCSEpochFormat>Calendar</LCSEpochFormat>
+            <LCSEpochType>Absolute</LCSEpochType>
+            <LCSEpochTypeInfo/>
+          </LCSEpochDetails>
+          <LCSEpoch>Jan 01 2010 00:00:00.000000000</LCSEpoch>
+          <LCSLongitude displayed_units="deg" units="deg">0</LCSLongitude>
+          <LCSLatitude displayed_units="deg" units="deg">0</LCSLatitude>
+        </LaunchCoordinates>
+        <InertialData>
+          <VehicleDryMass displayed_units="kg" units="kg">1000</VehicleDryMass>
+          <VehicleDryMOI dim="3,3" displayed_units="kg m^2" units="kg m^2">
+            <value>1200</value>
+            <value>0</value>
+            <value>0</value>
+            <value>0</value>
+            <value>1200</value>
+            <value>0</value>
+            <value>0</value>
+            <value>0</value>
+            <value>1200</value>
+          </VehicleDryMOI>
+          <MassTotal displayed_units="kg" units="kg">1990.18</MassTotal>
+          <VehicleDryCenterOfMass dim="3" displayed_units="m" units="m">
+            <value>0</value>
+            <value>0</value>
+            <value>0</value>
+          </VehicleDryCenterOfMass>
+        </InertialData>
+        <OrbitNumberCumulative displayed_units="" units="">1</OrbitNumberCumulative>
+        <OrbitNumberBounded displayed_units="" units="">1</OrbitNumberBounded>
+        <OrbitNumberResetNumber displayed_units="" units="">0</OrbitNumberResetNumber>
+        <OrbitNumberDaily displayed_units="" units="">1</OrbitNumberDaily>
+        <OrbitNumberResetLongitude displayed_units="" units="">20</OrbitNumberResetLongitude>
+        <StateAdvancerType>PropFM</StateAdvancerType>
+        <StateAdvancer>
+          <PropFM>
+            <Prop>
+              <RK89 isConstant="false" isGlobal="false" name="ScSRP_Propagator">
+                <Name>ScSRP_Propagator</Name>
+                <StepSize displayed_units="s" units="s">60</StepSize>
+                <StepJustTaken displayed_units="s" units="s">300.0</StepJustTaken>
+                <StepToTake displayed_units="s" units="s">300.0</StepToTake>
+                <LargeCurvature displayed_units="" units="">0</LargeCurvature>
+                <FixedStep>1</FixedStep>
+                <Tolerance displayed_units="" units="">1e-009</Tolerance>
+                <AllowErrorViolation>false</AllowErrorViolation>
+                <CalculateSTM>false</CalculateSTM>
+                <STMCalculationMethod>2</STMCalculationMethod>
+                <FM>
+                  <ForceModel isConstant="false" isGlobal="false" name="ScSRP_Propagator_ForceModel">
+                    <Name>ScSRP_Propagator_ForceModel</Name>
+                    <GravitatingBodies>
+                      <CelestialObjects dim="11">
+                        <value>Mercury</value>
+                        <value>Venus</value>
+                        <value>Earth</value>
+                        <value>Mars</value>
+                        <value>Jupiter</value>
+                        <value>Saturn</value>
+                        <value>Uranus</value>
+                        <value>Neptune</value>
+                        <value>Pluto</value>
+                        <value>Moon</value>
+                        <value>Sun</value>
+                      </CelestialObjects>
+                      <UseBodyForce dim="11">
+                        <value>false</value>
+                        <value>false</value>
+                        <value>true</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>true</value>
+                        <value>true</value>
+                      </UseBodyForce>
+                      <PlanetFieldType dim="11" displayed_units="" units="">
+                        <value>0</value>
+                        <value>0</value>
+                        <value>2</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                      </PlanetFieldType>
+                      <PlanetFieldDegree dim="11" displayed_units="" units="">
+                        <value>0</value>
+                        <value>0</value>
+                        <value>4</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                      </PlanetFieldDegree>
+                      <PlanetFieldOrder dim="11" displayed_units="" units="">
+                        <value>0</value>
+                        <value>0</value>
+                        <value>4</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                      </PlanetFieldOrder>
+                      <PlanetoPotentialFilename dim="11">
+                        <value/>
+                        <value/>
+                        <value>DEFAULT</value>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                      </PlanetoPotentialFilename>
+                      <SolidTideFilename dim="11">
+                        <value/>
+                        <value/>
+                        <value>DEFAULT</value>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                        <value/>
+                      </SolidTideFilename>
+                      <UseZeroTideModel dim="11">
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                        <value>false</value>
+                      </UseZeroTideModel>
+                      <SolidTideDegree dim="11" displayed_units="" units="">
+                        <value>0</value>
+                        <value>0</value>
+                        <value>2</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                      </SolidTideDegree>
+                      <SolidTideOrder dim="11" displayed_units="" units="">
+                        <value>0</value>
+                        <value>0</value>
+                        <value>2</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                      </SolidTideOrder>
+                    </GravitatingBodies>
+                    <SRP>true</SRP>
+                    <SRPForceGeometry>0</SRPForceGeometry>
+                    <Atmospheric>
+                      <Drag>true</Drag>
+                      <AtmosphericDensityModel>1</AtmosphericDensityModel>
+                      <SolarFluxFilename>DEFAULT</SolarFluxFilename>
+                      <HarrisPriesterF107Index>65</HarrisPriesterF107Index>
+                      <Lift>false</Lift>
+                      <Rho1 displayed_units="" units="">0</Rho1>
+                      <HarrisPriesterDensityFilename>DEFAULT</HarrisPriesterDensityFilename>
+                    </Atmospheric>
+                    <OtherAccelerations>
+                      <UseOtherAcceleration>false</UseOtherAcceleration>
+                      <OtherAccelerations dim="3" displayed_units="km/s^2" units="km/s^2">
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                      </OtherAccelerations>
+                      <OtherAccelerationsRate dim="3" displayed_units="km/s^3" units="km/s^3">
+                        <value>0</value>
+                        <value>0</value>
+                        <value>0</value>
+                      </OtherAccelerationsRate>
+                    </OtherAccelerations>
+                  </ForceModel>
+                </FM>
+                <ToleranceMode>1</ToleranceMode>
+                <RelativeErrorThreshold displayed_units="" units="">0.1</RelativeErrorThreshold>
+              </RK89>
+            </Prop>
+          </PropFM>
+        </StateAdvancer>
+        <AHFParms>
+          <AHF xsi:nil="true"/>
+          <AHFFilename/>
+        </AHFParms>
+        <Hardware>
+          <Sensors dim="0"/>
+          <Tanks dim="0"/>
+          <Thrusters dim="0"/>
+          <ProximityZones dim="0"/>
+          <GNSSReceivers dim="0"/>
+          <Transponders dim="0"/>
+        </Hardware>
+        <PlateModel>
+          <PlateModel isConstant="false" isGlobal="false" name="ScSRP_|PlateModel|">
+            <Name>ScSRP_|PlateModel|</Name>
+            <Plates dim="0"/>
+            <DrawMethod>2</DrawMethod>
+            <DrawNormals>false</DrawNormals>
+            <DrawRotationAxes>false</DrawRotationAxes>
+            <Visible>true</Visible>
+            <VisualScale displayed_units="" units="">100000</VisualScale>
+          </PlateModel>
+        </PlateModel>
+        <OD>
+          <SpacecraftODProperties isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|">
+            <Name>ScSRP_|SpacecraftODProperties|</Name>
+            <ElementSetToProcess>Cartesian</ElementSetToProcess>
+            <Cartesian>
+              <CartesianOrbitStateEstimablePropertyContainer isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|Cartesian|">
+                <Name>ScSRP_|SpacecraftODProperties|_|Cartesian|</Name>
+                <X>
+                  <EstimablePosition isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|Cartesian|_|X|">
+                    <Name>ScSRP_|SpacecraftODProperties|_|Cartesian|_|X|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="km" units="km">0.05</Sigma>
+                    <ProcessNoiseRate displayed_units="km^2/s" units="km^2/s">1e-15</ProcessNoiseRate>
+                  </EstimablePosition>
+                </X>
+                <Y>
+                  <EstimablePosition isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|Cartesian|_|Y|">
+                    <Name>ScSRP_|SpacecraftODProperties|_|Cartesian|_|Y|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="km" units="km">0.05</Sigma>
+                    <ProcessNoiseRate displayed_units="km^2/s" units="km^2/s">1e-15</ProcessNoiseRate>
+                  </EstimablePosition>
+                </Y>
+                <Z>
+                  <EstimablePosition isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|Cartesian|_|Z|">
+                    <Name>ScSRP_|SpacecraftODProperties|_|Cartesian|_|Z|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="km" units="km">0.05</Sigma>
+                    <ProcessNoiseRate displayed_units="km^2/s" units="km^2/s">1e-15</ProcessNoiseRate>
+                  </EstimablePosition>
+                </Z>
+                <VX>
+                  <EstimableVelocity isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|Cartesian|_|VX|">
+                    <Name>ScSRP_|SpacecraftODProperties|_|Cartesian|_|VX|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="km/s" units="km/s">2e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="km^2/s^3" units="km^2/s^3">1e-18</ProcessNoiseRate>
+                  </EstimableVelocity>
+                </VX>
+                <VY>
+                  <EstimableVelocity isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|Cartesian|_|VY|">
+                    <Name>ScSRP_|SpacecraftODProperties|_|Cartesian|_|VY|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="km/s" units="km/s">2e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="km^2/s^3" units="km^2/s^3">1e-18</ProcessNoiseRate>
+                  </EstimableVelocity>
+                </VY>
+                <VZ>
+                  <EstimableVelocity isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|Cartesian|_|VZ|">
+                    <Name>ScSRP_|SpacecraftODProperties|_|Cartesian|_|VZ|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="km/s" units="km/s">2e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="km^2/s^3" units="km^2/s^3">1e-18</ProcessNoiseRate>
+                  </EstimableVelocity>
+                </VZ>
+              </CartesianOrbitStateEstimablePropertyContainer>
+            </Cartesian>
+            <Equinoctial>
+              <EquinoctialOrbitStateEstimablePropertyContainer isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|Equinoctial|">
+                <Name>ScSRP_|SpacecraftODProperties|_|Equinoctial|</Name>
+                <A>
+                  <EstimableEquinoctialA isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|Equinoctial|_|A|">
+                    <Name>ScSRP_|SpacecraftODProperties|_|Equinoctial|_|A|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="km" units="km">0.05</Sigma>
+                    <ProcessNoiseRate displayed_units="km^2/s" units="km^2/s">1e-15</ProcessNoiseRate>
+                  </EstimableEquinoctialA>
+                </A>
+                <H>
+                  <EstimablePositionComponent isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|Equinoctial|_|H|">
+                    <Name>ScSRP_|SpacecraftODProperties|_|Equinoctial|_|H|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="" units="">1e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-20</ProcessNoiseRate>
+                  </EstimablePositionComponent>
+                </H>
+                <K>
+                  <EstimablePositionComponent isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|Equinoctial|_|K|">
+                    <Name>ScSRP_|SpacecraftODProperties|_|Equinoctial|_|K|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="" units="">1e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-20</ProcessNoiseRate>
+                  </EstimablePositionComponent>
+                </K>
+                <P>
+                  <EstimablePositionComponent isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|Equinoctial|_|P|">
+                    <Name>ScSRP_|SpacecraftODProperties|_|Equinoctial|_|P|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="" units="">1e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-20</ProcessNoiseRate>
+                  </EstimablePositionComponent>
+                </P>
+                <Q>
+                  <EstimablePositionComponent isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|Equinoctial|_|Q|">
+                    <Name>ScSRP_|SpacecraftODProperties|_|Equinoctial|_|Q|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="" units="">1e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-20</ProcessNoiseRate>
+                  </EstimablePositionComponent>
+                </Q>
+                <Longitude>
+                  <EstimableEquinoctialLongitude isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|Equinoctial|_|Longitude|">
+                    <Name>ScSRP_|SpacecraftODProperties|_|Equinoctial|_|Longitude|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="deg" units="deg">0.001</Sigma>
+                    <ProcessNoiseRate displayed_units="deg^2/s" units="deg^2/s">1e-16</ProcessNoiseRate>
+                  </EstimableEquinoctialLongitude>
+                </Longitude>
+              </EquinoctialOrbitStateEstimablePropertyContainer>
+            </Equinoctial>
+            <SGP4>
+              <Sgp4OrbitStateEstimablePropertyContainer isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|SGP4|">
+                <Name>ScSRP_|SpacecraftODProperties|_|SGP4|</Name>
+                <H>
+                  <EstimablePositionComponent isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|SGP4|_|H|">
+                    <Name>ScSRP_|SpacecraftODProperties|_|SGP4|_|H|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="" units="">1e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-20</ProcessNoiseRate>
+                  </EstimablePositionComponent>
+                </H>
+                <K>
+                  <EstimablePositionComponent isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|SGP4|_|K|">
+                    <Name>ScSRP_|SpacecraftODProperties|_|SGP4|_|K|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="" units="">1e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-20</ProcessNoiseRate>
+                  </EstimablePositionComponent>
+                </K>
+                <P>
+                  <EstimablePositionComponent isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|SGP4|_|P|">
+                    <Name>ScSRP_|SpacecraftODProperties|_|SGP4|_|P|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="" units="">1e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-20</ProcessNoiseRate>
+                  </EstimablePositionComponent>
+                </P>
+                <Q>
+                  <EstimablePositionComponent isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|SGP4|_|Q|">
+                    <Name>ScSRP_|SpacecraftODProperties|_|SGP4|_|Q|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="" units="">1e-005</Sigma>
+                    <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-20</ProcessNoiseRate>
+                  </EstimablePositionComponent>
+                </Q>
+                <Longitude>
+                  <EstimableEquinoctialLongitude isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|SGP4|_|Longitude|">
+                    <Name>ScSRP_|SpacecraftODProperties|_|SGP4|_|Longitude|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="deg" units="deg">0.001</Sigma>
+                    <ProcessNoiseRate displayed_units="deg^2/s" units="deg^2/s">1e-16</ProcessNoiseRate>
+                  </EstimableEquinoctialLongitude>
+                </Longitude>
+                <MeanMotion>
+                  <EstimableMeanMotion isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|SGP4|_|MeanMotion|">
+                    <Name>ScSRP_|SpacecraftODProperties|_|SGP4|_|MeanMotion|</Name>
+                    <ProcessAction>1</ProcessAction>
+                    <Sigma displayed_units="orbits/day" units="orbits/day">1e-006</Sigma>
+                    <ProcessNoiseRate displayed_units="(orbits/day)^2/s" units="(orbits/day)^2/s">1e-17</ProcessNoiseRate>
+                  </EstimableMeanMotion>
+                </MeanMotion>
+              </Sgp4OrbitStateEstimablePropertyContainer>
+            </SGP4>
+            <Cd>
+              <EstimableCoefficient isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|OD_Cd|">
+                <Name>ScSRP_|SpacecraftODProperties|_|OD_Cd|</Name>
+                <ProcessAction>0</ProcessAction>
+                <Sigma displayed_units="" units="">0.05</Sigma>
+                <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-10</ProcessNoiseRate>
+              </EstimableCoefficient>
+            </Cd>
+            <Rho1>
+              <EstimableCoefficient isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|OD_Rho1|">
+                <Name>ScSRP_|SpacecraftODProperties|_|OD_Rho1|</Name>
+                <ProcessAction>0</ProcessAction>
+                <Sigma displayed_units="" units="">0.05</Sigma>
+                <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-10</ProcessNoiseRate>
+              </EstimableCoefficient>
+            </Rho1>
+            <BStar>
+              <EstimableBStar isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|OD_BStar|">
+                <Name>ScSRP_|SpacecraftODProperties|_|OD_BStar|</Name>
+                <ProcessAction>0</ProcessAction>
+                <Sigma displayed_units="er^-1" units="er^-1">1e-005</Sigma>
+                <ProcessNoiseRate displayed_units="er^-2/s" units="er^-2/s">1e-13</ProcessNoiseRate>
+              </EstimableBStar>
+            </BStar>
+            <AGOM>
+              <EstimableAGOM isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|OD_AGOM|">
+                <Name>ScSRP_|SpacecraftODProperties|_|OD_AGOM|</Name>
+                <ProcessAction>0</ProcessAction>
+                <Sigma displayed_units="m^2/kg" units="m^2/kg">1e-5</Sigma>
+                <ProcessNoiseRate displayed_units="m^4/(kg^2 s)" units="m^4/(kg^2 s)">1e-13</ProcessNoiseRate>
+              </EstimableAGOM>
+            </AGOM>
+            <DragEstimateOption>0</DragEstimateOption>
+            <Cr>
+              <EstimableCoefficient isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|OD_Cr|">
+                <Name>ScSRP_|SpacecraftODProperties|_|OD_Cr|</Name>
+                <ProcessAction>0</ProcessAction>
+                <Sigma displayed_units="" units="">0.05</Sigma>
+                <ProcessNoiseRate displayed_units="1/s" units="1/s">1e-10</ProcessNoiseRate>
+              </EstimableCoefficient>
+            </Cr>
+            <OtherAccelerationsX>
+              <EstimableAcceleration isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|OD_UX|">
+                <Name>ScSRP_|SpacecraftODProperties|_|OD_UX|</Name>
+                <ProcessAction>0</ProcessAction>
+                <Sigma displayed_units="km/s^2" units="km/s^2">1e-006</Sigma>
+                <ProcessNoiseRate displayed_units="km^2/s^5" units="km^2/s^5">1e-16</ProcessNoiseRate>
+              </EstimableAcceleration>
+            </OtherAccelerationsX>
+            <OtherAccelerationsY>
+              <EstimableAcceleration isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|OD_UY|">
+                <Name>ScSRP_|SpacecraftODProperties|_|OD_UY|</Name>
+                <ProcessAction>0</ProcessAction>
+                <Sigma displayed_units="km/s^2" units="km/s^2">1e-006</Sigma>
+                <ProcessNoiseRate displayed_units="km^2/s^5" units="km^2/s^5">1e-16</ProcessNoiseRate>
+              </EstimableAcceleration>
+            </OtherAccelerationsY>
+            <OtherAccelerationsZ>
+              <EstimableAcceleration isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|OD_UZ|">
+                <Name>ScSRP_|SpacecraftODProperties|_|OD_UZ|</Name>
+                <ProcessAction>0</ProcessAction>
+                <Sigma displayed_units="km/s^2" units="km/s^2">1e-006</Sigma>
+                <ProcessNoiseRate displayed_units="km^2/s^5" units="km^2/s^5">1e-16</ProcessNoiseRate>
+              </EstimableAcceleration>
+            </OtherAccelerationsZ>
+            <PropagateCovariance>false</PropagateCovariance>
+            <CovariancePropagationModel>0</CovariancePropagationModel>
+            <Covariance>
+              <SpacecraftCovariance isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|Covariance|">
+                <Name>ScSRP_|SpacecraftODProperties|_|Covariance|</Name>
+                <Matrix dim="0,0" displayed_units="" units=""/>
+              </SpacecraftCovariance>
+            </Covariance>
+            <CustomObservations dim="0"/>
+            <ProcessNoise>
+              <SpacecraftProcessNoise isConstant="false" isGlobal="false" name="ScSRP_|SpacecraftODProperties|_|ProcessNoise|">
+                <Name>ScSRP_|SpacecraftODProperties|_|ProcessNoise|</Name>
+                <ReferenceFrame>ICRF</ReferenceFrame>
+                <RateMatrix dim="0,0" displayed_units="" units=""/>
+                <ReferenceFrameSupportData>
+                  <ICRF/>
+                </ReferenceFrameSupportData>
+              </SpacecraftProcessNoise>
+            </ProcessNoise>
+          </SpacecraftODProperties>
+        </OD>
+        <RefFrameEpochDetails>
+          <RefFrameEpochSystem>UTC</RefFrameEpochSystem>
+          <RefFrameEpochTimeZone>UTC +/- 00:00</RefFrameEpochTimeZone>
+          <RefFrameEpochFormat>Calendar</RefFrameEpochFormat>
+          <RefFrameEpochType>Absolute</RefFrameEpochType>
+          <RefFrameEpochTypeInfo/>
+        </RefFrameEpochDetails>
+        <RefFrameEpoch>Jan 01 2020 00:00:00.000000000</RefFrameEpoch>
+        <OrbitNumberCalculationsEnabled>false</OrbitNumberCalculationsEnabled>
+      </Spacecraft>
+    </Object>
+    <Object>
+      <ViewWindow isConstant="false" isGlobal="false" name="ViewWindow1">
+        <Name>ViewWindow1</Name>
+        <WindowTitle>Orbital Separations between each Spacecraft</WindowTitle>
+        <Viewpoints dim="1">
+          <value>
+            <Viewpoint isConstant="false" isGlobal="false" name="ViewWindow1_Viewpoint1">
+              <Name>ViewWindow1_Viewpoint1</Name>
+              <ViewpointName>Viewpoint1</ViewpointName>
+              <ViewpointType>view</ViewpointType>
+              <ViewpointParameters>
+                <view>
+                  <ThreeDView>
+                    <ThreeDViewpointOptions isConstant="false" isGlobal="false" name="ViewWindow1_Viewpoint1_|ThreeDView|">
+                      <Name>ViewWindow1_Viewpoint1_|ThreeDView|</Name>
+                      <Target>ScSRP</Target>
+                      <TailReference>ScSRP</TailReference>
+                      <ReferenceFrame>body fixed</ReferenceFrame>
+                      <Declination displayed_units="deg" units="deg">-178</Declination>
+                      <FieldOfView displayed_units="deg" units="deg">45</FieldOfView>
+                      <Radius displayed_units="km" units="km">0.05</Radius>
+                      <RightAscension displayed_units="deg" units="deg">320</RightAscension>
+                    </ThreeDViewpointOptions>
+                  </ThreeDView>
+                </view>
+              </ViewpointParameters>
+            </Viewpoint>
+          </value>
+        </Viewpoints>
+        <UseLighting>true</UseLighting>
+        <UseTextures>true</UseTextures>
+        <ShowLogo>true</ShowLogo>
+        <LogoTextureFilename/>
+        <ShowStatusText>true</ShowStatusText>
+        <ShowTextBackdrops>true</ShowTextBackdrops>
+        <AmbientColor>6710886</AmbientColor>
+        <StatusTextColor>15790320</StatusTextColor>
+        <BackgroundColor>0</BackgroundColor>
+        <ObjectShadowing>0</ObjectShadowing>
+        <StatusTextFont>
+          <ViewFont isConstant="false" isGlobal="false" name="ViewWindow1_|StatusTextFont|">
+            <Name>ViewWindow1_|StatusTextFont|</Name>
+            <Bold>false</Bold>
+            <Italic>false</Italic>
+            <Size displayed_units="" units="">0.0</Size>
+            <Strikeout>false</Strikeout>
+            <Typeface>Tahoma</Typeface>
+            <Underline>false</Underline>
+          </ViewFont>
+        </StatusTextFont>
+        <DefaultObjectLabelFont>
+          <ViewFont isConstant="false" isGlobal="false" name="ViewWindow1_|DefaultObjectLabelFont|">
+            <Name>ViewWindow1_|DefaultObjectLabelFont|</Name>
+            <Bold>false</Bold>
+            <Italic>false</Italic>
+            <Size displayed_units="" units="">20</Size>
+            <Strikeout>false</Strikeout>
+            <Typeface>Tahoma</Typeface>
+            <Underline>false</Underline>
+          </ViewFont>
+        </DefaultObjectLabelFont>
+        <Objects dim="15">
+          <value>Mercury</value>
+          <value>Venus</value>
+          <value>Earth</value>
+          <value>Moon</value>
+          <value>Mars</value>
+          <value>Jupiter</value>
+          <value>Saturn</value>
+          <value>Uranus</value>
+          <value>Neptune</value>
+          <value>Pluto</value>
+          <value>Sun</value>
+          <value>Stars</value>
+          <value>ScNoSRP</value>
+          <value>ScSRP</value>
+          <value>ScOtherAccels</value>
+        </Objects>
+        <ProjectionHeights dim="15" displayed_units="km" units="km">
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>800</value>
+          <value>800</value>
+          <value>800</value>
+        </ProjectionHeights>
+        <ShowObject dim="15">
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+        </ShowObject>
+        <ShowBody dim="15">
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+        </ShowBody>
+        <ShowName dim="15">
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>false</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+        </ShowName>
+        <ShowAxes dim="15">
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+        </ShowAxes>
+        <ShowHistory dim="15">
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+          <value>false</value>
+          <value>true</value>
+          <value>true</value>
+          <value>true</value>
+        </ShowHistory>
+        <ShowIcon dim="15">
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+          <value>false</value>
+        </ShowIcon>
+        <IconImageFilename dim="15">
+          <value/>
+          <value/>
+          <value/>
+          <value/>
+          <value/>
+          <value/>
+          <value/>
+          <value/>
+          <value/>
+          <value/>
+          <value/>
+          <value/>
+          <value/>
+          <value/>
+          <value/>
+        </IconImageFilename>
+        <IconSize dim="15" displayed_units="" units="">
+          <value>30</value>
+          <value>30</value>
+          <value>30</value>
+          <value>30</value>
+          <value>30</value>
+          <value>30</value>
+          <value>30</value>
+          <value>30</value>
+          <value>30</value>
+          <value>30</value>
+          <value>30</value>
+          <value>30</value>
+          <value>30</value>
+          <value>30</value>
+          <value>30</value>
+        </IconSize>
+        <IconDrawingMode dim="15">
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+        </IconDrawingMode>
+        <IconColor dim="15">
+          <value>16777215</value>
+          <value>16777215</value>
+          <value>16777215</value>
+          <value>16777215</value>
+          <value>16777215</value>
+          <value>16777215</value>
+          <value>16777215</value>
+          <value>16777215</value>
+          <value>16777215</value>
+          <value>16777215</value>
+          <value>16777215</value>
+          <value>16777215</value>
+          <value>16777215</value>
+          <value>16777215</value>
+          <value>16777215</value>
+        </IconColor>
+        <AxesScaleMode dim="15">
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+        </AxesScaleMode>
+        <AxesSize dim="15" displayed_units="km" units="km">
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1000</value>
+          <value>1000</value>
+          <value>1000</value>
+        </AxesSize>
+        <AxesScale dim="15" displayed_units="" units="">
+          <value>1.3</value>
+          <value>1.3</value>
+          <value>1.3</value>
+          <value>1.3</value>
+          <value>1.3</value>
+          <value>1.3</value>
+          <value>1.3</value>
+          <value>1.3</value>
+          <value>1.3</value>
+          <value>1.3</value>
+          <value>1.3</value>
+          <value>1.3</value>
+          <value>1.3</value>
+          <value>1.3</value>
+          <value>1.3</value>
+        </AxesScale>
+        <TailLength dim="15" displayed_units="" units="">
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>100</value>
+          <value>100</value>
+          <value>100</value>
+        </TailLength>
+        <HistoryMode dim="15" displayed_units="" units="">
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>0</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+        </HistoryMode>
+        <CurrentTailState dim="15" displayed_units="" units="">
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+        </CurrentTailState>
+        <LineWidthUnits dim="15" displayed_units="" units="">
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+        </LineWidthUnits>
+        <LineWidths dim="15" displayed_units="" units="">
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1</value>
+          <value>1.0</value>
+          <value>1.0</value>
+          <value>1.0</value>
+        </LineWidths>
+        <LabelFonts dim="15">
+          <value xsi:nil="true"/>
+          <value xsi:nil="true"/>
+          <value xsi:nil="true"/>
+          <value xsi:nil="true"/>
+          <value xsi:nil="true"/>
+          <value xsi:nil="true"/>
+          <value xsi:nil="true"/>
+          <value xsi:nil="true"/>
+          <value xsi:nil="true"/>
+          <value xsi:nil="true"/>
+          <value xsi:nil="true"/>
+          <value xsi:nil="true"/>
+          <value xsi:nil="true"/>
+          <value xsi:nil="true"/>
+          <value xsi:nil="true"/>
+        </LabelFonts>
+        <MouseInteractionEnabled>true</MouseInteractionEnabled>
+      </ViewWindow>
+    </Object>
+    <Object>
+      <PlotWindow isConstant="false" isGlobal="false" name="PlotWindow1">
+        <Name>PlotWindow1</Name>
+        <WindowTitle>Plot of Range to each Spacecraft</WindowTitle>
+        <PlotType>XYPlot</PlotType>
+        <ConfigureFonts>true</ConfigureFonts>
+        <UseMonitorMode>false</UseMonitorMode>
+        <Items>
+          <XYPlot>
+            <XAxisItem>
+              <EventCall isConstant="false" isGlobal="false" name="PlotWindow1_:XAxisItem">
+                <Name>PlotWindow1_:XAxisItem</Name>
+                <BaseObject>ScSRP</BaseObject>
+                <EventName>ElapsedTime</EventName>
+                <Parameters dim="0"/>
+              </EventCall>
+            </XAxisItem>
+            <YAxisItems dim="2">
+              <value>
+                <EventCall isConstant="false" isGlobal="false" name="PlotWindow1_:YAxisItems1">
+                  <Name>PlotWindow1_:YAxisItems1</Name>
+                  <BaseObject>ScSRP</BaseObject>
+                  <EventName>Range</EventName>
+                  <Parameters dim="1">
+                    <value>
+                      <ObjectHolder isConstant="false" isGlobal="false" name="PlotWindow1_:YAxisItems1_:Parameters1">
+                        <Name>PlotWindow1_:YAxisItems1_:Parameters1</Name>
+                        <BaseObject>ScOtherAccels</BaseObject>
+                      </ObjectHolder>
+                    </value>
+                  </Parameters>
+                </EventCall>
+              </value>
+              <value>
+                <EventCall isConstant="false" isGlobal="false" name="PlotWindow1_:YAxisItems2">
+                  <Name>PlotWindow1_:YAxisItems2</Name>
+                  <BaseObject>ScSRP</BaseObject>
+                  <EventName>Range</EventName>
+                  <Parameters dim="1">
+                    <value>
+                      <ObjectHolder isConstant="false" isGlobal="false" name="PlotWindow1_:YAxisItems2_:Parameters1">
+                        <Name>PlotWindow1_:YAxisItems2_:Parameters1</Name>
+                        <BaseObject>ScNoSRP</BaseObject>
+                      </ObjectHolder>
+                    </value>
+                  </Parameters>
+                </EventCall>
+              </value>
+            </YAxisItems>
+          </XYPlot>
+        </Items>
+        <BackgroundColor>16777215</BackgroundColor>
+        <HighQualityRendering>false</HighQualityRendering>
+        <InterlacedColor>15128749</InterlacedColor>
+        <InterlacedDirection>0</InterlacedDirection>
+        <GridBandColor>15128749</GridBandColor>
+        <Legend>
+          <PlotLegend isConstant="false" isGlobal="false" name="PlotWindow1_|PlotLegend|">
+            <Name>PlotWindow1_|PlotLegend|</Name>
+            <BorderVisible>false</BorderVisible>
+            <Font>
+              <PlotFont isConstant="false" isGlobal="false" name="PlotWindow1_|PlotLegend|_|PlotFont|">
+                <Name>PlotWindow1_|PlotLegend|_|PlotFont|</Name>
+                <Bold>false</Bold>
+                <BoldDefault>false</BoldDefault>
+                <Italic>false</Italic>
+                <Size displayed_units="points" units="points">9</Size>
+                <SizeDefault displayed_units="points" units="points">9</SizeDefault>
+                <Strikeout>false</Strikeout>
+                <Typeface>Verdana</Typeface>
+                <TypefaceDefault>Verdana</TypefaceDefault>
+                <Underline>false</Underline>
+              </PlotFont>
+            </Font>
+            <Location>3</Location>
+            <TextColor>0</TextColor>
+            <BackgroundColor>16777215</BackgroundColor>
+            <BorderColor>16777215</BorderColor>
+            <Title>
+              <PlotTitle isConstant="false" isGlobal="false" name="PlotWindow1_|PlotLegend|_|PlotTitle|">
+                <Name>PlotWindow1_|PlotLegend|_|PlotTitle|</Name>
+                <Color>0</Color>
+                <Font>
+                  <PlotFont isConstant="false" isGlobal="false" name="PlotWindow1_|PlotLegend|_|PlotTitle|_|PlotFont|">
+                    <Name>PlotWindow1_|PlotLegend|_|PlotTitle|_|PlotFont|</Name>
+                    <Bold>false</Bold>
+                    <BoldDefault>false</BoldDefault>
+                    <Italic>false</Italic>
+                    <Size displayed_units="points" units="points">9</Size>
+                    <SizeDefault displayed_units="points" units="points">9</SizeDefault>
+                    <Strikeout>false</Strikeout>
+                    <Typeface>Verdana</Typeface>
+                    <TypefaceDefault>Verdana</TypefaceDefault>
+                    <Underline>false</Underline>
+                  </PlotFont>
+                </Font>
+                <Text/>
+                <TextDefault/>
+                <Visible>true</Visible>
+              </PlotTitle>
+            </Title>
+            <Visible>true</Visible>
+          </PlotLegend>
+        </Legend>
+        <PlotAreaColor>16777215</PlotAreaColor>
+        <PlotSubTitle>
+          <PlotTitle isConstant="false" isGlobal="false" name="PlotWindow1_|PlotSubTitle|">
+            <Name>PlotWindow1_|PlotSubTitle|</Name>
+            <Color>0</Color>
+            <Font>
+              <PlotFont isConstant="false" isGlobal="false" name="PlotWindow1_|PlotSubTitle|_|PlotFont|">
+                <Name>PlotWindow1_|PlotSubTitle|_|PlotFont|</Name>
+                <Bold>false</Bold>
+                <BoldDefault>false</BoldDefault>
+                <Italic>false</Italic>
+                <Size displayed_units="points" units="points">10.0</Size>
+                <SizeDefault displayed_units="points" units="points">10</SizeDefault>
+                <Strikeout>false</Strikeout>
+                <Typeface>Verdana</Typeface>
+                <TypefaceDefault>Segoe UI</TypefaceDefault>
+                <Underline>false</Underline>
+              </PlotFont>
+            </Font>
+            <Text/>
+            <TextDefault>__Use_Analysis_Date__</TextDefault>
+            <Visible>true</Visible>
+          </PlotTitle>
+        </PlotSubTitle>
+        <PlotTitle>
+          <PlotTitle isConstant="false" isGlobal="false" name="PlotWindow1_|PlotTitle|">
+            <Name>PlotWindow1_|PlotTitle|</Name>
+            <Color>0</Color>
+            <Font>
+              <PlotFont isConstant="false" isGlobal="false" name="PlotWindow1_|PlotTitle|_|PlotFont|">
+                <Name>PlotWindow1_|PlotTitle|_|PlotFont|</Name>
+                <Bold>true</Bold>
+                <BoldDefault>true</BoldDefault>
+                <Italic>false</Italic>
+                <Size displayed_units="points" units="points">13.0</Size>
+                <SizeDefault displayed_units="points" units="points">13</SizeDefault>
+                <Strikeout>false</Strikeout>
+                <Typeface>Verdana</Typeface>
+                <TypefaceDefault>Verdana</TypefaceDefault>
+                <Underline>false</Underline>
+              </PlotFont>
+            </Font>
+            <Text>Range</Text>
+            <TextDefault>FreeFlyer Plot</TextDefault>
+            <Visible>true</Visible>
+          </PlotTitle>
+        </PlotTitle>
+        <RAxis>
+          <PlotAxis isConstant="false" isGlobal="false" name="PlotWindow1_|RAxis|">
+            <Name>PlotWindow1_|RAxis|</Name>
+            <Direction>0</Direction>
+            <GridColor>13420739</GridColor>
+            <GridLineStyle>2</GridLineStyle>
+            <GridLineStyleDefault>2</GridLineStyleDefault>
+            <GridLineWidth displayed_units="" units="">1</GridLineWidth>
+            <GridVisible>true</GridVisible>
+            <LabelsColor>0</LabelsColor>
+            <LabelsFont>
+              <PlotFont isConstant="false" isGlobal="false" name="PlotWindow1_|RAxis|_|PlotFont|">
+                <Name>PlotWindow1_|RAxis|_|PlotFont|</Name>
+                <Bold>false</Bold>
+                <BoldDefault>false</BoldDefault>
+                <Italic>false</Italic>
+                <Size displayed_units="points" units="points">9</Size>
+                <SizeDefault displayed_units="points" units="points">9</SizeDefault>
+                <Strikeout>false</Strikeout>
+                <Typeface>Verdana</Typeface>
+                <TypefaceDefault>Verdana</TypefaceDefault>
+                <Underline>false</Underline>
+              </PlotFont>
+            </LabelsFont>
+            <LabelsFormat>0.000</LabelsFormat>
+            <LabelsSpacing displayed_units="" units="">0</LabelsSpacing>
+            <Location>0</Location>
+            <MaximumValue displayed_units="" units="">0</MaximumValue>
+            <MinimumValue displayed_units="" units="">0</MinimumValue>
+            <Scaling>0</Scaling>
+            <Title>
+              <PlotTitle isConstant="false" isGlobal="false" name="PlotWindow1_|RAxis|_|PlotTitle|">
+                <Name>PlotWindow1_|RAxis|_|PlotTitle|</Name>
+                <Color>0</Color>
+                <Font>
+                  <PlotFont isConstant="false" isGlobal="false" name="PlotWindow1_|RAxis|_|PlotTitle|_|PlotFont|">
+                    <Name>PlotWindow1_|RAxis|_|PlotTitle|_|PlotFont|</Name>
+                    <Bold>false</Bold>
+                    <BoldDefault>false</BoldDefault>
+                    <Italic>false</Italic>
+                    <Size displayed_units="points" units="points">8.0</Size>
+                    <SizeDefault displayed_units="points" units="points">8</SizeDefault>
+                    <Strikeout>false</Strikeout>
+                    <Typeface>Verdana</Typeface>
+                    <TypefaceDefault>Verdana</TypefaceDefault>
+                    <Underline>false</Underline>
+                  </PlotFont>
+                </Font>
+                <Text>__Use_Parameter_Label__</Text>
+                <TextDefault>__Use_Analysis_Date__</TextDefault>
+                <Visible>true</Visible>
+              </PlotTitle>
+            </Title>
+            <TickLabels>
+              <AxisTickLabelsStyle isConstant="false" isGlobal="false" name="PlotWindow1_|RAxis|_|AxisTickLabelsStyle|">
+                <Name>PlotWindow1_|RAxis|_|AxisTickLabelsStyle|</Name>
+                <Format>auto</Format>
+                <Visible>true</Visible>
+                <Font>
+                  <PlotFont isConstant="false" isGlobal="false" name="PlotWindow1_|RAxis|_|AxisTickLabelsStyle|_PlotFont">
+                    <Name>PlotWindow1_|RAxis|_|AxisTickLabelsStyle|_PlotFont</Name>
+                    <Bold>false</Bold>
+                    <BoldDefault>false</BoldDefault>
+                    <Italic>false</Italic>
+                    <Size displayed_units="points" units="points">9</Size>
+                    <SizeDefault displayed_units="points" units="points">9</SizeDefault>
+                    <Strikeout>false</Strikeout>
+                    <Typeface>Verdana</Typeface>
+                    <TypefaceDefault>Verdana</TypefaceDefault>
+                    <Underline>false</Underline>
+                  </PlotFont>
+                </Font>
+                <TextColor>0</TextColor>
+                <MajorTickInterval displayed_units="" units="">0.00000000000000000e+00</MajorTickInterval>
+                <MinorTickIntervalsPerMajor displayed_units="" units="">5.00000000000000000e+00</MinorTickIntervalsPerMajor>
+                <TickLabelValues dim="0"/>
+              </AxisTickLabelsStyle>
+            </TickLabels>
+            <UseAutoMaximum>true</UseAutoMaximum>
+            <UseAutoMinimum>true</UseAutoMinimum>
+            <UseDateTimeFormatting>false</UseDateTimeFormatting>
+            <Mode>0</Mode>
+            <GridBandsVisible>true</GridBandsVisible>
+          </PlotAxis>
+        </RAxis>
+        <ThetaAxis>
+          <PlotAxis isConstant="false" isGlobal="false" name="PlotWindow1_|ThetaAxis|">
+            <Name>PlotWindow1_|ThetaAxis|</Name>
+            <Direction>0</Direction>
+            <GridColor>13420739</GridColor>
+            <GridLineStyle>2</GridLineStyle>
+            <GridLineStyleDefault>2</GridLineStyleDefault>
+            <GridLineWidth displayed_units="" units="">1</GridLineWidth>
+            <GridVisible>true</GridVisible>
+            <LabelsColor>0</LabelsColor>
+            <LabelsFont>
+              <PlotFont isConstant="false" isGlobal="false" name="PlotWindow1_|ThetaAxis|_|PlotFont|">
+                <Name>PlotWindow1_|ThetaAxis|_|PlotFont|</Name>
+                <Bold>false</Bold>
+                <BoldDefault>false</BoldDefault>
+                <Italic>false</Italic>
+                <Size displayed_units="points" units="points">9</Size>
+                <SizeDefault displayed_units="points" units="points">9</SizeDefault>
+                <Strikeout>false</Strikeout>
+                <Typeface>Verdana</Typeface>
+                <TypefaceDefault>Verdana</TypefaceDefault>
+                <Underline>false</Underline>
+              </PlotFont>
+            </LabelsFont>
+            <LabelsFormat>0.000</LabelsFormat>
+            <LabelsSpacing displayed_units="" units="">0</LabelsSpacing>
+            <Location>0</Location>
+            <MaximumValue displayed_units="" units="">0</MaximumValue>
+            <MinimumValue displayed_units="" units="">0</MinimumValue>
+            <Scaling>0</Scaling>
+            <Title>
+              <PlotTitle isConstant="false" isGlobal="false" name="PlotWindow1_|ThetaAxis|_|PlotTitle|">
+                <Name>PlotWindow1_|ThetaAxis|_|PlotTitle|</Name>
+                <Color>0</Color>
+                <Font>
+                  <PlotFont isConstant="false" isGlobal="false" name="PlotWindow1_|ThetaAxis|_|PlotTitle|_|PlotFont|">
+                    <Name>PlotWindow1_|ThetaAxis|_|PlotTitle|_|PlotFont|</Name>
+                    <Bold>false</Bold>
+                    <BoldDefault>false</BoldDefault>
+                    <Italic>false</Italic>
+                    <Size displayed_units="points" units="points">8.0</Size>
+                    <SizeDefault displayed_units="points" units="points">8</SizeDefault>
+                    <Strikeout>false</Strikeout>
+                    <Typeface>Verdana</Typeface>
+                    <TypefaceDefault>Verdana</TypefaceDefault>
+                    <Underline>false</Underline>
+                  </PlotFont>
+                </Font>
+                <Text>__Use_Parameter_Label__</Text>
+                <TextDefault>__Use_Parameter_Label__</TextDefault>
+                <Visible>true</Visible>
+              </PlotTitle>
+            </Title>
+            <TickLabels>
+              <AxisTickLabelsStyle isConstant="false" isGlobal="false" name="PlotWindow1_|ThetaAxis|_|AxisTickLabelsStyle|">
+                <Name>PlotWindow1_|ThetaAxis|_|AxisTickLabelsStyle|</Name>
+                <Format>auto</Format>
+                <Visible>true</Visible>
+                <Font>
+                  <PlotFont isConstant="false" isGlobal="false" name="PlotWindow1_|ThetaAxis|_|AxisTickLabelsStyle|_PlotFont">
+                    <Name>PlotWindow1_|ThetaAxis|_|AxisTickLabelsStyle|_PlotFont</Name>
+                    <Bold>false</Bold>
+                    <BoldDefault>false</BoldDefault>
+                    <Italic>false</Italic>
+                    <Size displayed_units="points" units="points">9</Size>
+                    <SizeDefault displayed_units="points" units="points">9</SizeDefault>
+                    <Strikeout>false</Strikeout>
+                    <Typeface>Verdana</Typeface>
+                    <TypefaceDefault>Verdana</TypefaceDefault>
+                    <Underline>false</Underline>
+                  </PlotFont>
+                </Font>
+                <TextColor>0</TextColor>
+                <MajorTickInterval displayed_units="" units="">0.00000000000000000e+00</MajorTickInterval>
+                <MinorTickIntervalsPerMajor displayed_units="" units="">5.00000000000000000e+00</MinorTickIntervalsPerMajor>
+                <TickLabelValues dim="0"/>
+              </AxisTickLabelsStyle>
+            </TickLabels>
+            <UseAutoMaximum>true</UseAutoMaximum>
+            <UseAutoMinimum>true</UseAutoMinimum>
+            <UseDateTimeFormatting>false</UseDateTimeFormatting>
+            <Mode>0</Mode>
+            <GridBandsVisible>true</GridBandsVisible>
+          </PlotAxis>
+        </ThetaAxis>
+        <XAxis>
+          <PlotAxis isConstant="false" isGlobal="false" name="PlotWindow1_|XAxis|">
+            <Name>PlotWindow1_|XAxis|</Name>
+            <Direction>0</Direction>
+            <GridColor>13420739</GridColor>
+            <GridLineStyle>2</GridLineStyle>
+            <GridLineStyleDefault>2</GridLineStyleDefault>
+            <GridLineWidth displayed_units="" units="">1</GridLineWidth>
+            <GridVisible>true</GridVisible>
+            <LabelsColor>0</LabelsColor>
+            <LabelsFont>
+              <PlotFont isConstant="false" isGlobal="false" name="PlotWindow1_|XAxis|_|PlotFont|">
+                <Name>PlotWindow1_|XAxis|_|PlotFont|</Name>
+                <Bold>false</Bold>
+                <BoldDefault>false</BoldDefault>
+                <Italic>false</Italic>
+                <Size displayed_units="points" units="points">9</Size>
+                <SizeDefault displayed_units="points" units="points">9</SizeDefault>
+                <Strikeout>false</Strikeout>
+                <Typeface>Verdana</Typeface>
+                <TypefaceDefault>Verdana</TypefaceDefault>
+                <Underline>false</Underline>
+              </PlotFont>
+            </LabelsFont>
+            <LabelsFormat>0.000</LabelsFormat>
+            <LabelsSpacing displayed_units="" units="">0</LabelsSpacing>
+            <Location>0</Location>
+            <MaximumValue displayed_units="" units="">44</MaximumValue>
+            <MinimumValue displayed_units="" units="">0</MinimumValue>
+            <Scaling>0</Scaling>
+            <Title>
+              <PlotTitle isConstant="false" isGlobal="false" name="PlotWindow1_|XAxis|_|PlotTitle|">
+                <Name>PlotWindow1_|XAxis|_|PlotTitle|</Name>
+                <Color>0</Color>
+                <Font>
+                  <PlotFont isConstant="false" isGlobal="false" name="PlotWindow1_|XAxis|_|PlotTitle|_|PlotFont|">
+                    <Name>PlotWindow1_|XAxis|_|PlotTitle|_|PlotFont|</Name>
+                    <Bold>false</Bold>
+                    <BoldDefault>false</BoldDefault>
+                    <Italic>false</Italic>
+                    <Size displayed_units="points" units="points">8.0</Size>
+                    <SizeDefault displayed_units="points" units="points">8</SizeDefault>
+                    <Strikeout>false</Strikeout>
+                    <Typeface>Verdana</Typeface>
+                    <TypefaceDefault>Verdana</TypefaceDefault>
+                    <Underline>false</Underline>
+                  </PlotFont>
+                </Font>
+                <Text>__Use_Parameter_Label__</Text>
+                <TextDefault>__Use_Parameter_Label__</TextDefault>
+                <Visible>true</Visible>
+              </PlotTitle>
+            </Title>
+            <TickLabels>
+              <AxisTickLabelsStyle isConstant="false" isGlobal="false" name="PlotWindow1_|XAxis|_|AxisTickLabelsStyle|">
+                <Name>PlotWindow1_|XAxis|_|AxisTickLabelsStyle|</Name>
+                <Format>auto</Format>
+                <Visible>true</Visible>
+                <Font>
+                  <PlotFont isConstant="false" isGlobal="false" name="PlotWindow1_|XAxis|_|AxisTickLabelsStyle|_PlotFont">
+                    <Name>PlotWindow1_|XAxis|_|AxisTickLabelsStyle|_PlotFont</Name>
+                    <Bold>false</Bold>
+                    <BoldDefault>false</BoldDefault>
+                    <Italic>false</Italic>
+                    <Size displayed_units="points" units="points">9</Size>
+                    <SizeDefault displayed_units="points" units="points">9</SizeDefault>
+                    <Strikeout>false</Strikeout>
+                    <Typeface>Verdana</Typeface>
+                    <TypefaceDefault>Verdana</TypefaceDefault>
+                    <Underline>false</Underline>
+                  </PlotFont>
+                </Font>
+                <TextColor>0</TextColor>
+                <MajorTickInterval displayed_units="" units="">0.00000000000000000e+00</MajorTickInterval>
+                <MinorTickIntervalsPerMajor displayed_units="" units="">5.00000000000000000e+00</MinorTickIntervalsPerMajor>
+                <TickLabelValues dim="0"/>
+              </AxisTickLabelsStyle>
+            </TickLabels>
+            <UseAutoMaximum>true</UseAutoMaximum>
+            <UseAutoMinimum>true</UseAutoMinimum>
+            <UseDateTimeFormatting>false</UseDateTimeFormatting>
+            <Mode>0</Mode>
+            <GridBandsVisible>true</GridBandsVisible>
+          </PlotAxis>
+        </XAxis>
+        <YAxis>
+          <PlotAxis isConstant="false" isGlobal="false" name="PlotWindow1_|YAxis|">
+            <Name>PlotWindow1_|YAxis|</Name>
+            <Direction>0</Direction>
+            <GridColor>13420739</GridColor>
+            <GridLineStyle>2</GridLineStyle>
+            <GridLineStyleDefault>2</GridLineStyleDefault>
+            <GridLineWidth displayed_units="" units="">1</GridLineWidth>
+            <GridVisible>true</GridVisible>
+            <LabelsColor>0</LabelsColor>
+            <LabelsFont>
+              <PlotFont isConstant="false" isGlobal="false" name="PlotWindow1_|YAxis|_|PlotFont|">
+                <Name>PlotWindow1_|YAxis|_|PlotFont|</Name>
+                <Bold>false</Bold>
+                <BoldDefault>false</BoldDefault>
+                <Italic>false</Italic>
+                <Size displayed_units="points" units="points">9</Size>
+                <SizeDefault displayed_units="points" units="points">9</SizeDefault>
+                <Strikeout>false</Strikeout>
+                <Typeface>Verdana</Typeface>
+                <TypefaceDefault>Verdana</TypefaceDefault>
+                <Underline>false</Underline>
+              </PlotFont>
+            </LabelsFont>
+            <LabelsFormat>0.000</LabelsFormat>
+            <LabelsSpacing displayed_units="" units="">0</LabelsSpacing>
+            <Location>0</Location>
+            <MaximumValue displayed_units="" units="">1.9993908270191</MaximumValue>
+            <MinimumValue displayed_units="" units="">0</MinimumValue>
+            <Scaling>0</Scaling>
+            <Title>
+              <PlotTitle isConstant="false" isGlobal="false" name="PlotWindow1_|YAxis|_|PlotTitle|">
+                <Name>PlotWindow1_|YAxis|_|PlotTitle|</Name>
+                <Color>0</Color>
+                <Font>
+                  <PlotFont isConstant="false" isGlobal="false" name="PlotWindow1_|YAxis|_|PlotTitle|_|PlotFont|">
+                    <Name>PlotWindow1_|YAxis|_|PlotTitle|_|PlotFont|</Name>
+                    <Bold>false</Bold>
+                    <BoldDefault>false</BoldDefault>
+                    <Italic>false</Italic>
+                    <Size displayed_units="points" units="points">8.0</Size>
+                    <SizeDefault displayed_units="points" units="points">8</SizeDefault>
+                    <Strikeout>false</Strikeout>
+                    <Typeface>Verdana</Typeface>
+                    <TypefaceDefault>Verdana</TypefaceDefault>
+                    <Underline>false</Underline>
+                  </PlotFont>
+                </Font>
+                <Text>Range [km]</Text>
+                <TextDefault>__Use_Parameter_Label__</TextDefault>
+                <Visible>true</Visible>
+              </PlotTitle>
+            </Title>
+            <TickLabels>
+              <AxisTickLabelsStyle isConstant="false" isGlobal="false" name="PlotWindow1_|YAxis|_|AxisTickLabelsStyle|">
+                <Name>PlotWindow1_|YAxis|_|AxisTickLabelsStyle|</Name>
+                <Format>auto</Format>
+                <Visible>true</Visible>
+                <Font>
+                  <PlotFont isConstant="false" isGlobal="false" name="PlotWindow1_|YAxis|_|AxisTickLabelsStyle|_PlotFont">
+                    <Name>PlotWindow1_|YAxis|_|AxisTickLabelsStyle|_PlotFont</Name>
+                    <Bold>false</Bold>
+                    <BoldDefault>false</BoldDefault>
+                    <Italic>false</Italic>
+                    <Size displayed_units="points" units="points">9</Size>
+                    <SizeDefault displayed_units="points" units="points">9</SizeDefault>
+                    <Strikeout>false</Strikeout>
+                    <Typeface>Verdana</Typeface>
+                    <TypefaceDefault>Verdana</TypefaceDefault>
+                    <Underline>false</Underline>
+                  </PlotFont>
+                </Font>
+                <TextColor>0</TextColor>
+                <MajorTickInterval displayed_units="" units="">0.00000000000000000e+00</MajorTickInterval>
+                <MinorTickIntervalsPerMajor displayed_units="" units="">5.00000000000000000e+00</MinorTickIntervalsPerMajor>
+                <TickLabelValues dim="0"/>
+              </AxisTickLabelsStyle>
+            </TickLabels>
+            <UseAutoMaximum>true</UseAutoMaximum>
+            <UseAutoMinimum>true</UseAutoMinimum>
+            <UseDateTimeFormatting>false</UseDateTimeFormatting>
+            <Mode>0</Mode>
+            <GridBandsVisible>true</GridBandsVisible>
+          </PlotAxis>
+        </YAxis>
+        <ZAxis>
+          <PlotAxis isConstant="false" isGlobal="false" name="PlotWindow1_|ZAxis|">
+            <Name>PlotWindow1_|ZAxis|</Name>
+            <Direction>0</Direction>
+            <GridColor>5060146</GridColor>
+            <GridLineStyle>0</GridLineStyle>
+            <GridLineStyleDefault>0</GridLineStyleDefault>
+            <GridLineWidth displayed_units="" units="">1</GridLineWidth>
+            <GridVisible>true</GridVisible>
+            <LabelsColor>16248303</LabelsColor>
+            <LabelsFont>
+              <PlotFont isConstant="false" isGlobal="false" name="PlotWindow1_|ZAxis|_|PlotFont|">
+                <Name>PlotWindow1_|ZAxis|_|PlotFont|</Name>
+                <Bold>false</Bold>
+                <BoldDefault>false</BoldDefault>
+                <Italic>false</Italic>
+                <Size displayed_units="points" units="points">9.00000000000000000e+00</Size>
+                <SizeDefault displayed_units="points" units="points">9.00000000000000000e+00</SizeDefault>
+                <Strikeout>false</Strikeout>
+                <Typeface>Roboto</Typeface>
+                <TypefaceDefault>Roboto</TypefaceDefault>
+                <Underline>false</Underline>
+              </PlotFont>
+            </LabelsFont>
+            <LabelsFormat/>
+            <LabelsSpacing displayed_units="" units="">0.00000000000000000e+00</LabelsSpacing>
+            <Location>0</Location>
+            <MaximumValue displayed_units="" units="">0.00000000000000000e+00</MaximumValue>
+            <MinimumValue displayed_units="" units="">0.00000000000000000e+00</MinimumValue>
+            <Scaling>0</Scaling>
+            <Title>
+              <PlotTitle isConstant="false" isGlobal="false" name="PlotWindow1_|ZAxis|_|PlotTitle|">
+                <Name>PlotWindow1_|ZAxis|_|PlotTitle|</Name>
+                <Color>16248303</Color>
+                <Font>
+                  <PlotFont isConstant="false" isGlobal="false" name="PlotWindow1_|ZAxis|_|PlotTitle|_|PlotFont|">
+                    <Name>PlotWindow1_|ZAxis|_|PlotTitle|_|PlotFont|</Name>
+                    <Bold>false</Bold>
+                    <BoldDefault>false</BoldDefault>
+                    <Italic>false</Italic>
+                    <Size displayed_units="points" units="points">9.00000000000000000e+00</Size>
+                    <SizeDefault displayed_units="points" units="points">9.00000000000000000e+00</SizeDefault>
+                    <Strikeout>false</Strikeout>
+                    <Typeface>Roboto</Typeface>
+                    <TypefaceDefault>Roboto</TypefaceDefault>
+                    <Underline>false</Underline>
+                  </PlotFont>
+                </Font>
+                <Text/>
+                <TextDefault/>
+                <Visible>false</Visible>
+              </PlotTitle>
+            </Title>
+            <TickLabels>
+              <AxisTickLabelsStyle isConstant="false" isGlobal="false" name="PlotWindow1_|ZAxis|_|AxisTickLabelsStyle|">
+                <Name>PlotWindow1_|ZAxis|_|AxisTickLabelsStyle|</Name>
+                <Format>auto</Format>
+                <Visible>true</Visible>
+                <Font>
+                  <PlotFont isConstant="false" isGlobal="false" name="PlotWindow1_|ZAxis|_|AxisTickLabelsStyle|_PlotFont">
+                    <Name>PlotWindow1_|ZAxis|_|AxisTickLabelsStyle|_PlotFont</Name>
+                    <Bold>false</Bold>
+                    <BoldDefault>false</BoldDefault>
+                    <Italic>false</Italic>
+                    <Size displayed_units="points" units="points">1.05000000000000000e+01</Size>
+                    <SizeDefault displayed_units="points" units="points">1.05000000000000000e+01</SizeDefault>
+                    <Strikeout>false</Strikeout>
+                    <Typeface>Roboto</Typeface>
+                    <TypefaceDefault>Roboto</TypefaceDefault>
+                    <Underline>false</Underline>
+                  </PlotFont>
+                </Font>
+                <TextColor>16248303</TextColor>
+                <MajorTickInterval displayed_units="" units="">0.00000000000000000e+00</MajorTickInterval>
+                <MinorTickIntervalsPerMajor displayed_units="" units="">5.00000000000000000e+00</MinorTickIntervalsPerMajor>
+                <TickLabelValues dim="0"/>
+              </AxisTickLabelsStyle>
+            </TickLabels>
+            <UseAutoMaximum>true</UseAutoMaximum>
+            <UseAutoMinimum>true</UseAutoMinimum>
+            <UseDateTimeFormatting>false</UseDateTimeFormatting>
+            <Mode>0</Mode>
+            <GridBandsVisible>true</GridBandsVisible>
+          </PlotAxis>
+        </ZAxis>
+        <Projection>xy</Projection>
+        <BarSeriesOptions>
+          <BarSeriesOptions isConstant="false" isGlobal="false" name="PlotWindow1_BarSeriesOptions">
+            <Name>PlotWindow1_BarSeriesOptions</Name>
+            <DrawMode>0</DrawMode>
+            <BarWidth displayed_units="" units="">0.00000000000000000e+00</BarWidth>
+          </BarSeriesOptions>
+        </BarSeriesOptions>
+        <Viewpoint>
+          <PlotViewpoint3D isConstant="false" isGlobal="false" name="PlotWindow1_PlotViewpoint3D">
+            <Name>PlotWindow1_PlotViewpoint3D</Name>
+            <Azimuth displayed_units="" units="">1.35000000000000000e+02</Azimuth>
+            <Elevation displayed_units="" units="">2.50000000000000000e+01</Elevation>
+            <Radius displayed_units="" units="">1.50000000000000000e+03</Radius>
+            <Target dim="3" displayed_units="" units="">
+              <value>5.00000000000000000e-01</value>
+              <value>5.00000000000000000e-01</value>
+              <value>4.00000000000000022e-01</value>
+            </Target>
+          </PlotViewpoint3D>
+        </Viewpoint>
+        <ScatterSeries dim="2">
+          <value>
+            <PlotScatterSeries isConstant="false" isGlobal="false" name="PlotWindow1_PlotScatterSeries1">
+              <Name>PlotWindow1_PlotScatterSeries1</Name>
+              <DataLabelsFont>
+                <PlotFont isConstant="false" isGlobal="false" name="PlotWindow1_PlotScatterSeries1_|PlotFont|">
+                  <Name>PlotWindow1_PlotScatterSeries1_|PlotFont|</Name>
+                  <Bold>false</Bold>
+                  <BoldDefault>false</BoldDefault>
+                  <Italic>false</Italic>
+                  <Size displayed_units="points" units="points">9</Size>
+                  <SizeDefault displayed_units="points" units="points">9</SizeDefault>
+                  <Strikeout>false</Strikeout>
+                  <Typeface>Verdana</Typeface>
+                  <TypefaceDefault>Verdana</TypefaceDefault>
+                  <Underline>false</Underline>
+                </PlotFont>
+              </DataLabelsFont>
+              <DataLabelsTextColor>0</DataLabelsTextColor>
+              <DataLabelsBackgroundColor>14745599</DataLabelsBackgroundColor>
+              <DataLabelsBackgroundVisible>false</DataLabelsBackgroundVisible>
+              <DataLabelsStyle>2</DataLabelsStyle>
+              <DataLabelsVisible>false</DataLabelsVisible>
+              <LineColor>12674086</LineColor>
+              <LineStyle>0</LineStyle>
+              <LineVisible>true</LineVisible>
+              <LineWidth displayed_units="" units="">1</LineWidth>
+              <MarkersColor>12674086</MarkersColor>
+              <MarkersSize displayed_units="" units="">1</MarkersSize>
+              <MarkersStyle>0</MarkersStyle>
+              <MarkersVisible>false</MarkersVisible>
+              <LabelDefault>SC_SRP.Range(SC_OtherAccels)</LabelDefault>
+              <Label>SC_SRP.Range(SC_OtherAccels)</Label>
+              <ShowInLegend>true</ShowInLegend>
+              <Opacity displayed_units="" units="">1.00000000000000000e+00</Opacity>
+              <Data dim="0,0" displayed_units="" units=""/>
+              <LegacyDataLabels dim="0"/>
+              <DrawMode>0</DrawMode>
+            </PlotScatterSeries>
+          </value>
+          <value>
+            <PlotScatterSeries isConstant="false" isGlobal="false" name="PlotWindow1_PlotScatterSeries2">
+              <Name>PlotWindow1_PlotScatterSeries2</Name>
+              <DataLabelsFont>
+                <PlotFont isConstant="false" isGlobal="false" name="PlotWindow1_PlotScatterSeries2_|PlotFont|">
+                  <Name>PlotWindow1_PlotScatterSeries2_|PlotFont|</Name>
+                  <Bold>false</Bold>
+                  <BoldDefault>false</BoldDefault>
+                  <Italic>false</Italic>
+                  <Size displayed_units="points" units="points">9</Size>
+                  <SizeDefault displayed_units="points" units="points">9</SizeDefault>
+                  <Strikeout>false</Strikeout>
+                  <Typeface>Verdana</Typeface>
+                  <TypefaceDefault>Verdana</TypefaceDefault>
+                  <Underline>false</Underline>
+                </PlotFont>
+              </DataLabelsFont>
+              <DataLabelsTextColor>0</DataLabelsTextColor>
+              <DataLabelsBackgroundColor>14745599</DataLabelsBackgroundColor>
+              <DataLabelsBackgroundVisible>false</DataLabelsBackgroundVisible>
+              <DataLabelsStyle>2</DataLabelsStyle>
+              <DataLabelsVisible>false</DataLabelsVisible>
+              <LineColor>14535</LineColor>
+              <LineStyle>1</LineStyle>
+              <LineVisible>true</LineVisible>
+              <LineWidth displayed_units="" units="">1</LineWidth>
+              <MarkersColor>14535</MarkersColor>
+              <MarkersSize displayed_units="" units="">1</MarkersSize>
+              <MarkersStyle>1</MarkersStyle>
+              <MarkersVisible>false</MarkersVisible>
+              <LabelDefault>SC_SRP.Range(SC_NoSRP)</LabelDefault>
+              <Label>SC_SRP.Range(SC_NoSRP)</Label>
+              <ShowInLegend>true</ShowInLegend>
+              <Opacity displayed_units="" units="">1.00000000000000000e+00</Opacity>
+              <Data dim="0,0" displayed_units="" units=""/>
+              <LegacyDataLabels dim="0"/>
+              <DrawMode>0</DrawMode>
+            </PlotScatterSeries>
+          </value>
+        </ScatterSeries>
+        <PolynomialSeries dim="0"/>
+        <SurfaceSeries dim="0"/>
+        <HeatmapSeries dim="0"/>
+        <BarSeries dim="0"/>
+      </PlotWindow>
+    </Object>
+  </ProjectObjects>
+
+  <ProjectMissionSequence>
+    <ProjectExternals/>
+    <ProjectCommands>
+      <FreeForm enabled="true">
+        <Label>Mission Plan Description and Console Setup</Label>
+        <Bookmarks/>
+        <Breakpoints/>
+        <FreeFormScript><![CDATA[
+// Mission Plan Description and Console Setup
+
+// This Mission Plan demonstrates the use of the Force Model's UseOtherAcceleration to apply custom forces used in spacecraft propagation.  
+
+// Three spacecraft with identical orbits are created. The first spacecraft, SC_SRP has the effects of Solar Radiation Pressure turned on 
+// in the force model, SC_NoSRP has no forces due to SRP added, and SC_OtherAccels uses UseOtherAcceleration to apply
+// the force due to SRP.
+
+// Another option to define custom forces used in spacecraft propagation is to use a FreeFlyer Extension. A force model defined in an 
+// Extension allows the force to be re-evaluated at each integration step as part of the FreeFlyer integration process. This 
+// happens automatically when the Step command is used. When using Other Accelerations, the force can only be controlled, 
+// modified, or updated by the user from the Mission Plan between Step commands. 
+
+// Console Setup
+Console.Dimension = 40;
+Console.Show();
+Console.WordWrap  = 1;
+Console.BackColor = ColorTools.Black;
+Console.CurrentTextColor = ColorTools.Yellow;
+Console.WindowTitle = "Mission Plan Description";
+
+Report "This Mission Plan demonstrates the use of the Force Model's UseOtherAcceleration to apply custom forces used in spacecraft propagation.  " to Console;
+Report "" to Console;
+
+Report "Three spacecraft with identical orbits are created. The first spacecraft, SC_SRP has the effects of Solar Radiation Pressure turned on in the force model, SC_NoSRP has no forces due to SRP added, and SC_OtherAccels uses UseOtherAcceleration to apply the force due to SRP. " to Console;
+ Report "" to Console;
+
+Report "FreeFlyer Extensions offer another option to define custom forces used in spacecraft propagation. A force model defined in an Extension allows the force to be re-evaluated at each integration step as part of the FreeFlyer integration process. This happens automatically when the Step command is used. When using Other Accelerations, the force can only be controlled, modified, or updated by the user from the Mission Plan between Step commands. " to Console;
+Report "" to Console;
+]]></FreeFormScript>
+      </FreeForm>
+      <FreeForm enabled="true">
+        <Label>Create Objects</Label>
+        <Bookmarks/>
+        <Breakpoints/>
+        <FreeFormScript><![CDATA[
+// Create Objects
+
+// Define constants used in Solar Radiation Pressure calculation
+Global Variable AU =  Constants.AU;	// astronomical unit in km
+Global Variable c = Constants.c;	// speed of light in km/s
+Global Variable S = 1358.0;			// solar flux in W/m^2
+
+// Create an array to store SRP values
+Array SRP[3];
+
+// Turn on other accelerations for SC_OtherAccels
+(ScOtherAccels.Propagator AsType RK89).ForceModel.UseOtherAcceleration = 1;
+]]></FreeFormScript>
+      </FreeForm>
+      <FreeForm enabled="true">
+        <Label>ComputeSRP Procedure</Label>
+        <Bookmarks/>
+        <Breakpoints/>
+        <FreeFormScript><![CDATA[
+// ComputeSRP Procedure
+
+// Procedure to compute the solar radiation pressure on a spacecraft
+Define Procedure ComputeSRP(Spacecraft sc, Array SRP);
+
+	Array U[3];
+	Vector SCToSun;
+
+	SCToSun.BuildVector(9, Sun, sc);
+	U = SCToSun.Element;
+
+	SRP = (S*AU^2*sc.Cr*sc.SRPArea/1000000)/(sc.Mass*sc.Range(Sun)^2*c)*U.Normalized();
+
+EndProcedure;
+]]></FreeFormScript>
+      </FreeForm>
+      <FreeForm enabled="true">
+        <Label>Propagate Spacecraft and Compare Trajectories</Label>
+        <Bookmarks/>
+        <Breakpoints/>
+        <FreeFormScript><![CDATA[
+// Propagate Spacecraft and Compare Trajectories
+
+While (ScOtherAccels.ElapsedTime < TIMESPAN(3 days));
+
+	// Update plots
+	Update ViewWindow1;
+	Update PlotWindow1;
+
+	// Compute Solar Radiation Pressure
+	Call ComputeSRP(ScOtherAccels, SRP);
+
+	// Apply Solar Radiation Pressure to SC_OtherAccels
+	(ScOtherAccels.Propagator AsType RK89).ForceModel.OtherAccelerations[0] = SRP[0];
+	(ScOtherAccels.Propagator AsType RK89).ForceModel.OtherAccelerations[1] = SRP[1];
+	(ScOtherAccels.Propagator AsType RK89).ForceModel.OtherAccelerations[2] = SRP[2];
+
+	// Step all spacecraft
+	Step ScSRP;
+		  
+	Step ScOtherAccels;
+		  
+	Step ScNoSRP;
+
+End;
+]]></FreeFormScript>
+      </FreeForm>
+    </ProjectCommands></ProjectMissionSequence>
+
+</FreeFlyerMissionPlan>

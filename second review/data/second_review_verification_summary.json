@@ -1,0 +1,25 @@
+{
+  "orbit_period_hours": 10.529299285391595,
+  "eclipse_summary": {
+    "total_events": 6,
+    "total_shadow_min": 106.18,
+    "shadow_pct": 5.6
+  },
+  "apogee_boost_summary": {
+    "pure_circularization_dv_ms": 1472.53,
+    "pure_plane_change_dv_ms": 788.74,
+    "separate_burns_total_dv_ms": 2261.27,
+    "combined_optimal_dv_ms": 1833.64,
+    "vectorial_savings_dv_ms": 427.63,
+    "savings_percentage": 18.91
+  },
+  "bplane_targeting_summary": {
+    "b_dot_t_km": 2488.166,
+    "b_dot_r_km": 2488.166,
+    "miss_distance_km": 3518.798
+  },
+  "lifetime_summary": {
+    "lifetime_years": "> 35.0",
+    "iadc_compliant": false
+  }
+}

@@ -1,0 +1,190 @@
+--- Page 1 ---
+HEO validation benchmark for Orekit, Nyx, and SatKit
+Benchmark objective
+The benchmark should answer a concrete engineering question: which toolkit provides sufficient accuracy, run-
+time, numerical robustness, and operational completeness for a defined highly eccentric Earth-orbit workflow?
+It should not produce a single universal winner. The result should instead identify the best toolkit for long-arc pre-
+diction, perigee-resolving propagation, orbit determination, covariance propagation, and repeated mission-design
+evaluations.
+Orekit is the reference feature-rich baseline because its retrieved documentation exposes analytical, numerical, and
+semi-analytical propagation; gravity, drag, third-body, radiation-pressure, maneuver, event, covariance, and orbit-
+determination capabilities.[1] Nyx should be evaluated as a performance-oriented Rust/Python alternative, while
+SatKit should be evaluated as a Python numerical-propagation option.[2, 3]
+Test articles and reproducibility
+Use one pinned release or commit of each toolkit, one compiler/interpreter environment per toolkit, and one common
+machine. Record CPU model, operating system, compiler flags, BLAS/LAPACK configuration, thread count, and
+whether acceleration hardware is used. Run each case at least 10 times after one warm-up run. Report median,
+interquartile range, and maximum wall-clock time rather than a single timing.
+All toolkits should consume the same CCSDS-compatible initial state, epoch, frame definition, Earth-orientation data,
+gravity field, atmospheric model, solar and lunar ephemerides, space-weather inputs, spacecraft area-to-mass ratio,
+reflectivity coefficient, and maneuver sequence. If a toolkit cannot ingest one input, create a documented adapter
+and report the adapter separately; do not silently substitute a different physical model.
+Orbit and force-model cases
+Case Orbit and purpose Required model Primary risk tested
+A Molniya-like Earth orbit;
+baseline HEO propagation
+Earth gravity, Sun/Moon
+third bodies, drag, solar
+radiation pressure
+General HEO accuracy
+and apogee dwell
+behavior
+B More extreme eccentricity
+with low perigee
+High-degree gravity,
+atmosphere, third bodies,
+radiation pressure
+Perigee resolution,
+step-size control, and
+numerical stability
+C Geostationary-transfer-
+like orbit
+Gravity, drag near perigee,
+third bodies, radiation
+pressure
+Strongly nonuniform time
+scale and rapid perigee
+dynamics
+D Long-arc unforced/weakly
+forced case
+Gravity plus third bodies;
+30, 90, and 365 days
+Secular drift and
+accumulated phase error
+E Maneuver case Same as A plus impulsive
+and finite-duration burns
+near perigee and apogee
+Event handling,
+discontinuities, and
+post-maneuver recovery
+F Orbit-determination case Tracking measurements,
+covariance, and
+state-transition matrix
+Estimation consistency
+and sensitivity
+propagation
+The Molniya case is mandatory because prior work explicitly evaluates propagation accuracy and computational
+efficiency for that regime by adapting the geopotential degree and numerical tolerance to the mission error require-
+ment.[4]
+1
+
+--- Page 2 ---
+Reference truth and comparison hierarchy
+No toolkit should be declared “truth” merely because it runs at a smaller step size. Construct a reference solution
+independently by using at least two numerically distinct high-accuracy configurations: for example, a high-order
+adaptive integrator with tight tolerances and a second integrator or regularized formulation. Tighten tolerances and
+increase force-model degree until the difference between the two reference configurations is below the benchmark
+threshold.
+For the most eccentric cases, add a regularized reference using a Sundman or KS formulation. Sundman transforma-
+tions redistribute computational effort, taking larger effective steps near apogee and smaller ones near perigee.[5]
+KS scaling has been reported to preserve the Kepler-energy relation with negligible additional cost in the tested
+formulation.[6] The regularized reference must nevertheless be checked for event-time error, because stopping a
+propagation at an event can create timing or phasing errors that are not visible in the geometric state error alone.[7]
+Metrics
+State accuracy
+Compute position and velocity errors against the reference at fixed output epochs and at dynamically meaningful
+events:
+• three-dimensional position error;
+• velocity error;
+• radial, along-track, and cross-track components;
+• perigee and apogee epoch error;
+• true-anomaly or argument-of-latitude phase error;
+• maximum error, root-mean-square error, and 95th-percentile error;
+• error growth versus propagation duration.
+Report errors both in inertial coordinates and in the local orbital frame. A toolkit can look accurate in Cartesian
+norm while still accumulating unacceptable along-track timing error.
+Force-model and event fidelity
+Repeat selected cases while varying gravity degree/order, atmospheric model, third-body inclusion, radiation pres-
+sure, maneuver duration, and output cadence. The goal is to separate numerical error from model error. Test event
+detection at perigee, apogee, ascending node, eclipse entry/exit, ground-station rise/set, and maneuver start/stop.
+Event accuracy deserves its own score because regularized formulations can lose timing accuracy even when their
+geometric trajectory is highly accurate.[7]
+Runtime and scalability
+Measure:
+• wall-clock time per propagated day;
+• wall-clock time per output state;
+• peak memory;
+• initialization time;
+• scaling with output cadence;
+• scaling with force-model complexity;
+• scaling from one spacecraft to 10, 100, and 1,000 spacecraft;
+• parallel scaling where supported.
+Report accuracy at each runtime point so that the output is an accuracy–cost frontier rather than a speed leaderboard.
+Robustness
+A run passes robustness testing only if it completes without numerical failure and produces finite, physically plau-
+sible states. Stress the integrators with tolerance changes, output-cadence changes, event-rich arcs, near-perigee
+2
+
+--- Page 3 ---
+maneuvers, long propagation durations, and perturbed initial conditions. Repeat selected cases with slightly differ-
+ent integrator settings and check that the scientific conclusion does not change.
+Orbit determination and covariance
+For the OD case, generate synthetic range, range-rate, and angular measurements from the reference trajectory, add
+controlled noise, and use identical measurement schedules across toolkits. Compare:
+• recovered initial-state error;
+• residual RMS and normalized residuals;
+• covariance realism using normalized estimation error squared;
+• state-transition matrix agreement;
+• sensitivity to measurement gaps and perigee-only observations;
+• convergence from deliberately biased initial conditions.
+This prevents a toolkit from ranking highly on forward propagation while failing in the estimation workflow required
+for operations.
+Acceptance gates
+Use gates rather than one composite score:
+1. Numerical validity: no failed runs, NaNs, unbounded energy error in the unforced test, or unexplained dis-
+continuities.
+2. Accuracy: meet mission-defined position, velocity, and event-time thresholds for Cases A–F.
+3. Reproducibility: results remain within a predefined tolerance when output cadence and integrator tolerances
+are varied within the qualified range.
+4. Operational completeness: support the required frames, time scales, force models, events, maneuvers,
+ephemeris export, and covariance/OD functions.
+5. Performance: meet the target propagation throughput and memory budget at the required accuracy, not at a
+lower-fidelity setting.
+A practical decision rule is to reject any toolkit that fails an accuracy or robustness gate, then choose among the
+survivors using the accuracy–runtime frontier and operational completeness. Do not compensate for a failed event-
+time or covariance requirement with faster nominal propagation.
+Recommended scorecard
+Keep the scorecard visible and multidimensional:
+• 30% state and event accuracy;
+• 20% long-arc stability;
+• 15% force-model completeness;
+• 15% orbit-determination and covariance performance;
+• 10% runtime and scalability;
+• 10% reproducibility, documentation, and deployment friction.
+The weights should be changed for the mission. For onboard or near-real-time use, increase runtime and memory.
+For orbit determination or collision-risk work, increase event, covariance, and state accuracy. For preliminary design,
+increase throughput and parameter-sweep scalability.
+Minimum benchmark deliverables
+The benchmark package should contain:
+1. version-pinned environment files for Orekit, Nyx, and SatKit;
+2. identical input files and a machine-readable case manifest;
+3. reference ephemerides and independent-reference convergence evidence;
+3
+
+--- Page 4 ---
+4. raw state, event, runtime, memory, and OD outputs;
+5. automated plots of position, velocity, radial/along-track/cross-track, phase, and event-time errors;
+6. an accuracy–runtime Pareto plot for each case;
+7. a pass/fail matrix with failure explanations;
+8. a reproducibility report showing the effect of tolerance, output cadence, and force-model changes.
+Recommended initial implementation order
+Start with Cases A–C and the unforced long-arc test. These establish whether each toolkit can reproduce HEO
+geometry and perigee dynamics before the benchmark becomes entangled with atmosphere, measurement, and
+maneuver-model differences. Next add the maneuver and event suite, then OD and covariance. Only after those
+tests pass should the team compare 100- or 1,000-spacecraft scaling.
+The most decision-relevant gap is not raw nominal trajectory error; it is the absence of a common, cross-tool HEO
+validation dataset and a shared force-model configuration. Until that is supplied, claims that one of the three toolkits
+is “most accurate” should be treated as configuration-specific rather than intrinsic to the software.
+References
+1. Overview (OREKIT 12.0.2 API). https://test.orekit.org/site-orekit-12.0.2/apidocs/index.html
+2. nyx-space/nyx. https://github.com/nyx-space/nyx
+3. Propagation - SatKit. https://satkit.dev/api/satprop/
+4. Flores R, Burhani B, Fantino E (2021) A Method for Accurate and Efficient Propagation of Satellite Orbits: A
+Case Study for a Molniya Orbit. arXivorg. https://doi.org/10.1016/j.aej.2020.12.056
+5. Berry M, Healy L (2002) The generalized Sundman transformation for propagation of high-eccentricity ellip-
+tical orbits
+6. Fukushima T (2004) Efficient Integration of Highly Eccentric Orbits by Scaling Methods Applied to
+Kustaanheimo-Stiefel Regularization. The Astronomical Journal. https://doi.org/10.1086/425553
+7. Urrutxua H, Álvarez J, Bombardelli C (2016) Impact of the integration stop-condition on the accuracy of
+regularized orbit formulations
+4

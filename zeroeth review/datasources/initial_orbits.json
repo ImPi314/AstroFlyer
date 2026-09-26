@@ -1,0 +1,61 @@
+{
+  "scenarios": [
+    {
+      "id": "molniya_baseline",
+      "name": "Molniya 12-Hour Critical Inclination Orbit",
+      "orbit_type": "HEO",
+      "elements": {
+        "semi_major_axis_km": 26560.0,
+        "eccentricity": 0.72,
+        "inclination_deg": 63.435,
+        "raan_deg": 45.0,
+        "arg_perigee_deg": 270.0,
+        "true_anomaly_deg": 0.0
+      },
+      "derived": {
+        "perigee_altitude_km": 1058.66,
+        "apogee_altitude_km": 39304.66,
+        "orbital_period_hr": 11.968
+      },
+      "description": "Critical inclination (63.435 deg) locks argument of perigee precession (domega/dt = 0), ensuring 8+ hour apogee dwell over high-latitude northern hemisphere."
+    },
+    {
+      "id": "gto_transfer",
+      "name": "Standard Geostationary Transfer Orbit (GTO)",
+      "orbit_type": "HEO",
+      "elements": {
+        "semi_major_axis_km": 24371.0,
+        "eccentricity": 0.7306,
+        "inclination_deg": 28.5,
+        "raan_deg": 120.0,
+        "arg_perigee_deg": 180.0,
+        "true_anomaly_deg": 0.0
+      },
+      "derived": {
+        "perigee_altitude_km": 187.0,
+        "apogee_altitude_km": 35786.0,
+        "orbital_period_hr": 10.518
+      },
+      "description": "Standard transfer from low Earth parking orbit to geostationary orbit with deep atmospheric penetration at perigee."
+    },
+    {
+      "id": "circular_leo",
+      "name": "Baseline Circular Low Earth Orbit (LEO)",
+      "orbit_type": "LEO",
+      "elements": {
+        "semi_major_axis_km": 6878.137,
+        "eccentricity": 0.001,
+        "inclination_deg": 51.6,
+        "raan_deg": 0.0,
+        "arg_perigee_deg": 0.0,
+        "true_anomaly_deg": 0.0
+      },
+      "derived": {
+        "perigee_altitude_km": 493.13,
+        "apogee_altitude_km": 506.87,
+        "orbital_period_hr": 1.576
+      },
+      "description": "Reference low circular orbit demonstrating baseline two-body mechanics and fast J2 nodal regression."
+    }
+  ]
+}

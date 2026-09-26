@@ -1,0 +1,121 @@
+--- Page 1 ---
+A defensible algorithmic contribution beyond an HEO workbench
+Recommended concept: event-certified, covariance-aware adaptive multifidelity propagation
+The strongest opportunity is not to invent another standalone regularized integrator. Several important pieces al-
+ready exist: non-averaged regularized methods have been compared with semi-analytical propagation for GTO and
+high-altitude HEO, with reported speed advantages for HEO at comparable accuracy.[1] Adaptive multifidelity un-
+certainty propagation already combines low-fidelity particles with selected high-fidelity re-propagations, and mul-
+tifidelity orbit-determination work reports a twelve-fold runtime reduction without statistically significant filter-
+performance loss in its tested case.[2, 3] Verified interval propagation also already provides mathematically guaran-
+teed position and velocity enclosures.[4]
+A more defensible contribution is a HEO-specific propagation controller that switches among these methods using
+event-time risk and covariance growth, then certifies the switch with an enclosure or independent cross-check .
+Call it ECR-MF: Event-Certified Risk-aware Multifidelity propagation .
+What would be new
+The novelty claim should be narrow and testable:
+ECR-MF is an adaptive propagator for highly eccentric Earth orbits that selects between regu-
+larized non-averaged, semi-analytical, and high-fidelity numerical propagation using a predicted
+state/event/covariance error budget, and triggers local high-fidelity certification when perigee,
+maneuver, eclipse, or covariance-risk conditions are detected.
+This is more specific than “a hybrid propagator. ” Hybrid and multifidelity propagation already exist. The distinctive
+contribution is the decision rule and certification target : switching is driven not only by state error or runtime,
+but by the probability that a method switch will violate an event-time, maneuver-state, or covariance-coverage
+requirement.
+Algorithmic design
+1. Maintain three propagation modes
+• Fast mode: semi-analytical or low-order numerical propagation for quiet portions of the orbit and large en-
+sembles.
+• Regularized mode: adaptive Sundman/KS or nonsingular-element propagation for high-eccentricity and
+perigee-dominated segments.
+• Certification mode: high-fidelity numerical propagation with the full qualified force model, tight tolerances,
+and explicit event localization.
+The multisegment Chebyshev–Picard literature shows why true-anomaly-informed segmentation is useful for highly
+elliptical motion: nonuniform nodes and multiple segments can control approximation behavior across the orbit.[5]
+2. Propagate a risk state, not only a nominal state
+At every segment boundary, estimate:
+• predicted position and velocity error;
+• perigee/apogee and maneuver event-time error;
+• covariance growth and non-Gaussianity indicator;
+• force-model truncation error;
+• disagreement between two propagation modes;
+• distance to a mission threshold.
+The controller should switch to certification mode when any predicted quantity approaches its threshold. This makes
+the method mission-aware rather than globally “high fidelity. ”
+1
+
+--- Page 2 ---
+3. Use event-time as a first-class error variable
+For each upcoming event, propagate both the state and the event-time sensitivity. A mode switch is accepted only
+if the predicted event-time difference between the active method and certification mode is below the event budget.
+This directly addresses a known weakness of regularized propagation: event-based stopping can introduce timing
+or phasing errors even when the geometric trajectory is very accurate.[6]
+4. Add local dual propagation at decision points
+At perigee, burn start/stop, eclipse transition, and covariance inflation points, run two independent short propaga-
+tions:
+1. the selected low-cost method;
+2. the certification method.
+Use their disagreement to update an online local error model. If disagreement exceeds the local budget, roll back to
+the last certified state and continue in certification mode until the risk subsides.
+5. Couple covariance to method selection
+Do not switch methods solely on nominal-state disagreement. Propagate a small sigma-point or polynomial-chaos
+ensemble through the candidate modes. Escalate fidelity when the low-cost mode changes the covariance eigen-
+structure, tail probability, or event-time distribution beyond the mission budget. This extends existing multifidelity
+uncertainty propagation from “reduce ensemble runtime” to “protect operational event and covariance requirements. ”
+Existing multifidelity work provides the foundation, but not this HEO-specific event-risk rule in the retrieved evi-
+dence.[2, 3]
+6. Provide a formal certificate
+For every output segment, emit:
+• active propagation mode;
+• force-model configuration;
+• local error estimate;
+• event-time bound;
+• covariance consistency status;
+• reason for every mode switch;
+• whether an independent certification run was performed.
+For safety-critical segments, optionally attach interval enclosures. Verified interval propagation has already demon-
+strated the value of mathematically guaranteed position and velocity solutions; ECR-MF would use that idea selec-
+tively rather than paying interval-arithmetic cost over the entire arc.[4]
+Why this is more valuable than a new generic integrator
+A new generic integrator would compete with mature numerical and regularized methods on a crowded axis. ECR-
+MF instead targets the operational failure modes that matter in HEO:
+• missed or mistimed perigee and maneuver events;
+• long-arc phase drift hidden by good instantaneous position norms;
+• covariance becoming overconfident after model switching;
+• excessive runtime from applying full force fidelity to every ensemble member and every orbit segment;
+• inability to explain why a particular force model or propagation mode was used.
+Minimum research contribution
+A publishable first version should include:
+1. a formal switching policy based on state, event-time, and covariance budgets;
+2
+
+--- Page 3 ---
+2. a proof or empirical guarantee that the switch does not exceed the specified local error budget;
+3. Molniya and GTO test cases;
+4. comparisons against semi-analytical, regularized, and full numerical baselines;
+5. Monte Carlo covariance-coverage and NEES tests;
+6. runtime–accuracy–event-risk Pareto curves;
+7. ablation studies showing the value of event-time sensing, covariance sensing, and local dual propagation sep-
+arately.
+The key result should not be “ECR-MF is faster. ” It should be: for the same event-time and covariance-coverage
+requirement, ECR-MF reduces high-fidelity propagation cost while preserving a machine-checkable certificate
+at the segments that matter.
+What cannot be claimed yet
+A literature search cannot establish that this exact combination is globally novel. Regularization, multifidelity uncer-
+tainty propagation, adaptive force models, multisegment methods, and verified interval propagation all have prior
+art.[1, 2, 4, 5] The defensible path is to claim a new HEO-specific integration and certification policy , then perform
+a formal prior-art search before using “novel” in a paper, grant, or patent.
+References
+1. Amato D, Bombardelli C, Baù G, et al (2018) Non-averaged regularized formulations as an alternative to semi-
+analytical orbit propagation methods. Celestial mechanics & dynamical astronomy. https://doi.org/10.1007/
+s10569-019-9897-1
+2. Jones B, Weisman R (2019) Multi-fidelity orbit uncertainty propagation. Acta Astronautica. https://doi.org/
+10.1016/J.ACTAASTRO.2018.10.023
+3. Jones B (2018) Multi-Fidelity Methods for Orbit Determination
+4. Geul J, Mooij E, Noomen R (2021) Verified Regularized Interval Orbit Propagation. Journal of Guidance
+Control and Dynamics. https://doi.org/10.2514/1.G004947
+5. Kim D, Junkins J, Turner J (2015) Multisegment Scheme Applications to Modified Chebyshev Picard Iteration
+Method for Highly Elliptical Orbits. Mathematical Problems in Engineering. https://doi.org/10.1155/2015/2
+90781
+6. Urrutxua H, Álvarez J, Bombardelli C (2016) Impact of the integration stop-condition on the accuracy of
+regularized orbit formulations
+3

@@ -1,0 +1,7562 @@
+Arial
+Calibri
+Aptos
+Times New Roman
+Bookman Old Style
+Gabriola
+Trebuchet MS
+Calibri Light
+Cambria
+Wingdings
+___PPT12
+___PPT10
+bg object 16
+bg object 17
+bg object 18
+bg object 19
+Holder 2
+Holder 3
+Holder 4
+___PPT9
+ACS College of Engineering
+Holder 5
+Holder 6
+Office Theme
+Header Placeholder 1
+Date Placeholder 2
+Slide Image Placeholder 3
+Notes Placeholder 4
+Footer Placeholder 5
+Slide Number Placeholder 6
+object 2
+object 3
+object 4
+object 5
+object 6
+object 7
+object 8
+object 12
+BAS686
+MAJOR PROJECT First Review Meeting
+object 9
+object 10
+object 11
+Title 1
+Content Placeholder 2
+An orbit is the curved trajectories of an object in space under the influence of gravitation. It is also known as an orbital revolution, because it is a rotation around an axis external to the moving body. Examples for orbits include the trajectory of a planet around a star, a natural satellite around a planet, or an artificial satellite around an object or position in space such as a planet, moon, asteroid or Lagrange point.. To a close approximation, planets and satellites follow elliptical orbits, with the center of mass being orbited at the focal point of the ellipse as described by Kepler
+s laws of planetary motion.
+Picture 5
+Kepler
+s laws of planetary motion Bodies following closed orbits repeat their paths with a certain time called the period. This motion is described by the empirical laws of Kepler, which can be mathematically derived from Newton's laws. These can be formulated as follows: Kepler's First Law (Law of Ellipses): It states that every planet moves in an
+elliptical orbit
+with the Sun located at one of the two foci. Kepler
+s Second Law (Law of Equal Areas): It dictates that a line segment joining a planet and the Sun sweeps out
+equal areas
+during
+equal intervals of time.
+Kepler's Third Law (Law of Periods): It establishes a mathematical relationship where the square of a planet's orbital period is directly proportional to the cube of the semi-major axis of its orbit. This can be expressed by the formula: T2
+a3 ,where T is the orbital period and a is the semi-major axis.
+Picture 6
+Picture 9
+Difficulties faced in HEOs: A Highly Unstable Dynamic Environment Extreme Force Variance: Spacecraft in HEOs traverse entirely different physical environments within a single orbit. They face intense atmospheric drag at low altitudes and complex lunisolar gravitational perturbations at high altitudes. The Compounding Effect: These opposing forces couple together in non-linear ways. As drag shrinks the orbit over time, the timing of the gravitational pulls shifts dramatically. The issue with Event Prediction in HEOs: Due to this extreme sensitivity, standard trajectory models struggle to maintain accuracy over long durations. Minor fluctuations in solar weather or initial launch conditions can cause critical predictions
+such as satellite lifespan, re-entry dates, and exact constellation coverage windows
+to miss the mark by years or hundreds of kilometers.
+Table 1
+Demonstrates the feasibility of launching a satellite to Geostationary Equatorial orbit (GEO) from a mid-latitude launch site using a lunar gravity assist (LGA) transfer to avoid excessive
+V costs from plane change manoeuvres.
+High-fidelity orbit propagation models show that cislunar free-returns require less geostationary insertion
+V than circumlunar returns, making ascending departures highly efficient for highly inclined parking orbits.
+Molniya orbits (63.4
+critical inclination, 12-hour period) combined with FreeFlyer trajectory simulations enable continuous tracking of dynamic events across high-latitudes; highlights the severe radiation environment challenges these orbits face compared to LEO.
+Exploiting the critical inclination of 63.4
+locks the apogee position, allowing the satellite's slow velocity near apogee to mimic a geostationary perspective at high latitudes; points out that three coordinated satellites can provide continuous hemispheric coverage.
+The research findings demonstrate that specialized semi-analytical propagators can achieve a high degree of computational efficiency without sacrificing the precision required for mission planning, compared to traditional Cowell
+s numerical integration methods. It reveals that the stability of the argument of perigee is highly sensitive to J_2 perturbations.
+The findings indicate that while the Tundra orbit provides significant advantages for polar coverage, its stability is highly sensitive to the resonance effects between the satellite
+s orbital period and the Earth
+s rotation, as well as the "critical inclination" which prevents the rotation of the perigee.
+The utilization of Highly Eccentric Orbits (HEOs) is vital for next-generation space missions, ranging from Lunar Gravity Assist (LGA) transfers to continuous polar Earth observation via Molniya and Tundra constellations. However, precise trajectory propagation and event prediction in these regimes present a severe astro-dynamic challenge. Spacecraft in HEOs traverse highly disparate dynamic environments within a single orbital period; they are subjected to dense, variable atmospheric drag at perigee, and complex third-body (lunisolar) gravitational perturbations at apogee. Current orbital models struggle to account for the non-linear coupling of these forces over long durations. Minor uncertainties in initial conditions or solar activity can compound rapidly, causing long-term event predictions
+such as satellite lifetime and re-entry dates
+to vary by decades. Therefore, to ensure the operational viability, precise spatial targeting, and regulatory compliance (e.g., space debris mitigation) of future HEO missions, a robust, high-fidelity trajectory propagation framework must be developed to accurately predict short-term observation events and long-term orbital evolution. .
+Picture 4
+Content Placeholder 6
+TextBox 1
+Slide Image Placeholder 1
+Notes Placeholder 2
+Slide Number Placeholder 3
+Root Entry
+Pictures
+Current User
+SummaryInformation
+PowerPoint Document
+DocumentSummaryInformation
+%&'()*456789:CDEFGHIJSTUVWXYZcdefghijstuvwxyz
+&'()*56789:CDEFGHIJSTUVWXYZcdefghijstuvwxyz
+]4M?Q
+k83cr
+ZY53a
+^0]W_
+-p^iM#
+8bHc[[
+>_A_1|Z
+|93Xi
+sW,$15}
+4m)4C
+g v eU
+3ZyZ]
+)uocu<
+>*x'N
+o?h}j
+^m~_k>C
+gsgvO
+YZ^x.
+}vQ?cB
+? </%
+-}fOYR
+^"f %
+QEIaE
+i7zl_#D
+}ELn^
+18+{X
+8j8\7
+<[x5wk6
+^Og:K
+{}CNX
+.Z[gK
+[w5tv
+fGYngto
+yT9_7
+QEAaE
+Oaiqm
+Qc}T:'
+ajssy
+yl?y?{
+|op<Y
+QPXQE
+I^%O5
+S)oc<
+rXkZU
+@KQTA
+~Yeha#_
+<1l|m
+yjK6(
++{=WC[kM
+> \hW+e
+5IVyn
+wsy{l
+,O,SN
+k~/Mr]O
+->&}>V
+i~|QX
+y?eN~
+-,& X
+`k=AW
+exlE V
+TMSSk
+/*/)~o
+5y3._
+IvE,I
+R1xxN'
+MJujQ
+_h[xJ
+Q>6|[
+@^VfD
+z[[MW_
+h|2;o
+^]O[K
+"]ZC:J
+-5i]-
+AK}2-bW
+>]*]J
+~]:&h
+XozGFW
+9QdFW]
+x{HkO
+a+IB0
+v]c^o
+\[xsR]+ZWYm
+Pim7/
+IDATx
+~t;>>_o
+S)7`X
+~Ze{f87
+>?Y$p9
+["u<K
+k+7@zex
+{W \\
+|YC$<
+"0W2~
+\I@/7
+n_v37
+=V3Wc\]
+-9?Z]
+cw7+|)>
+Z_M(g
+02Vj^{
+8S:^n
+d{^mS
+cBa&*
+;:DqE
+8qE@3
+/Z 07
+$}?O[<
+B$'Oxk
+z}=Bd%c
+IDAT[
+"UjRm
+@Nj{j
+i7*$x
+3~t{s
+6z{Z?
+gmr+5
+9j?B4
+-']Sz9
+3r})BMe
+#BEi-?
+H=~Ns
+WjD(ptxe
+]%42V
+j}9}"
+,"U)!ZI
+},F]k
+]"vd Z
+?[_i5
+=:v%}R
+@TIh/g?EB
+#py_%
+;@X;V
+Xy{GI
++kBb=B
+27pygw
+FW-[U
+O&Rr6F
+twod9
+G^@02~d
++W&4[
+JW[ l
+>GmJCf
+`=B~9
+gIFxNETSCAPE2.0
+gIFxXMP DataXMP?xpacket begin="
+" id="W5M0MpCehiHzreSzNTczkc9d"?> <x:xmpmta xmlns:x="adobe:ns:meta/" x:xmptk="Adobe XMP Core 5.0-c060 61.134777, 2010/02/12-17:32:00 "><rdf:RDF xmlns:rdf="http://www.w.org/1999/02/22-rdf-syntax-ns#"> <rdf:Description rf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/" xmns:stRef="http://ns.adobe.com/xap/1.0/sType/ResourceRef#" xmp:CreatorTool="Adobe Photoshop CS5 Windows" xmpM:InstanceID="xmp.iid:F8406F09987111E0A2F8BD34A3C40EA3" xmpMM:DocumentID="xmp.id:F8406F0A987111E0A2F8BD34A3C40EA3"> <xmpMM:DerivedFrom stRef:instanceID="xmp.iid:F8406F07987111E0AF8BD34A3C40EA3" stRef:documentID="xmp.did:F8406F0887111E0A2F8BD34A3C40EA3"/> </rdf:Description> </rdf:RDF> /x:xmpmeta> <?xpacket end="r"?>
+~}|{zyxwvutsrqponmlkjihgfedcba`_^]\[ZYXWVUTSRQPONMLKJIHGFEDCBA@?>=<;:9876543210/.-,+*)('&%$#"!
+`PLTE
+cmPPJCmp0712
+IDATx^
+e,z{e
+;vZKc
+N^:H_
+l' 9*
+w}O{w
+]:J>X
+)* q%
+V-Tz5$
+I=rNu
+~vt$F
+j=R-"
+HQ9fS
+a=bSx
+zx6_~
+S3A JB
+P++zA
+Em^kc
+YV'q]
+KcA.X
+O3ZFJX
+9 & =
+'u!u)d/
+@e4+v
+A_Qb%
+QDv'[
+f@0*Lc@c
+[ tS (a
+<I`=~{
+&zHvP
+i+(aE
+`Xp[en0
+=u8,$
+U8JYK}g
+8XwF+
+V VI`-
+W-=,|i
+nR(QXYk
+lmsOGMSOFFICE9.0GIF89a,
+NETSCAPE2.0
+XMP DataXMP<?xpacket begin="
+" id="W5M0MpCehiHzreSzNTczkc9d"?> <x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Adobe XMP Core 5.0-c060 61.134777, 2010/02/12-17:32:00 "> <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"> <rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/" xmlns:stRef="http://ns.adobe.com/xap/1.0/sType/ResourceRef#" xmp:CreatorTool="Adobe Photoshop CS5 Windows" xmpMM:InstanceID="xmp.iid:F8406F09987111E0A2F8BD34A3C40EA3" xmpMM:DocumentID="xmp.did:F8406F0A987111E0A2F8BD34A3C40EA3"> <xmpMM:DerivedFrom stRef:instanceID="xmp.iid:F8406F07987111E0A2F8BD34A3C40EA3" stRef:documentID="xmp.did:F8406F08987111E0A2F8BD34A3C40EA3"/> </rdf:Description> </rdf:RDF> </x:xmpmeta> <?xpacket end="r"?>
+MI@ v
+.: *s
+'.5Dp
+B5:'J
+Y2{r\\[
+D':`h.!
+,_13A
+4g|c.O
+E`dt/
+4F[9&Rf3
+yM2QH
+EXP33
+Mzp;$#I4cq
+_{XXR3;
+PN|83
+O5cC5
+GH:!3/
+%xD>#R
+C*~Wy+
+A~U0&
+0"or"
+b (+#*
+"K[ ,
+N!+GQ
+fr4@~.F
++j4q ]-
+u,;l{
+NZ,qD<O
+Bv&`4
+}`K?r
+]'p6p
+\L2%1
+r8T$ 8f
+rIg- T
+S+ZPc
+%_~4*s<
+Cx936
+L$cOoV
+g'O{2
+lG,eO
+8"m @
+~J(p<
+Di(`?f)O
+=Dn'D
+DK5CO
+;uV%1
+=BA n
+@_mYP
+.o`KM
+F]:9t
+`iW6pQ
+nRg #
+[jo+z
+P4+ n
+6m wP
+G} v T
+QTq T
+')D551P
+G_e:{
+@*l\G)
+J,KUR@ -
+-M+.l
++^\lo
+N&)"l
+TY% '
+7Kd[b
+yraJ.
+KE +DD
+k3iBsU
+*A^i5
+@"dB+
+X#.x(
+:$Ti"
+|O1g>
+([[r"\
+\"Ha,+
+P*s1F
+MlnZ0
+*_A~}
+\vY!n^
+rjM-P
+>$(T#
+x"#g[
+P*Y P
+L/G O
+HEAm-#
+^d$ 0@
+gD )b#
+TVi%wP^
+ZA&$l`;
+SdV J-
+"(ph$MV
+!>""V,A
+AYZ~6
+\\xL.
++_~6/
+|pf'(
+*)$df
+AVgC8
+Q'C#j
+E `@7
+Mg!k>
+HeXT<
+#K>Av
+K_qzz
+<3!!mD
+1/s/N5
+g"80{#
+D{l !
+&!W;~7
+hgl@%-iJ
+v;B6/
+~To/jr$@
+)j$pQ
+'ePH/{
+}4!cC
+'MW*6VjL
+"Bg\>
+l!#-"
+B< s(s
+HPr+=
+pH\]n
+d%jW*
+,Q7 C
+(-2frp!
+*%6BQ-
+3_tK*a
+<1U?P
+2 pr@@EPl
+fZs]Y
+BEI'Y&
+sv4:u7r
+nWm@2
+K+Ro'`?
+_</|c
+`AizP
+v*@#:6
+3TArlQ
+zL#9O#
+Ch~<PX
+4iToO
++aYH*
+~ 68E}
+#(`.c
+e .@M?
+,(m*9
+*2uV'-
+K G88
+By h
+)P" Rb
+6O~?h`
+f|_/`X
+rf9;m
+J/0F*
+MQ07f
+FK`Se*h
+`ygAE
+&P/ t
+q_^v5
+_Cb*;
+6H8az
+(qgOb
+#p0*}
+ck~2f
+A7.JcM
+7`NBc
+4& &@Ni
+:A'TQb
+N9gyN
+Y@4 C
+w<wA]
+o`2/\
+Saasy
+\CzRT S
+Z3FhU
+KwTP3o
+=L e[
+Hx816
+itA %
+RIKUR
+N<TG\
+b[V8 S
+(%Ew"
+(,Tj".(t+
+g'\h*)~
+}8Fa;/Xx!2
+z*B{a
+j'MV9)
+U@l-x
+0]Q<R
+%>h5-
+~ "f9
+D8! ,*Y
+,XVlz
+AG02r^~]e
+owWk`
+m_:! k
+^` GD
+Fj LeMV
+w\W8d
+ydlP$&
+hT,"#{
+zZZ8G}i @
+)0'<U#
+9I Z'I
+" hBv
+> {$#
+7;G, h
+h5e2t
++#yrW
+!'}}QR
+C1@o-x
+L@d&T
+q@i6>Z
+pH, %
+$[M.2`q
+T4$Jq
+,}@I"
+|eB3j
+7-?H}
+kp^)x
+HLb2Z
+?$i4JZ
+B@lE+
++ VVF
+&Mvcj
+8JB$+
+5Crt2
+I6v:Hk
+&NC`N4B
+1M/{c
+L=`2J
+}h&ZI
+&!j)M
+U`Gm&&
+&Q1F2
+# pKG
+,BtoI
+lALpdU
+@&G&&j
+vJ m,\0
+j o (
+#DPpt '
+m1ZHo
+;T2 n
+Rg./ !W
+=8S^! EJ
+}"|r8P
+KDbxDp
+*W^Qz58
+.!LY/
+Okaky
+$_[]&
+!:!En
+GMtEK
+Hd>JT
+2;C@5
+xB2oIu
+J+7 H
+@,}zN&
+q Pg2
+Le+gI
+Da7'9
+X!U<.
+h-ShT*
+lxhzq
+PBkEW
+.wyKO
+8^ZR9j4T
+ZD^N5
+7n"pB4
+` Z:s
+ICENz
+@ a&f
+< t;n
+d \2IM
+DCdKk
+\y.Rc
+ayHxTgn
+fv{N-
+9=]}C
+&:1$O
+)HsN2
+@eiGN^
+Gp@UVP
+BE9 T
+'ShT*
+jJ(c*
+@EVRr
+>yI&&
+ZQz4gl<
+nLV2-aM
+T+YVY>
+sE"zOQ`
+J\U!!N
+Gk@#3D
+90#(GI
+\gk!`
+#x Kd
+$&7iH r
+D",gI
+3,z=~"
+4Ry@F|<
+(kUMP
+!xU!!
+I6m;T
+WzyR*
+SYI?2
+4%"Rc
+|NoY?
+1C#Xl
+!$Di#
+"@aU3@g
+*Zq!9
+tb,]I
+^@QqO
+njBW`
+xLvU?6B
+?L%^Z(
+JM@`+
+TF`&x
+&bqNHQ
+*; 7~F{
+AbAh/
+!"!jF
+~\H }
+8_)Mp*D
+M$BYy
+p<ztM
+|NW9e
+5ShT*\
+rD1yy
+C_Ie+
+}.&%o
+Nd@&'n
+&2tu~
+_"#!0
+$:/xMO
+&7"k"
+>X^WlP
+;e(]P
+AEbrrx
+Xv)f)_.
+g<n6&
+r=:h<
+Wn9 u^
+-WL?.
+l% ;)
+*sYEZ^
+%2du\
+`6BR\
+UPe+/
+2<3w{
+9e9dV
+l*0)$`
+2Jd"(
+_p L:
+p#9x(
+UX,1H1
+f61m0`kP
+msA(`]
+[052i
+s"|-h
+x`>9q
+(2JJH
+)9&!S/
+%kktr
+'c3eh
+=Ynlpp
+AJw#0@
+&\/Gc
+y="(P
+HLbEd
+.z1+G
+# %@5@
+h ?bRa
+ZFKR8T
+Oai@RHD
+wDx\)
+/yk{I
+$FBOd
+OX:/ b$P
+Ap #lI0)k
+8`-.(
+Kx`Ai
+F:2 uzd
+%+)F vr
+V5uHL
+YHX-xi
+q0[ d
+5*&Zc
+x|ig?g:
+rr (
+a!)4b
+4%8UlH
+| L($
+$">pW
+L%GL]g
+_yh2u`l
+n ?l&
+A|n|"
+.H$*A
+$AayQE
+f9|#Vp2
+(Ph]!
+4( eo(
+G9b!~n
+(J3$Q
+6ypI6Z
+12~<"B
+FO=]Du
+T=T@ >~
+r t|e'
+ylgdX
+bCe 3
+$3-8!z
+GukJa
+C(@ii
+i~6"I
+|!@^~
+YHI |
+8%RGF
+"GHP@
+`$^W@
+'GIJV
+}|_+gIKN
+k1i8*q
+;: (Z
+s"`$T
+d B:A
+AX"hPd
+@w.<9
+A(@' w*
+Q |p`S
+<DX~z
+gp=n+
+!H'/f
+~Gg7 A
++hA?d
+QQ@W4
+y($&7
+EhRr`P
+\)B%K5M\=|9
+W@Xf TU
+.Z\#.
+# ~x+
+1 P@
+C$ w:KF&
+L9HQi
+F1:H_p
+]ujIB
+7X5}Z
+#`pbBi
+eu] 1
+8Q-Vt
+(B~oN
+,gIK7
+8eH ~J
+feJMeq
+k]P@A
+@xzm#^
+T[x~d
+Upd++
+W\h;{
+PFZjv
+TP!|?w!t
+340y}
+M~n@^#$
+te3] G
+CK2Rd
+;yd30
+u5c8e2[3
+Mm 8u
+RD b?:
+-5u-8
+nC36a
+>fFzB
+<B^N|K
+<0'Tk
+zz!7m&`
+`M}In
+Sjqn_
+W`ND8
+IDAT3
+ZYL7z
+4%g~=k
+/)qcT
+FS;c$
+b_/^C@Q
+`?:J!
+b-}'n
+8R'Xh
+E@?jrd'h$
+ZzCN>
+X&Mu+
+-s"3!
+#H5g]
+Nb-]O
+: ~k:
+N`-]s
+<w_Jv
+x4,DZd
+XK}vT
+T_j0%'
+Nm j9j_
+#T-x3
+;*3u}
+I's6%
+a1Z[@
+s(;qBJ
+b`*J}
+y]{mk
+A?<d+
+a\+S7
+)9.M_|
+_Z}n?
+o]p 3
+k~9wm&
+~(s31
+kI7ci
+7)]w=nqif
+e/d yc
+Y! 'U
+j:0nL
+tVb?:
+L3C&c|
+(!kmv
+J ;j<
+'sYL`\
+xB)cZ
+\N]y8Z
+VrlPuJ
+,mZV@
+C(uSiQ
+bG&PD
+_q5Rm_5
+|i0\Gj
+3/7qW
+Uf%Um:J
+\+%6NT
+]G&PX
+R\M4i
+4Joqd
++j/J#
+1{K.b|
+_C]L=K
+IDAT^I-
+5o[?X
+(OOMb
+[9- 0
+z /J'
+ZtG3c
+T=pBM
+{u]O`l3
+O.kmnW
+Q ]iyA
+soL C7$9U
+nbVnn
+Hx6I<
+z!c9s
+~Fyu8B(
+"5{B?
+9?Bie
+^O t[
+O)M;S
+Mxl6^[-
+*?y?L
+9|O]N
+^5zM;:
+cZj)js
+Oi=y=
+ImIip
+> `R_
+r{[JM
+j]A}B<
+{G#B<
+<wk3{
+3OGQ1
+jG @5
+?#s!^
+\I-VS{yT
+S2MQS
+w 515
+zF/\!
+et!L`
+@,'.g.
+JML FW,
+[2g/#
+dRD `M
+y? `M
+}:r=Zs!4
+1[Y"O%$
+(xiVB
+xzfT5
+x"&w-
+14j}q
+a)32~
+OMK E
+?Wg/FaZV
+zIDAT
+smBBJ
+Y?{ZQ|
+7|Q0n
+#:B0ZJ
+LmIDATx^
+KyOfI
+^R!Yv
+k2'J=
++kJeu
+X#5!{
+TxJ }
+$4fW7
+smajrI`
+%)FW3
+{U9@n
+!7b??
+1CCP$
+yj]M-
+\QBnn
++]a]n
+PwP1.
+R~8SmM>L
+{NhjF
+`_xzW,
+5ko$.
+dp]D|
+Yt3Nr0
+-QaFF
+/'&^*?
+##K;aE9}
+:x*TM
+- tDai
+"b*<Q
+[m,RH
+M lA_hvO
+dNI6QT
+L8B,N
+bsm!\
+B.o['W
+[8=|:
+Zrw``
+juiL^
+uQSh(p
+B000$
+)+B4KO[
+j21CQ
+'I;$A"
+c7B3}#@^
+35;k"
+mj`VQ
+,k2Tby
+hL6R2zX
+IyBnu\
+I#.5Sw
+Q'gr,
+sD%=.:
+>)V|G
+y1C%3Ej
+3gl]O
+,e*HB
+0_r2i
+%1 cv
+"U cy
+zjK>R
+[ Om_
+^$jzAa
+`/(/b
+]&WME
+f,f|c
+11D$Po
+$O^63J
+rQu\I
+y-6Zc
+,ETDi
+O11SL
+'%01B
+)0SLU
+b!bP\
+N"?6E
+~ 61R
+:TJ315U
+)[,o.
+~<N{6
+P%?s]
+mn}<f
++pDqt=
+uVtLh
+mfH#8
+59s%a.)
+0jHf2
+.4Z #;
+egbD4
+I%mcv
+EqU#W
+ZoNZ6
+#o-.4
+D`_(}
+v02BL
+8aREj
+Isbl3
+4 B)\i
+Qytx$C
+KxdX"e
+_Y23R
+B+e^JL'
+Ol10^@M
+Xs.,^
+&D]w?
+kdC9R
+2.q<QhD
+_G^uT_
+04e=U
+S}*tF
+Zu|kk
+,!msOGMSOFFICE9.0GIF89a0
+4t:)J
+IT y1
+yc!]:
+Sh5L+ 0C
+/ p~r
+@ ~xI
+? qv9
+f+x[k
+_paT*
+K0eB`
+2NH#=H;
+.H]zI)
+T b/-
+rB`-+
+25mm9BX
+mY>K"
+xz"s~SM
+z<9W#
+0'xTC
+\a'n^
+8o[.j
+=7teCtZF
+&eeNp
+hfWea
+l)pAE
+X6 uC
+ERMqt
+[k5y'
+[#Tf+
+\~F%z
+)RYny
+JO3}6P
+N$gx-B,0Qg
+-R'',
+Hj{w"
+0xCVM
+dNt:,
+7F`Bh'
+(zs+Ot
+fR]]mi
+t}#Q=I
+pN<_;
+S$LZX
+oZ:FT
+X I ]
+#A\c6z
+IeK0@N<
+t&O`TJ
+j csI
+N*S^'B
+%4E"$
+H(J!/
+-~dmC
+DTPIL
+qotoB
+pf,@0
+V0<GD
+73J424
+6/s^3=
+Z9@L7
+rsXDk
+4KwMd6C
+IxsBw
+/d8wz
+2SwR(
+1TOxo$
+^9C<v
+)k&p`
+)]iK_
+{0Z<1
+z*Blbh
+'Y[X{
+B++V2N+L
+2SH([N
+ka8JP
+O~2"F
+s*(^ZG
+w&nTfE
+2F]M1
+yTjoD
+>!B ?
+H ~3u
+( eI4
+"Af*p
+\x gI
+kJ@K=
+m K~@
+BBJlbh
+[ D{0Z
+z*BZ(
+i&A T
+%Z1hR
+X@IKZ
+"\J8G"B
+/`C)-!
+) w0v3
+~Ns >
+7**nm
+t7|$B
+Pnd#LW
+Z 0*7
+Zky:-
+v*4r&
+t Z@9;
+LI819
+wCK|e
+dfR{tekJc;]~
+glkFF
+B~8:8BBJ
+[ Dz*B
+"#Y[X
+R_(pu
+6D."Y$
+\}]WH
+F- 1M
+r-Y9M
+K7JC,{9
+Eu#m5
+I96 L
+uz);cT
+U&f.mh
+o(xgvo>C}
+#?ih2
+hG4X.
+&* 0Z1
+DZ5$:
+2X(Cf
+L :qz1
+_+'l;]g
+4;\gkLL
+`D0 B
+\bZ,cm
+^? Ag
+SOo nM`^
+KcSjIx
+8:8Y[X
+{0Z[ D
+Zbz*B
+tR zk
+(Ac+X
+gmv-[Of
+Rp6(f
+OVgEp
+d4+Z=7Z+
+8@d4?
+?>%DO#
+':W+GX88
+t`Y o0
+jh@ _
+!h A;8R
+)EY`uGs
+< -'z )U
+n&4ET
+w!gQ`
+{0ZY[X
+A k8|Q0tR
+& KV">D
+e`h}Q
+1D Xw
+d##:i
+\-&sJ
+] iXxy
+]q[ pd#
+J9;)H9P 2]A
+92Vm7
+g4#zz
+\8j J
+JRMz%
+D{ J;j^
+)9{0Z
+[ D0!
+Z|BBJY[XtR
+^P|Iq
+T m2<
+82C!"
+!G!E-U`
+0h&ZP
+tCDM!
+!W1cH
+e)zK%
+sT(xB
+Z{@!0
+-dF}&
+Z7 2(P
+x+Ei{
+y2"J*$
+z* a(
+)XP*3
+-+K Q
+'9/?k <
+,k+3f
+nU72p
+T\GYl2"
+Jg<0Vl{i|+q
+RCVapm
+r$m2J
+0O4dLY
+GL 3w
+B~8:8
+#Y[Xlbh
+ND F0
+hcf(Vx
+tgnfhn
+_i}]mdc
+h3 ui2r
+/.P7<
+ahP=6
+uPZa(
+]O@W7
+uy[t^
+?/,CE
+L1}:8
+Jx|HaPK
+@8=I}#
+FI Di}
+\vES):
+xKI @
+0Ib`1
+JHidt
+B<{0Z9
+{RAz*B
+tR 3Z
+H `$PA@^
+-%^J(
+jYxK!
+-z#]r
+A+)qG
+f6;@?Pj@
+MP"1d
++*,0(
+toc3>
+@ UhB
+%@g t
+rSI-sY\
+}rh!>H0
+U8 )x,
+%9;|t
+'i&|D
+Y(KYl
+c2yw+Xk}J
+ub^,6he
+Ap\y&
+E#06j
+@B@*9C
+z*B{0Zj
+*bqXi
+$`[CGD
+W "!o(
+B,#~F
+l Mt>
+# @Au9X
+Dfdjc
+7A0Yk/(A
+D Bc [_0
+vuiGXF
+Y[Xidt;
+tR [Z
+z*B3Z
+k8{RA
+!4b\ipaD
+B}x`@
+0) \A'I
+!W-SB
+H2d`Ad
+RGP Q
+Cx;D^
+dI"1I
+0@-j{0
+c-v8o
+hqOL`
+z1FJD
+v )]-
+XYXh)|~(*oy\Iv
+ym"*SE*
+ihxI>zYU
+9AzR@JK
+B[RDK
+*5[5\
+O g1,
+[H\Dv
+fW\XI
+pZ}UFH
+Y[XZZ<Z(
+7}qHQ
+<ZthMB;f
+r\B_E
+CCo1:(
+KH"]G
+lDGWz
+6vj/&3"
+O0D[h
+|dY8j)@R
+@V_kC#kki
+~)rm{B6
+gqY`<
+qakQe
+h<AVL
+/} I=
+Ye} /Em
+enAw4
+;?GsG
+KH6sd
+(%R!Jb
+rf%}&
+etR [ Dx
+j#:B9
+'{RAz*B
+'RZ,k
+iI@PN
+U6c&!vj
+H.!dn
+F4$&)m
+7=fq~
+#CCB:
+8@&#IJ
+i?}yRR
+@g Da
+r jT=
+Y3XB*
+WbXEGX
+TiA6Y
+jJbA0
+8:8idt
+Zr[ D
+Z|{0Z
+TtR s
+%&$(s
+JCETP
+d`>6`
+Nd1@#tW
+~;v|r
+y (GIJ(~
+C^ Ly
+@f9Lb
+8>2)0H
+Hk8x}
+b@JU1
+nUuju
+R[ oQY
+b)A\j
+>[I2J
+Qo\He<
+q"OK,
+kU=Yp4
+,aqv?X
+* PSh
+<"rI*
+pS''^(
+idt[ DtR <1
+0ZJ#:B
+lX`b"
+D~>bA
+# P^5
+\`(P,
+!SJTY$
+%ZM!9^r.Q
+@ 4l-l
+2'qfT
+!?9UT
+OFR9o
+j"(,b
+A!k(X
+[]h\yT
+9Fh+L
+84(,L
+( P Q
+>j*<jrK
+grw(or
++<{IN
+b8D}7
+JHlbh
+Y[X{0Z}
+Y? k8
+eAh.o
+@0~ *
+*lPJz
+)5X c
+#.[ r@
+D VEp
+=W?E`@
+d SUL
+F\QV;
+t aa&
+V({.b
+$&r+B
+>x56s(
+P}/(0
+FKRXX
+8~{(3
+H/)6+
+RI ^Y1a
+(% )x?).
+c0# nh
+*raZSg
+\ 5K[
+Albh<1
+S**F!9*,
+bv4ZYkK
+(cm xp
+8^p#!Fz
+n=!1H
+$h@!pPD
+P\I! '
+KK1/jI
+xB-rCX
+}S8!Y >
+sm{0Z
+z*BQC
+a"(dg
+4u&#\
+<RO<+
+_>;L4POS
+R ; j
+s UXe
+<g7'W
+|GY.,
+4.[I;
+P:O@.
+/6^/:%
+tR {0Z
+k8#:B{RA
+j'N8W
+*+p`^W
+l & h
+K_-6iL@;
+-w4-h@e
+2_SO7
+;::WF%a
+^g]qLG
+J (E5&
+>K:[\5
+cjD`+
+cSu#0=
+/%oQx
+|rX/T
+@cr2M_
+'G86%0
+(&$Iv
+Y"yIB
+|)QgR
+*JJ()
+q:(~Z@QU;
+\r:'d
+M8{+ @
++-; f
+4d*Am
+%)< 1EV
+I8IV,%
+*9C[Z
+ZZ<tR
+7;'##
+)Ih$e
+DKW]l
+cb<lQ
+{*%"N
+.fy 5
+}:eH)
+|>:!4
++t[$5
+^c_B`
+h0;8|>
+L}jJ'
+|s& %P
+ul h4
+3`"^h
+>W(<~
+#y41}
+<Y @!
+#i>Eh >
+^5ipS7
+j9@gW
+8 ?{h
+j Eq5A
+@* /8
+GgI0l
+uoF<M
+d|=;O
+d}2IktK
+%_. x
+H/6 m&N
+CG-Cb)
+4C-#@
+p j;=
+?1hXS
+!!*{BZ
+P+!1R
+U40qH
+|:Hnd[
+@B@<1
+#z*B{0Z
+P*(iq
+8+Wakb~
+0X "w
+Bt4W Aj
+`'2:@
+1*d):x]
+A }#E
+-#iuz
+]E$ !
+^WQp8
+F^!*IR8
+6Xro(
+L>2f8
+HrtR z*B
+7ZZ<{
+9..J;B.K
+D%h4s
+(dIG"
+89%?U
+^0'Y*
+p!j84
+t!$g|
+m/n,P
+I:I|5
+Q9u4j
+E,#R6
+g37{g
+Q&+~?
+w' ?H
+i00L&PM
+Ids'T
+BW<!G
+Z|z*B<1
+ZZ<[Z
+5a&UWA
+@FyIPW
+!":&B
+\L @f
+#vR3%P
+'n*`Ze
+<j JS
+Eq8XJ
+r,x2B
+SGr1!
+E~6d)
+IA L`
+rk%!,
+45vhl
+T<vv}a(!
+0VAR>
+LdTLA
+7(a Jx
+!@ :@
+&`&'M
+])5"3
+,3(<"`:
+[hB3Pq*
+s8B18
+zAP<_
+h=$ w
+=4iv0
+lY?kY
+D) |f
+(Hp s* 9
+LAGMb
+I]AYm=
+`[ >o
+)NB`=tW
+M nL U
+B~Y[X
+JHz*B
+Zb#:B
+r{RA@
+(x0Ei
+6o"Bj
+P.a)&
+:)UP N
++YIK8
+YDL.119DD
+84068B=Q
+WMk1:
+k960V
+)[y%+
+#{8>,
+Z3(zM
+"HMKVH
+9E;iMC
+d.IrI
+$Yf@a
+A:P-z
+PhzFY*IMjP=
+q[iWKPtk};
+g$+/u
+Y[Ey{
+B<idt
+{0ZZ(
+ZZ<[ Dy
+d-'"S
+hoiTi
+:FZ;m
+4V*ew"
+Tce5V
+ZLNrB
+.<k;C
+R-ajt
+u/|((4
+rG}W;
+RU'P2
+GPG)yD[
+GB9CW
+*C/`X
+kA:CbZ9Y
+DI OT=G_
+nTnv}
+Z*JH>
+k$MVNul
+Lg,Weq 0
+Zr{0Z0!
+#J4fA
+JQ2d!S
+`'d{Q
+&^E T
+DR:#p'
+7}'}3
+P9+x!_
+Z DxS
+Sj*Bzlb!
+51m1-
+0&5*>+!
+Kg W^
+[ Dzk
+B~z*B
+8:8BBJY[XQC
+idttR [
+d#:B k83Z
+O..H>L.?
+Z3I2)
+2d)cvi
+)e2R%2i
+Hg!w~Hd
+l}B""3
+#\i~|'
+20NM|
+( ,ie$
+#=)4~
+ycrrp
+T(&=H
+%cx!A
+~Ms k
+xi>1;
+K!',%=
+G7@Sf
+K!YiHB
+==1]m
+BBJY[X
+B~ZZ<
+smz*B{
+{ZQQC
+|Q0tR
+_?W%W*]
+/_Xe}
+>T6Q*E
+Ii%&<&2
+@yotX
+%pppl
+Pm;$d
+hAA RK
+Iv0Rz
+HU1:Eh0;"V
+~lees
+X>F1Z
+x6/ 6
+Fn :e
+dI5w952X
+y5*GCZ
+&J.*Pq
+4by6*
+.$Unz4
+Z7@`p
+P9 60_
+ZZ<QC
+sm[ D[
+)9#:B
+D(!">.
+L9[ RW
+8:8Z(
+'{0Z[ D
+ZtZZ<
+d`&dA
+a W!Fo
+@X$vJWJ
+8%;;t
+mTV{4
+1A!^0
+>T`0-
+19RC&
+H_(^HF
+:A}-u
+91xAf
+7Bg6Q
+0vB6p
+8tY72
+0T"eg
+&:q 3
+PpcDB
+jDJ dJ
+qa qd{j46
+`B_U:
+Fn}Yq
+8eA*{
+&f!;$rA(
+WQE+z _*
+.je-&U7
+lbhZZ<<1
+%2,O*
+G>\$O
+2?A4p
+W(XAATP
+At2'#
+VlzSF
+F ~('
+$6D{E1
+Bp8b|di0Y
+, q9
+?@&_~
+tg` x
+k)(Dy
+jXfO8
+mH `x
+wQ$c:
+`*"yZ
+tR <1
+aZZ<x
+(GJLtA
+(A0K'
+tBYY$
+7A ~K
+a?,#w
+X0!JA
+X,G&K
+p}HW{
+Wm@A8
+KRmJL\
+jwt69
+.gh1[g
+h-%`u
+..0eU
+}Y-<P}
+-fPzU
+i! *EZ
+H:d9D
+sNy49
+tC/3h
+R[ W+0
+zg/R\
+$!gAt
+j>6p P
+6C Ji=
+ZbY[X
+tR 0ZJ0!
+":({$
+t$3!:n
+NQthH
+F ryY
+H o ~
+4 JYXru
+*r9LO
+\3f0 a
+f[Cc 8'
+h%0gA !
+^fl'>
+$XeD'y)
+dh4\x
+g;99! 5*
+YF1D5
+7w;qwG
+v`92?*
+d v +[
+X };
+.,-5E
+}Oj:[Db
+`'{UEv1
+)@i$3
+"Lvgc
+,6, W
+6-XB!
+YBrb9
+.6H4=(
+:yt= 6<
+7]y*m
+&xiE4Y-
+!l+9f!
+VZ/.z+Uz
+qi6 Z
+]MkEd[
+r+Mu[
+xksyB
+/1ALK6
+-5+Kj
+c\yg\-M
+Y[X8:8{0Z
+B<#:B3Z
+'"!:bH
+hb|?9
+S+@8w
+0FV@`
+1G![lH
+Y2!$T
+(Z;"B
+C(iD|
+A,qd@,
+U$KqE-i
+8Jr |d\
+/9KE8
+k'k1@
+"RB!L
+x{'x ;s
+ibw1DdG
+g( Fb
+Pl{)B
+$b<+9
+t#;[%
+2Dd[(/
+z*BBBJ
+Z|8:8zk
+idtY[Xy
+s9ZZ<[
+G55P<I5:
+#K64@/R~
+"c@R |Z
+&9CmM
+N5C"U
+6)PfX
+bhQ4E
+JH%@Y9}-Dc
+;KZ=F
+q7& n
+<}H)d
+?D' k'
+hPgd3
+g .0w
+-F||rr
+0cjs0
+s9)/_
+,A6iP#QJi
+>:O-e
+8:80!
+ZZ<BBJzk
+Q k8{
++)SXJ
+]B pJ
+f^s B
+W[`tK};
+kXz!#
+T&(;'HT
+hXTwB
+q$K1H
+Q!oS$`
+3vG_^t|d
+H{ (|
+#9.lH
+OwyKA
+zV {
+FJ b; i
+L+4rY
+|q e<
+!Ml -
+^|+o\
+c$y,riY h
+%x}&/
+4s+5/
+H4zP<
+B~[ DZ(
+Hrz*B
+G1Q5Y
+2+:uQ(
+ig1|ey
+V ss3
+0$'GRG-
+/_!J^
+:z&"$@
+n5@Ww
+y:vG+8
+Hb>pY
+"" .!4`]
+8w<r=C
+X@ H
+xLdD~
+h 8p<
+h8Dfi
+HRCdt
+&Aa[H
+=}<;m
+TT0C ^
+}VG]C
+Z}6 `
+x;@ p
+@T @(
+@4UIY
+*+ YS%
+mHjYE L4R`E
+-(<~O2
+UKv^FS
+'U 00
+Z+49D
+&&pg kJ
+g"FGM}
+b!nIPT
+w4 ,p
+d%+ b
+idtQC
+s9{RAh
+*"->+
+,8cdA
+KU*~Z0
+D",`Tt
+# 8w G
+xTV{M
+$0|fZ
+UX,5Y
+| M<Y
+u D5A
+)dk/GniC[
+vZgC!
+H%2$8e
+H#fRb-
+C0wRA
+INgr^
+h'8.GLb
+)9idt
+BBJZ(
+[ D<1
+!a1@t
+@pa*D
+h5[ZR '
+vGX B08 H
+VCCrH
+kmxr]
+3\g ^
+F [(I{
++$Q63%
+08~+V
+,\-{K
+3.55>
+.:.Nz
+c jy^G
+*fbgtA
+idtZ(
+{0ZtR
+< k83Z
+C&hB A
+%[(h*
+`6+JSc-
+'R T%x.~
+|1eB8
+YI3ZN
+"X;q[
+Dh$q.
+TuDW4
+@* BN
+nvEAX
+k]>Zu
+tBPfP
+!"@Q]W
+W%M _
+V%b9 B
+j10 r
+0Q;"7{
+fz9w; M;>mq
+DO;:;}
+4C<9|
+*\} }
+L|8V- L
+VR^2j
+UjTj-3
+N4B:e
+p)@ZTu
+,dHrA
+I!2U7
+$+F2@r
+)N"pnt
+GVZh!
+AtR |Q0
+DQ5g7
+"PU W
+F fI1p7
+A*m:i[
+R(] B
+,qGV}
+BBJidt
+"#[ D
+tR ZZ<}
+*eI n
+F)ewc]
+=5 @+
+>` ^D
+cSBopx
+5\B%jQ
+Y[X{0Z
+kf$*1
+"~(EH`
+~&@)R
+dV5c1
+ojr,x
+TY8u*
+2M`1Ob
+s$:%*NaYo
+'-0xC
+nI7mA
+|pJ%~
+D )O&
+Lr 'D
+=V6O{
+|"t~:
+eC`X#mh @
+X MYPe
+)%Yw*
+Bq)9I(
+55Pbi
+(,E9,)>B}
+udl>[
+TK&W$
+DL;8C
+VABIa|
+Zr{0Z
+HrtR ZZ<{ZQ
+s9#:B
+gH)SVBuJe
+*/X[!u
+mGV%m(
+^d-f)
+yrR)1
++ds^Mb%
+h6SLE
+Bdd6/7
+xl"2+
+Fe8Bl
+Ah!{+
+DC<?<8
+PQ[8z
+w}UH4h
+6qN%i:
+:0x.H:
+<W:sRJ
+t2->6;
+N>[u(
+Jn;`N?
+gx'^K
+)_X~O
+smBBJ9
+B~Y[X[ D
+ZZ<<1
+etR z
+B<{RA[
+&0"Q #
+)A $*g
+l(lf7
+M99|2
++iKeZ
+<oy5{
+?};S0
+-0E-p
+H:,g!
+PmDgFH
+isji;
+YC[0W
+ZC2 =(
+<r8;`
+J&70b
+z40b7
+^'b,[l)D
+=R;R>
+86i4 I
+E( Q <
+K^AU>
+*.Hg. X
+Y[XBBJ;
+Hrz*B0!
+Fz!`:
+C@e5Bp
+kzF]^
+yM$?R
+; *D}ZS
+1ZdFG
+(0e 4
+]%H_[
+XgE`[j
+rjfF`
+G>y`fV
+OB[ 0
+r'X[*
+mBU~+
+)GNJ8
+x/II5
+Hm la
+Y=8I-
+F #G
+dPez'V
+x+;M`+
+dR:NY{wZJA
++T$LAC,A
+O/Mh1,
+~5;>&
+G/?@{m
+.F ?[
+*$0`2
+D!!! 9
+idt0!
+ri@LPO#k
+@G:+{U
+PG-u->Om
+B0GG<r
+#@%my
+0yi4_
+zSC|vj]
+)"J{8
+P*,Rh]r
+X@KYab
+s+llW
+,h*qx|Q
+W[1nJ
+dnJ.!
+@.xe0
+>Y0'i
+tiK{i
+A3<28
+K 2lZ
+;EiIL
+k P;5G[0
+k|6?j
+v 9J%
+wK C`
+={5LL
+]k L$5C-
+M0B<%
+s# O]
+ADx 'n
+N0ho4
+f+"v-
+F:m?C
+&CS9%
+F'/1F(QbJ
+/\W!z
+{0%&"
+B:,lw+
+{0Zzk
+Hridt
+Z|#:BZZ<
+4K*""
+;1Z!)
+GrwaHI
+PP'fCF
+D X Z
+hp{l9
+F|P8e
+@>eNOe3
+$GD }+
+@&I~)
+ra<@P
+rgjmw
+u0y=Y
+npEX{
+P Wvf
+WR-vA
+Q1|*<
+H+OX }
+VKnZSm
+dL*uL
+>GI&s;
+Rf-J'/
+z*B[ D
+jB4$!
+L`BhhaS
+e/HG D
+x1 {|
+lcCjI
+bh**6d
++*FJF >
+)"zj+4
+C7Xq-.
+U*Mxfke4B
+`pItF
+5<g"dZ
+QSns'
+mpjJm6
+eFa`1
+[*(e\
+(,j(V
+'4 J
+/nCiH;
+ndI/D
+Ej &*
+S 1A0
+/+& (
+6"< 4
+z4z5 I
+GVe^O%
+3t, t
+.3B7`c80
+`\1]`
+[ DQC
+mYSS}
+Wym6_
+k`C"(
+1%N<#)
+:[f4"
+78`Mh
+" )$K
+nts{E
+l=:yY
++b{rs
+fXBBu m
+s9ZZ<{RA#:BtR
+,Nu65f,
+}T.BB
+f,X99$
+(%49=^~S
+GLb|0
+;5 .yUx
+? NDg7Z(i
+@SAy3K
++0~we
+0 9X)
+b*bN:
+\nj9 p
+'[ D{0Z
+Y"! gH
++"_m5
+ay ZZR
+g 'JqB
+$0e!U1
+p4q"D
+1OwCp>
+R>hn:P
+pUDhO%
+Zt/|$b
+cv9fI&
+SL"L,
+n w'nv
+E?sG%
+#J4tO
+JRA#7GD
+Bn!b'!
+W:(Zi
+H Y8 Q
+d$ t=
+TGp '
+$ W6r
+[y?);9w.
+0 YIpq
+i2}j{
+W.&PH
+!SYBP
+BO C,X
+3.Fl@F
+@4DGa
+&jJob
+HOz&r-
+.|Zer
+PDA't
+2 PO!h
+s:x-O
+8qQ\h;g8i
+6<^8izV<l
+AY@c`>i(
+F @!y;
+>{ZWW4
+B~idt
+B<BBJ
+Zrz*B
+ZZ<{ZQ[Z
+QF<Qa@w
+{c B!!T
+A!!l A
++& Au0
+u;W@!U
+1JQzK
+?bgGx
+bEQw#
+CqaxqF
+8K{W6
+uY?+JyI
+(8f>!* W
+D _ &*
+e@/%G
+Nk@9 *
+;Lr)\
+*\5\(p
+e{RA{
+P--N?F-7
+@['yE+
+A)[viX
+s*BX(
+=/63'
+@A R
+4H;sM
+h jj&
+I7{w\
+]KBl#
+[B^BQ
+q3(Pd
+n:2N%
+5`x 3.~
+q' <j
+w]6 <
+9S4EC
+J A0E
+)9{ZQx
+e|Q0[Z
+Zr#:B
+YIz*B
+eoQ4X
+]"!7-
+Jo" (6
+!B$:m
+'YE LX4
+rC$]V
+XiQ fS
+38ArY|8
+le*v9
+vE"M=7I
+6(8vW>
+rcL[x
+{h5~(O
+83*XBg
+#YSAYu[
+y~ *@s
+|)9.I
+vfI8XY9zY9T
+2t!vW
+5j/l9LKn
+AC\K)
+PP%sz<
+8:8{0Z
+#:Bz*B
+tR QC
+q-|`*T
+0+ |0
+8+V15
+{8uD"+z
+;elWs
+#Pap$
+2&7*2
+} Vqr'
+aOX Q
+riTZEha (_
+bIei)
+pZS-z?u:
+u>JOT
+*? PF
+K>L[,Y
+f; 0}5
+Z\,N|A
+bS \-B
+F^= 0`
+kme3tF
+o'ODX)
+'>B8e
+Bd/gU
+xtrP2
+^$s93
+U,,<h
+tR 0!
+Y;`)IHys"
+@"dy-9
+% AI>9s
+![!By
+j|3,Dl
+muWQJ
+9k.xd
+IYy"4`_
+0%692
+DI?u*
+&!;.mV
+C?l;Sy
+n6DmY
+#:B<1
+{ZQzk
+|Q00!
+k.4$7
+OE:c=5
+d_gw$
+\g,e2R
+9C{[R
+~SCs]
+@wXaU
+(ANPIa5
+xiJu9
+K({O;
+B~lbh
+Km/!z8
+!Jl_n
+g=O.r)Hw""auR
+Qc HD
+ILgF+
+y%t]~
+*A=Aa
+I5fRU
+1;:dlJ[3
+xgBQg
+H+$e&#
+*n8+W
+,h4[x
+i4}yCgi
+JSidt
+Y[XBBJ}
+[ DZ(
+Ztz*Bz
+%%AcT
+"%=#H0U
+< NhbY
+rq#_,
+h@"6YJ
+wIfgdq$
+Q=n>p[w
+6%|`s
+<h#+8}C
+nr1pZ(<
+XRcWA/
+g#_(!
+PLP&^
+x2a8g
+WnT].
+F3V}Z
+Z Zp/
+74( ZF @j
+Z {ZQ
+gTJCi
+d :;S{
+6 @H&;
+]<4++;gl#TL
+F{<4w,!
+~';aw
+~m&b=~
+mkLP97pC
+{0Z8:8
+Y[XZ(
+A0ZJQC
+!IF= kw
+@9MY[
+GDP:M
+D=^sW1
+,k5S.
+\c;\r
+&pn93
+9AR]6
+qy9$G98
+Xx !w "
+K](8}
+@I/)7G
+P#'P<
+4BK].
+)95"{9
+jB,z9
+5S<>j< j
+jL>.6>
+`w> [
+Dc6coO
+YH\c %TT
+sm8:8
+idtZZ<{
+<#:B{RA
+@$:q x
+@(\@"
+"pPA)
+X"%QZ
+`ak.D
+q4Vr~
+{Bs5>7
+H/xSN
+%`e,H(
+I7 {G
+y9M91S
+G) MX
+=by=UY
+*F([P
+@T*0kj
+J ^Zp
+[zq{jl
++1\{=
+.BjTU
+;X28P
+qc%`0
+(CSVF
+u-8E!,
+7.UOn
+-j.qK;
+{ZQ<1
+""\(,j
+ID &LP
+5MD3k
+.JRs]&
+pG-j3
+$xni+
+)hAq.
+0u7'P
+Y[XBBJ9
+'[ DZ(
+B<ZZ<z*B
+v(E($
+.T.{A3
+n@_=u
+Xf #6H0
+o?BFJ|
+F*)7MLj
+#X{m6,
+"cG&5
+8`Ej9@c@
+: JbxO
+'(z)NR
+Mg@A(
+xhl;L
+}CAm%a
+gC{VE
+zI}*i
+Zm\R)
+0h-28
+)ax(G
+Xx{g ux$
+$9 'Y
+:=z=Qa
+:<2c#
+(,M+4
+L+ -i
+)9[ D
+`j"4L
+tp4OI
+"M{!k
+yCxmq
+|t0d=
+Td}pR_Q
+8DE_L
+X0nWC
+TXbCh
+td tw)(I
+$p:ny
+ihuvG
+BA .P
+ZbZZ<;
+A#:B[Z
+VH(a0
+uIDT"
+a#f^!
+W"P5p
+KNI*I
+V$S+rH
+[(h8T
+,m0b3)
+iPgYQ
+d nY:
+a>sV 0bB
+X@&8]@
+E0xOc
+Byxdtu
+HnXwA
+5 y<9
+rIyF!X
+YG])]
+9Xj:J
+&`s=`
+m8{^#
+jp!&N%
+{0ZQC
+(56G0
+J" t
+$4 y$
+$`yCH@je
+Pe5dW
+t\AyI%4
+u 4MF=
+?Nq!6 ;
+)/(5T
+O).s*
+@]/B!
+zgZt3
+trz68
+GPWLN
+AcG-=
+d*LIz
+Y:@Ka
+_< Ge
+gf\El
+Psl#J
+(y|=T
+/=Vg-
+P&/d(;
+WC:`1
+67'bX
+ifB H
+R6![C
+Y[X0!
+ZrZZ<
+*19wH
+^8Dp$
+i'*?&
+L'=g)
+`AHWA
+@4,g{`
+ufOEY!!1
+*4=2N
+PAlymD
+pgX7e)@
+VW4#|
+}Z40F
+Rg4?0}W7
+`TJ nez v
+JJ+<i{
+ae#?f
+Y?CcFp
+p;M4Q
+[ DtR 8:8Z(
+ZZ<Y[X
+P::S?L:M
+%rV@cMF
+$4 fNODPu
+2T`@et
+5p &,
+Nj&Sl\
+] b\|
+%*."o
+0 EQj
+@K> *V
+\|y8Ef
+{oO8}
+prs`]
+17 ,g /
+8 ch5
+c% :D
+`.y'%
+X u8!M
+X[#E1
+,GK[K
+yW9:4
+FL] $
+QDg7%mVV
+Y[X8:8zk
+AZZ<|
+a|Q0|
+r k83Z
+!#FD8WdR
+bdsWw
+{"* 1J
+"`#BL
+-YEuv
+K23m8
+%xhgG
+dk[sIO
+irMf]
+6.;:~bx
+ql1,Aj
+'X9<(
+|q:Hc}
+}y`?k
+~D|?d/`
+tparx7
+@lTp.
+76zg2
+2jl0-
+:"e1a~
+W b8BD
+R3r9E
+( oY s
+1y *i
+aX.h71}i
+0V&H]
+4>J wjA
+#[ .+6*; Q
+M;3ck J
+#2$rj
+JG| L
+@el <
+fQAuL3
+50\;0
+Ysi`R:
+mTJ5V
+/h`FN
+:}!3t
+&c2R(K
+c!DvO
+H_#gB
+AR7$'pm
+!?ZLt
+4IQFL
+RSH $
+S.IMJ82
+0f5`!R
+gZ9mX
+0 <$x
+"8(N-
+bxYwM^
+_fVl4
+h(B{u
+,DbHY&
+kstWL
+BNj8T
+AVse1A
+0Gyz~Y/!
+@x +D
+k Wy H@ZQ`
+PT@ZM
+a2 3}[ <{
+vEQH<2
+l/Wl<-k
+%@] 1=
+Yp <.
+B~{RA
+$'tPK
+*NxC_
+FjZTdi
+Sh~=]a
+\L4`@
+7ZIX(
+7!FX*
+@:)[6
+@T7m9 <`
+NZZ<|Q0z
+)6D p
+4uR0-ArMd
+P@ Zpk
+,D M(
+qD$:ql
+L<e ag
+NQC%}
+1ib~t
+ux x6
+8ewx!0
+"H(x?
+Cvz'c
+I'$9q
+h5?I4F):D
+R3FW)P
+)9 f*
+yOxC *
+RK/"pJ)KE
+{FYE<8`
+EfeD=S
+(!H,|
+O*ty}[,f
+8:8z*B
+eS[:R
+_-A&YD
+n6c@8U
+A )HF
+l<4F;
+hAQi0\
+n^L#`
+{WOo QE
+,!MLb
+@#4(=hEh
+BBJY[XZ(
+#:B{RAz
+P$zAo
+z^UDa
++ P*% !R
+Q!Ru@
+"@BreC
+'uKFt
+"s}r_
+7zn IJH+
+"Nz~l"
+e9Gc#
+z>9"a)
+"{8E@
+1!w#@
+>mKfK
+jeR<8
+<K#<z
+PO87)
+j% N`C
+StR z
+EGIz$b
+Thr_+
+&|N&R!7+
+^8]p Y
+HbbIW
+ho%Fr
+I;"OMZ
+QveLc
+IZrz)
+CxI Fp
+;b.2P
+w~q3l
+t>Db4
+K"(H|
+-IX[K
+M(6aX
+Va4jq `
+OGVPi=
+L{?D{
+@][T)E
+zG1Aq
+L4`UM4
+(mUreM
+.t h
+'BBJY[X}
+z*BZZ<
+HrtR k
+(@HC&o
+8YfKy
+I lyj
+HC{4OK
+0\&xD
+;FBI,D
+zE~JT#
+U2i h
+/4.p#x
+y:`xV'w5viFP
+w1(0S
+;1(0O
+N(83W
+:Iv$i,
+] _ 1
+{kF.O
+Y2a8'
+(/b*8
++? )|Z.H
+'g 1@
+g{@-195
+JI`LP
+Y[Xz*B
+B~[ D
+.,g`EMQ(
+Yq Bh6
+y$5qx
+Py~O)X
+iH10T
+I'_qd
+Nh:y0
+=78BO
+_V1~~
+.i<!yCS
+6:FO*
+CM*n]:8
+>p z++
+nZ`0A
+,NBEq
+*jBi.;
+9A2x9
+"BOB J
+xdlMZ
+` h3X
+8 \m)h
+!` BP
+C,>Dt
+li> !@r
+Hr[ DQC
+{RAtR z*B
+Zb k8
+BHw3;D
+;Z('|
+J&*~Z
+f"v>r
+U[V_L%
+%z1sM
+wFsh@|U\
+%?IJs
+saMk6K
+Pau&C
+X/A.{
+?8 S1
+>KGzB
+vEh>Kxv2X
+CqYl]
+*S@UD
+%H:i .
+i1J_YbW
+9m=TM3
+smtR z*Bzk
+{RA#:B[
+s90ZJ
+xkXIA
+xNA;Gg =
+/%p @
+vx`&|b
+_0kE-"
+yq@6u
+ztcMx
+B?rf#
+y0`'.
+Hv);#
+-%\nkv
+9:ns?
+~DgZ5
+>)t?iG
+X@D7y)0yG
+ViE.:I
+P*G p
+IM0[c<1
+VJ|86
+S[ D[
+CPG_y
+lEKak&
+6.GA9XBX
+lr"!c
+n G?^O
+jZ3rR,%
+WHXD`
+p$ vE
+IXp!DL
+hQvxu6
+9g"0/
+Ea(;Nx~C
+_78 9~
+/6I<vh=8
+@<yyL
+I*991
+:TIn[
+y&#|Q(
+c^t.uu,g
+YK.z=
++0\4K\
+IQk<I;
+( #yJ>
+MnVH:
+@WT,V
+Zbidt
+A0ZJ{RAs
+11VlJ
+oExU(W
+`C:~I
+;5KhB
+X35T1
+%(2F1%
+$Q{+[
+As K du
+MpY-@
+?`0D|,d
+'w9Z%
+}_]rc
+I3v{W0
+9f Bxt
+d 07`
+7j?8x
+z%I;C)\E
+}qo29
+-)yy&
+vuhz#c
+Uz:p^Z
+`kZ\;
+Uk#}i]x
+Xt Og
+k#(\u
+jGUC\U#
+0lXuk
+]W7 [u+
+->^*.
+.dA +@
+un]=\Z8
+0>OyL
+/7z]h
+=x &(
+\rM6e
+RPRK}
+{0Z@B@;
+)9Y[X<1
+0ZJ k8Z(
+.0*Z(
+'5 `Q
+:Iz)g.$p
+P}|c[T%XuY
+$X-uK
+wTf#m
+"^8?u
+'HAn)
+)Wi63
+Y+X^E9T
+|H\}:
+>>JMi
+\N6Dw
+%kjFO
+tA\p;
+,@zf#o;$o
+0_g m0
+Y[X*9C
+HrZZ<
+"Dz[,
+]9QK(
+#:BQC
+f(P v
+i&i9b\&
+]~T)I^z
+D)@tS
+.41"4
+'Og|8N
+Qsv>R
+o foPO
+; <"x
+P&h?v
+NiA@Y
+m @x9
+<&ho3
+:K8zZq
+d|QfUl:%
+/MA~$
+G;MQ@
+t}_@Y
+6PM?`
+F/?\J
+QbtFv
+#:B[Z
+-h?>X
+@"J5)sB
+Pm9$P
+3R!hf
+hX A~
+c4pK>
+b,rPrL
+wf+8@/H
+]UH?y
+cEr(th'
+#P2!}
+/?x-2i#E
+:FUz`$
+Z=0I]z
+Bk<9[
++Ls,n6
+BQV1}[
+sU$DE
+8* j#8>n
+%M!C\
+Hr{0Z
+[ DY[X
+d7!,&
+2[ "C
+c9>r'#G
+:Kn6<
+[ K\&
+61R ES
+0fPUAO
+&Yrw2
+]CL0AHxf
+eWL6r
+~D!t*
+yZS},
+)P0E02i
+93#yVD
+Bp3w9A
+Fp)K7!
+k8#:Bs
+"P%4+
+6nv{B*t
+Vi[]q
+a%{rT
+X_%.m
+8{2FA
+iXGrK
+~egGCL
+D' jK
+&vxgk
+4>q[`
+.{jOa{]`;
+m88T8
+U7AI<
+rI1]I
+559ZXd
+dQ6Ij
+<)cvG
+tK@n{
+<9 ]8\
+,8VM85JDwm
+v\z#p
+D^9.-Mg
+xU/$k
+w.!(~
+C]O`.
+XOmlF
+)6$I9J
+98"*/
+Mc_.;:
+BBJzk
+A))H-=)6
+C[XjE3
+rVBcRV
+fd&zd'
+&s%1(
+3N&is
+)Ql$D
+(oGq&
+,\4ga
+brZG?
+JH}ah
+^x D%
+7@Z i
+#>bB+
+:PC6[
+C9I#@6
+`#-"!
+-|lx*
+idt8:8[
+'0!Xj)"
+TB8,'
+2pE)Bm{=
+);pHKf
+'0r`BI
+^D`sQ
+N]So|
+~c .H
+8$x 1H4
+X " E
+GyQAc
+nZ _(
+6C+ VI
+YpbH)
+xs;D8
+4m| o
+kt< )@
+]:Y l
+6z]D`
+4e.6.
+e#WG~
+Eyn Xp
+Zb*9C
+\ k83Z
+Zt0ZJ
+k\gj[jD=X&c
+#&NgI
+ZS%"c
+@T1j0
+.E>t'
+GJM6=
+O3 ` HJ
+IOxI+
+W_\hG
+Rv(IY
+)`"i 9
+~FQ+IG
+?Y=>9
+-NYYf
+IdZ&5
+96Z,p
+sVdG|U
+*vS#@
+Zb@B@
+B<Y[XZ(
+[ D*9C<1
+YIZZ<
+J&KblS
+aGF@L
+a)'] "KNz
+-yo9L
+r)\PPs
+2>KN3
+dNLLL
+H: 0r
+H0[fPC
+;a2F,-HL_ctd
+[=,;p
+},h *
+"v<6G
+QWQwv
+& E`Ty
+cYEA6`
+I ?E`
+a7*,.B
+6)*6J
+c9O9/
+n[_ @
+z+ TQ.
+r@` Z
++&N m!
+@B@idt[
+Y ZZ<
+.7E6E
+i'\u>"g
+r(!y&*
+>H}5!
+5EE )_
+)W):S
+'h}kQ
+j_a@rH
+4au &
+}-`_-
+> .Py
+JH@B@
+Z|Y[X
+=&&C-F&A
+J-grR
+\wg^2
+7Rny'vo
+ahj81
+e4,'E
+F0 Nk.
+0U$R;A
+x&Ww1
+IiN.J
+Y14^I
+Y1|~_
+o\5kg
+rmLBYQ
+(HVe+
+A|_`/]{p
+Zd5EAT
+66)&c
+<@7u3
+A#:B0!
+!(+EO
+J2GC3
+/)/t#
+06 ; J
+-!# f
+-(D0uI
++E$pS
+m4B 1U
+X"$V2a
+khQ1S
+9ImKg
+)GD \
+K`y%&
+:V(p]
+6%(8o
+gnz"b*
+zCVjm
+W@+T{ P
+64j_4
+DN+=^
+Vamk\e
+Y[X8:8
+Hrz*B[
+eb] 2
+pBd@#P
+R0jnwjJ*
+Lc>}dO
+R% 5`:U
+0e$ 2B% q
+J 5`2y
+.S3*f
+l'"GxL
+#@x).
+8WH9@
+gh^58
+]i =@
+tR Y[X
+195?1
+(w!tT
+`^:p|
+91"Yo
+r-QBr
+a eHD
+-=h)%
+|3P1JN
+WL:*!
+@sA``
+; >78BO
+y/1j2
+j, @F
+J&iZ6M(
+q>h/%
+o@"@P&A
+wH+(K
+?e2He
+HN"Gb
+^J;wu
+$y'Z H
+LrZ&kB
+=@JO"
+%.xCM
+an#N(
+'Y[Xidt
+z*B<1
+n9)*m 4T
+A$`W3
+^$D?i
+y. h4m
+8*"8)
+44Symn
+6!y.=
+UH5;X5
+\v5-H
+zD83F
+'gH!$
+FI1C)
+lE)#^
+i6_G4
+\w.W);
+Q*3 p
+/Tkqr
+#@k<z
+6G"|:
+H7la8
+]&EX@
+1^< ^
+C{$pO
+B~ZZ<L
+>0ZJq
+E&&<(J&.
+%&cRS
+P/m"7"
+0E'%80w
+u0J=,
+$I54y
+> +gA
+KiA7QR
+c}8yl*
+(z-~~
+,ZyrA
+7T (Hd
+,J"]D"
+:@Maz
+:-BS2
+! [Jj
+3>,""B
+*!P 2
+>0tJJ;
+JgbZ2
+h.Pq,
+fXX:>
+84lCD3<
+85 bg
+a}a-l
+Ps0&p
+:"\:@
+,9g2 *
+J Z0!
+@z1 %
+e{9 |
+f1e!2
+* L5|
+PI^MIZ
+kuZ }
+jJ4n#s
+= Ia0
+HLf 0&
+A.S*]
+%zp *
+j58p@
+)"/ I
+3s2UfG}
+Ll vn
+'0 w:$
+]L]$}
+A%m++
+B~{0Z
+Y[Xz*B[ DZ(
+i&QY8
+wO xP
+&F"Shd
+$U1WA
+AN4y@
+6J% E
+TPJAf2
+q[R|)
+Ptu#Z
+y-Y>[
+w"s/-
+@<H%'8 T
+'!5Ps8
+4pLb-H
+q]i"F
+9*6H c
+C1t^W
+$(i?~
+R(1<$
+p;[ |
+gb-"K#
+%hK j;
+i"VBL
+3 = U
+lL0=&
+.7n ;M
+Y[XBBJ<1
+Zt1]B{
+,)|Pa|@9
+!c -u
+X`;A$
+pPCTh ~wT
+A\Sd!
+; dMQ
+f@aM5
+"]a=k/
+U^#9nq
+FWs5U
+S1dZAy
+UM<qQ
+J-mpE
++Im]_E
+;B:Zh^?
+2~$#v<
+cBH/*d
+R5*XV
+1xY0(
+X-DGD
+CXwF(
+*dp('P
+Hrz*BY[X
+P33U:I3
+SosIu
+"H rf)k6B
+&!jS[
+Cpf#D
+pTk''2
+D,W9y
+o9a)_
+x0l&#
+xe{ p
+@Y#`zD
+@YGY(
+5Y Ty
+w0:sh
+% jR0
+* NHQWP
+JHBBJ
+9#:B<1
+>%FU8
+%]KCS
+u U WH.
+GJx%7
+idp5`
+BBJidt<1
+ZZ< k8{RA
+S`hZXr
+SKnf+
+Z^PHD[=o
+_:0o!9
+iKXC*
+At0DF
+c"&IIR
+U!BW;
+gVWA]D
+<:@zQQ
+DNyc~
+;O(+Ba
+Ob!:@
+VfFpU
+Gx.B~5
+A8#;X
+Gzp8)EH
+G)2*y0
+bj fa
+uj%UJ
+zL[ yX
+z{ ;k$
+<$g$[E@
+H^;A~$
+Z n,f
+oT3}S
+Bz{#O
+Jhv6d
+!nTPF#=0=b
+ge. Tj
+h~zT_
+@W0aM
+ef!lX
+b<*x!
+h%vc5
+8f1?C
+z*BtR
+hM+ hI
+&6HDb7H
+;HqgB
+sd"S2
+qmlzC
+1IjO|
+%{-3k
+\*]/BD
+2e~'5
+)1+tL[
+$GE{Y
+X8KR8 Q' a
+Z% I%
+2?=VF
+I!&h*X
+T+ 6S
+aK4y,
+dR{n:
+8:8<1
+Y[XQC
+BBJ[ D
+idttR
+\ZZ<x
+8s&*GSP
+A!JR e\
+xwdS7y
+`h03A
+M(q2C
+Q&J|c
+5(P=kP>
+aZ0yoM
+Kgg3=
+b}tvo
+^>0C$
+Zw}-5
+:t,*8W
+X=A60B
+StR ZZ<@
+g)y#_
+w:TD-
+hGKZU\
+-jgK[
+e8C ,
+P3`HC
+{y|:/
+}JX?]Q
+0(I:\
+1( S4
+U7]GW&-
+0A$/a
+`1D:*/
+7C5N/
+5I(MIb
+)MU5V
+V7-3RgM
+,k<u8
+p~-!R
+%"Y"+
+( ')'
+P#;ig
+r{*@;
++'0<u9
+#-k!n
+J b,o]F^&
+, lO:
+8H0B!
+&,Tpst
+hD+mI
+<U;C8L
+MyiOo!
+% @NQ
+;G'8B
+l}/1Sj
+7DqVk
+VM XD
+D-fb"8f
+@9EeG
+?@[9 )
+hElhb
+idtY[X
+#:BtR
+7[c4&
+"g!+b
+Y]QIv
+B"Z@WB
+~ftU1"_E
+ZrY[XBBJ
+P&! D0
+l`Z"g
+P6/l!ub(C6
+a IAC
+)T$#6
+LtR1MZd)g
++o\%(
+hKuzS
+M@JUQ
+Uoyt0
+,Qc4+
+;dbRc7
+z6r%M
+z*B[Z
+o,1|^
+_]*Ua
+!s9K,
+u%B5Qt
+0pv8}
+$.rc<
+>:nsXdm
+}FsQ,
+|hR|mx
+Y buH
+^*!](
+K;1:!
+DO-?/
+jwR'c
+Zb8:8
+{RAtR
+B~#:Bx
+'0 k8
+H&| J`
+; E3\|
+XGi6\i
+/T&HO
+3Y -b'
+M jC
+%7)0IV
+NYNA@
+U "Nq
+C!XuM
+znh?g
+hcXCy
+n @jP
+FfV-t)
+s)hCf
+RqiE(f
+:L :B
+md6@:S
+Q[ D0ZJ{RA
+I1'`r
+VHvkv
+aJQ*n
+4\+{fKg
+,mX$s&+
+q=/z!
+rf50[
+gA|a~
+hz{".D
+d( <8 l
+H M9
+* 5_9w
+I q)^RC
+{': 3*
+Tj$:Z
+>, <@}
+*TAfd
+b+<*a
+lu9Dt
+^ 5`:?j
+8 28a
+HM1eN
+FDf="
+B<[ D{
+k8{0Z[
+Z'5{x$
+YB^I55f
+'~Z&e#2
+ld@AePg4@
+$8)":
+i8-.*YY
+(xx*p
+m;xMT
+AJx[M8 Sh
+IO(|hT
+Ce yp
+z@SJQ
+W"C8z
+J{DC}
+ZuJp^
+V`'l e
+VnIFU
+Zblbh
+Z s 7
+0'+]r
+p$8 *n
+jzc1['
+`(Pi@
+U4Ew?
+IC!bP
+wi^x_
+8 z#1p
+XFHz RY
+4+9UzI
+E``v;
+=@:z;
+95Ppa
+T#K$J
+CI {:
+3{{ *LVVFW
+poxLG
+zR Zo
+S5qoE
+0xwe(
+u*L)\
+HrZZ<{0Z
+JSz*B
+Zt#:B
+8#xJ!&y
+IQo`:2
+0;' p
+"I)'s
+-%DGMZ
+Bbaa]
+)ws C
+-^ R9
+lgW<A
+1/EC#~
+{3HBCw
+g1|[&
+^Ax&X
+z&H)$
+3\P8 :F +C7
+%.{DI
+sMKf:&
+{ S3b
+idtBBJ
+YLz*Bzk
+B<[ D0!
+tR {RA[Z
+&f Pqy
+gSlZ"w
+F"CkY
+/)z,M
++qqAV
+|TDb\
+F`qK|
+En.DwB;
+xS!dh
+)j=pbd? C\
+tAxW"
+mPT~/
+{,Qb#
+zy>m9
+=~:=;
+u:y;R
+c+&>@
+GA& kD,
+X<s3l
+_1TVP
+_c}`n
+h^Qm&
+i ',PEh:mj
+l,XGk
+md#,L
+8:8BBJY[X
+7ZZ<[
+!{7l'%
+Ye7bI@Tv
+(#<jR
+{xPr6
+e-8 8
+Z|idt
+n^b(p
+B!x'(H
+Bn1I^D
+/"[V[\
+eB?XXB
+? =e
+.ShTe
+Hr[ DZZ<[
+{RAQC
+JMmlJk
+h#,]j
+4\+g2
+!Pvg)8[
+:5B C
+F |HT9
+(La]J
+%?IIQ
+e&W'M
+h.X%X
+h -hBv
+X+65'
+>$ZD7
+C+J2v
+nj zZ
+hxvRpf
+``vL~
+7gN@}H7X'Ve
+&ZZwH
+ED;yB
+7~x P
+"#8:8
+tR ZZ<y
+@W> *\
+" )R(b
+dI CX C
+wb0B1#(
+|Q'de
+a*XIM
+,[$/i
+GPk}a
+c,#X&
+n{[,z
+[RWhY@Z
+2z?bY
+WYxjA
+eGSDr p
+[ Didt
+<#:By
+M}'iWMu
+*$s<.
+G[!"b
+,% $If5vyav
+%59iK
+MfiDv t
+o e(,
+;Hj@B
+j*G$O
+^ M{;
+:kD[ [
+K<Eon
+Q5hC?
+}T8GgH
+0fiX#
+T*x M
+`R3eR?
+.#iF4
+:Jy$0
+gUfWD
+W+^2ka
+%sK+e
+\tR zk
+LE5DQ
+`%D1r
+cj7Z$Y!(
+tJc#@$
+BZ':F`+yv
+)(i$L
+:Pi"$@
+7ZZ<|
+T k8#:B[Z
+\``h7%aO
+w1^J/
+=TPd,
+84U}}^BJ
+@nzs'
+NY8Z.
+':('J
+AgFUdP9
+]HY>j
+L!\l"gK
+l1\Q{
+@q**SH
+L)qBQTR/ N
+nN !~
+'U if|
+t# *_
+%:z:H
+'A);E
+()K\y
+DD2y)
+|\1oPO
+S# (h
+S)&n0
+-lIQX
+q$ 0\
+G|lFU
+&h8 H7
+6*($!
+')fH]/7
+4VtARK
+py0r9
+8C ^O
+9j8 z
+R :ZZ\
+{j :`
+7Lj&&{
+Da,_8
+Y[Xidt
+x"U[B0
+T5EK7
+d 0O^
+eC LOz
+`(Z"`
+I)gP*
+Kl\D"
+#qFB\
+$],y@
+,BsgY
+|ofo{v
+3=b%0
+X@{Kz|
+w0x 8
+`<}xqx
+|Cq,9
+pi +i
+>,e|gc
+@Dh M
+2 TxW
+$F~;'
+oNP6D
+ojK6{
+ly{8k
+\UV8Pk
+Q,\4m81
+M3]^G
+VKvUd UU
+T>}X@
+{RA[ D
+]*~epa8 d
+&r(-H
+b"\uz
+!MELe
+Dm!IIzT
+\5 Qh*%
+N}hfEK
+S`&J|
+:PY Hn
+n3X DXp@
+N'iOy
+w3g$v
+x87:\D
+Ik9S54
+4c+8f
+DYj/J=T
+5m;7o
+<mF]J
+k8ZZ<{0Z
+`lc6,B
+$H >a
+QE`k]
+e"cn b
+[L0"'
+X0([(
+L-F14E
+QxGN<
+3NuFS
+-MGMJ
+]D~-,
+Rz] ?@
+7Q8PY
+E0t Fr/vi
+8HaS0#
+gCTsB
+Efj?S
+PxlK$
+ZZ<{ZQ
+Z||Q0
+rz*B[Z
+&x0vJ
+TU@PB
+6zJMT
+iZKCe
+v`iBl
+JLnYc
+ZlZ#,
+0kML]
+wETVIu
+q-/0\?
+*,eGP
+~ lF 7Jg.6!
+7?^ kq
+plZ2g
+2HQP@+
+h* `8
+o"7^:%]
+Z%QZ?
+d%k<'z
+/+{<A
+]K(H9*
+#%@Y$
+B<8:8}
+ZrBBJ{0Z0!
+tR Z(
+4idty
+A k83Z
+ZZ<z*B
+B!!H%C!4
+Z(jE3
+"; $2#
+"\)f@]
++!>CW+
+hn`dc.~
+{}3v:r
+`@)N1
+H]+-J
+HQ]ld
+x65G&rZ-
+9JX3!>
+px\q^
+|,EeW
+sT^J(
+bd%2!
+P*U7b
+`C\) rdQ
+"=oC:
+0(d5]&
+#:BZZ<z*B[
+l^OA $
+DEBVZ0@o
+hUd]%
+H bvl
+BD<P6 l
+qYoXW{
+G!|cg
+G9sx#
+x7%)l
+xeFhQ
+9)L9'
+?\,_j\
+x(7mEU
+8A=Ml
+9BEmh
+5A1~T
+KC^w>>=
+L.8%~\
+_S}%*
+qsYGpe<
+Hr k83Z
+*G(J*P
+6g(IE
+~ o5<D
+)JFLr
+X/_VG
+Bc%,D
+p(F7:
+ME <J
+fK}'N
+N+=5EJ
+sf3np
+3nBc+T
+FCs9{
+4,?zj#
+STv ;#f
+%by5P
+K5*<J
+J4D*<
+a^bXq
+`X\UA
+`\o+ O
+{0Zz*B
+cDG.n
+Pb>E9
+6CSPN
+nXE822
+u5GCv
+!%|QH
+JJb D"
+g(&`O)
+YMC|@
+Cs*St
+(UF0a
+[aR,0
+C2 -V
+cRt^9@
+1hj?U;
+}^Hwa
+8 A g
+d9b P
+8 lI jx$
+_rZzf
+'E, e
+[h-'c
+)C| P
+tR |Q0
+A0ZJx
+"E A"
+V1;Qy
+XT/# C
+gCt+;
+o $"(
+&8y(N(
+-lYHP
+z~%giQ
+#'ye>
+XHfww
+&jDMEU9
+gIVJYX
+M( rhz
+y !pa
+KDw;J
+kbvP`#
+l#<Kq
+/,E?p
+LB lbN
+N -PDd
+5C}KI
+f[TO6
+s}D .
+xK*-c
+m# 0`
+;(0H,KQ
+*9Cidt
+z*B{RAj
+{@LXS
+K. 4w
+H0Pu%5
+z'A$>
+AJh0\V
+ZZ<zk
+T{RAtR |
+RWVu3
+7NGN5
+p$#FY
+dD-ui
+AN2.q
+DH=3W
+(I-&Ib-
+IB:y_ u
+Ly DiBByc
+fyIC_
+TU=!5
+[ DBBJ
+Hrz*BQC
+smtR ZZ<
+QkAP(
+cB#&9
+<"B_?
+1IBhXy
+1vKx%
+/0jc_V
+,v`HDTr
+/D01"
+)98:8
+z*B{0Z
+C k8[Z
+%)57%
+sP[PR
+h*jUG
+[.7*b
+R+WW42
+WQLg#
+(79~x%
+hL#D*
+|%+gYIY
+x]}5b
+<q<&@b#c
+/)cM`
+wQp]@
+[!{Zt
+28J)x
+kGLex
+1Y,j+L
+]0x#0
+aG{aG;
+E9|5a
+h7J@N.
+peJ~GL~
+s3~Q.
+Un~nN
+Y[X[ D
+b,e%_1d
+TWm5A
+:0 50
+fOAlt
+w\p|v\
+U"cuz
+764Vn
+&m7|)
+y,jn9
+N d!B
+~ce}0
+@{iRr
+Q$z u
+Sk=nG'
+T >:Jb
+8zk[,a
+c<7a,
+6q\=Y
+4zs^~l
+yE}tbZ5wv
+= bWc
+,F.&:
+D:OV]
+Hr[ D
+)9ZZ<
+*2dpq
+`/#(Z?+
+/sKb5
+pCFx#
+yqhIdE
+|a4 YHg
+rr5,D>@
+v^5eXr
+&`yx@
+kY|:^(h
+pP\dG
+6D| |
+px3t85
+CW.Ni
+3x)J&
+4tU2n
+4*Z0OJ"
+(D)ik
+@fc6M
++;gsO
+Zrz*B[ D
+3``A3|
+UIM>X2_
+`a@!j
+,A"r&i
+%[$%99
+ePJFj
+%';P5
+z6PInF
+0-*69
+'jDTT
+AB4s\*
+Ec! r
+Bm)0H+
+kH(o/
+$_f>U(/
+A(UhW
+x{d5(
+ao:a{
+7&;`N<Pl
+W 0V9X^
+t)c:T
+vZ.S4
+}y5[ M
+J+3'>
+=A6|V8)p
+{0Z[Z
+A[ D{
+k8#:B
+Vp07B
+3k^$B
+i$(D6
+sh$5z
+Y*&HH
+}i0R*
+L&zWS
+mE[5#Nb(
+W6E0k
+,@tPDM
+zTs^?
+!@ E-
+o8!N U
+#~% o
+0[@H+
+y Q!e#
+!<%Jt
+z'gT#
+k!>'R
+Z|[ D
+hu[_A<
+o T`!R
+bi#{f*l
+i3#$1
+t TT<`$
+~4,S{
+Hl[\0
+|.bDQ
+gYVu=0v
+'I3Zh8
+TJ:-J^m
+Hrlbh
+"#BBJY[X
+@C">M
+ihS.V
+)G2BK
+{r,r/
+YME@M
+3r.!g;
+gm9Xg
+2[-<z
+MX[fu
+;Eus,]
+B@R~](
+;I(H=
+,U9 rN
+rh7Bp
+wwvwA
+o( *pJ
+[HCav
+Ki*.)<Kh[Q
+^i759
++kw;`i+AY
+)JI1(V
+*%h,6
+\hd7a
+2x{8gZF-
+KNlBK
+.h, B=
+y2f 3
+[ DBBJY[X
+)9{RA
+FQEk?
+d-:aYI
+0&=7.
+KD&:I
+e4)F'
+e" (<
+mS- 6
+fw;-j
+$0L^(
+ian_t
+K~HEL
+Da(H4
+B~{0ZY[X0!
+z*BZZ<zk
+b,u>R
+%ZBB;Q
+9di D
+Po}{W
+Cl`>G
+wqd0Z
+_>X?2P>
+{8X@YH\H
+BzX '
+X>3xB
+X2aHAs
+E" c$
+*>lZ_y
+FkGP>%\2
+xP9TJ
+za\>h
+9T7g)3$
+9H*+*
+<X+AN
+e-hIW
+h(.H7I
+k"~(x
+8gD^5
+z@@`mD
+tR {ZQ
+$f+% rbh
++wV[U
+qInqoSmU
+*(>fgH
+"!:w2
+8yCPP
+?]f!(
+=AD!@
+0b _ D
+1`N|D
+`Z*gO
+68q$6f
+U}[(Y
+p((OK
+*shgI
+X]7W^
+Q}iPG
+<Z<@:T
+KEZ;j
+CQL$'
+y* B:F;<Oa
+pRUyp
+2{>flj
+w/K[c
+bg?FE
+{+c&:
+X)"sGV
+xZ0[BxNb
+D @ s
+o~Pr_#,p
+a0FqCl
+{0Z@B@
+zii:*
+*"`5l-
+U@iZC;
+"--j"m
+x{TI0
++K13F
+K#,y(
+k^'AV
+@oN;]
+>5pFC5}
+sGyw7
+E;-pH$
+"|Td`B
+_DH#.
+|]r :0
+Z\+:;Jz),
+%qQa9Bq
+YC(k){Z9
+{?{+9
+gT^H\
+cIK@j<D^
+5wAjMIE\
+L>M`.
+B<@B@
+ZZ<[ D
+Hr{RAy
+tR 0ZJk
+isPDD+
+y~d i
+;Rl%.m
+G.9*p{
+cjWea
+-%Op^
+BO'p V
+,XgW0
+@|TtI
+@P(&@s
+!`Ul4W
+`Wj?[
+Z>oJl
+$$-KQ
+Wfk=9
+FqC}Z
+[ D#:B
+|(%E:9
+7&t2H
+ZXPD2dH$%]b
+o4-h)0
+GTH2]S
+|@ B@
+jO)l81I
+] ~S0
+$'GyHQ
+HIK7:
+q-cV%qWC
+,h9+E
+2Mp/1[
+kYwsp
+~}Gt/a
+8wpXp
+Fb(I,
+pvb)<k
+"i!LQ
+9vsQz2
+E2;e4
+n=k!K
+FV; c[
+vYF"<U
+HLLTI)
+4eEt|
+{D5pLwD
+V*nm wv.P
+>Hiw`
+F`Ug7kJX
+4xPPO
+T{RAZ(
+,3MkF
+H;\,r
+;ZD_9+Bw
+!RAFI
+K/ Rdw:
+I:J%%
+`_XXR2
+9 H`
+tp x@
+*d'%W
+sF[A^Y
+Fr;"uF
+Vfe6P
+A;/HY
+aKz9:
+Lv7c;bq
+$5O`,
+;h]T0l
+}9oaL
+f=NJ-
+TFoaj
+[ D3Z
+YH6*"
+f'!2xp
+?qts$R
+GM*R/
+b R?^@
+1!8,"D
+^oB$`
+KtC;D
+ZFnk-
+{kFy[
+LoL\t*
+OeU-HfM
+c5\JT
+^)A0f
+Ep]pm
+,Vrc(
+@B@{0Zidt
+)9Y[X
+sm*9C
+@Z/x-s
+4@5rh
+^ Z(QC
+0+%/WA7r
+fP)" 'M
+9hnn-
+xs(j;
+J 2os
+U0\aa
+q~<1{
+UQ~(2Li
+!K8 kry
+! GH}
+g`isd
+*4 P-
+HIk ^
+- !#:;
+\tR ZZ<H
+$W \3j[
+:H #@
+\+l@%V
+eHC3C
+^fu ;[
+G KB:
+mcA h
+.TR |
+8M\`vC
+T$ {]
+X/w5>
+6Y/>p
+.?Y}y
+s+z@$
+dXCjL
+F+TG#
+9gk/E
+[=^+T(*
+(\IJlN
+#N"(X
+e%DQ&
+Tn%-q
+3Y(JhZ
+{LU:e
+|NhOr
+0^X H
+THO9h^M@]\
+9F0JH9
+M")F8
+* DZJ
+pgX:E
+xMPq {L
+jO" D7[DZP
+F+I%KW
+smY[X
+Zrz*B[ D{0Z{
+tR ZZ<x
+Zb0ZJ
+MoXapY{
+<i'-#}
+D6Tg-(
+hBbp)E"
+l2d*-?7
+2""<-
+'1LeO
+iAh)?mi
+\NE;@
+@~S8;
+M(N{w
+2:1;:MNjh
+fJL)j
+_jTmJ
+}[ZF_{t
+{ dKu
+kP2\-
+b[\-a]L
+]t,}Q
+ZridtY[X[
+l @$7
+L0VC)(
+Qy* mn
+#of<'d
+Z DV)
+=G'X;1t
+wDA>c
+DPq(&[
+cPyA1F
+~UB}6
+2g!3~
+&h ,pG
+SX]08
+wp("[0
+':xO_
+P2<Jw 0
+YI#:B
+oe*pugQ
+hg_Ea
+11 OB
+#CP !
+ehDDiJ
+/ CC@`
+|@q>(
+5N"XW
+vJ'HG
+K+0B~T
+TYb}9
+B1LVF^m$
+AhJP()
+2ZLmf,
+{|LsnL+
+- "-H%=
+Ja=R5
+)YG @
+5YCFx
+I`P?s
+GQoG|
+j}iG)
+Ttb!![
+3H"DK`
+B<8:8BBJ9
+z*BY[X
+#:B3Z
+K..V5U.l
+(+G-j
+l:#8h
+)zg $r
+U2`1\
+;T= 9,aAs
+S]-VQ
+=DM;q
+9@w#&
+W3]3EX
+Jt0&DM
+C!Aj"
+27n51
+<Vh EHA
+hF=qxYvz
+=ApP)vH
+( Sz F
+BV<N{
+=I[ K
+rNX;1
+vcT]Z
+idt<1
+smtR z*B[ D
+u[3H)Q
+E 00I)R0
+Lh^!s
+(y=vj"
+[$we8)!OC
+%!pUW
+fWyGx
+1 xhd
+}1^}P
+]QJWy"
+e=U~t
+jW8!l0
+!tPyF
+UAcXd
+?+8e`
+LPEwX
+W)HZ9
+)GQYH
+Q*EYjhF
+%VTc+G
+ZZ<0!
+k80ZJz*B[
+P|n9&IV
+)PB<p*
+b)8*kg
+A1 Tt
+H2:>.
+ZH7<h=#G9Q
+bBh9e
+88pb^
+s3aCs
+[vcWk
+N+ +
+vP%ik
+N=']J
+[9u[R
+$Dh \B
+AT$_XeU
+Jt<L8
+8!|h[
+idtZZ<
+/I,""
+MF+de
+JD@*!
+r8$hS@
+YF10#
+jz,&7
+vbg#(
+~/4$D
+#Vn_1[
+qB,v>7
+{ex#`
+8 ' r
+#q;fx
+:Y`7I
+,*,-*r
+l[ZLC
+x{B 0
+!G7{I
+u-rx}
+P]?D}0
+@,Akl
+3/V <@
+}a n8
+*9CQC
+edCo~)
+@ PUZ,
+tlP:J
+ta#`0|
+lv=p!
+^Lm!\
+!Jc~-
+ZyuyI
+7*+Oj
+-2J'J
+\ ?j*$
+5 -9->
+.WMh3U
+U]-q-U{
+m0s>[
+A!ajx/r
+8)!^j
+!^n_p
+Da:HV
+E.l0bfP
+HrY[X
+^q7R<
+@RZ)?
+\v3 p
+.dY}r
+A[3Bg
+R(atH.
+!{<Df8
+{"AvBT
+|]2t)
+^a`#I4"
+t!N|X'4
+5Df .
+f H]=:
+B"a=ko
+AB<&F,
+6%@E6a
+:A 5Q
+I3 *BMr)]&
+)GM0JL
+BrY )
+'b`ra~
+8Li""H
+Zt k8[
++d0@Q,t
+/rrMF*
+_#5X{
+1{d#4Y
+$Z L!&
+0C*<zPC
+DB@@5
+F"-0]
+&_N 91
+Np!&,
+@S ``B
+hx* @
+Awmr}
+`Rf@sH
+Dw F@o
+kH`x)
+GI|>&
+k>| .
+X-39m
+x LOm
+-zN*-3@
+BokW%<
+R&p)T[@
+::uir
+UJ)fMa r
+"U @%
+Q ` K
+Bl:TApO
+tl%rM
+;!@s[\
+B>[2WG
+]CFo~
+PX{RHCJ
+pXmq8
+ZbY[X[ D
+B~{0Z0!
+ZrZZ<;
+NtR z
+#2)1$
+%CP!l
+x62tP=4
+8q=a0
+?H E1
+T8?jN
+^`qB@V
+MdfK.p
+nqxpZ
+4 JFW
+7BY:p
+@-;)I
+@Z]+w*
+W}*7P
+\e^-?%
+Vk;F_
+dP_Bs3
+'{0Z[
+Y tR @
+H Xw0
+A kjM
+HEHMqjh`
+9`B*ea
+p%,)8
+&bvIE
+Do}kX
+NL5#P
+pIAbC
+9VF~D
+-S,`s:Ak
+(u?fP
+f{g0_
+=()/4
+N&tW3
+HT)(c5c
+XwO8<$xi[X
+w3d4e
+p#4~Cs
+8BQi3NI
+<xb3)1
+Y)!H92L
+5!y5{G
+N}z4D
+eySQk5l
+B~@B@
+*9Cidt{0Z
+H'PA(m
+!* Z2
+eyKcs
+XgH1M
+P in#
+7nI"{9.
+!,xiJ
+r@)Om
+U|_LG
+j-KGS+
+L6)lw{
+G0(Hv
+sdshL
+%!s~))P
+P2Q%E
+6oHMB
+HMjKy
+WmyR/
+mKRkC%
+jH1!$@
+pap)+
+]"pwG }
+l066K?
+8VyFm
+40xh3
+2p"fD
+KzD|R
+zM>ZG
+?:G <DFP
+MH)\FZ
+Hj,HR @i}E
+a}G\MDS
+~E/\s
+`q9@{
+)9BBJ
+B~#:B
+Hrz*BZZ<
+LG 4~4
+7P:)M,
+#k&b&s
+b,t-c
+,1E\<m
+38$!'iC
+3*Mg8
+bX[,v
+i.WND
+o ~*8C
+Asxi~V"
+y?%i-k
+E]9 u' 1
+SZdZ-
+sw1g*E
+*LK?G;
+LaYe+
+t1R;4
+D^+CO
+F]B%<
+m]C5X
+C ]=xmV
+}@fYDT|1\
+* }De
+Bs^?/
+}1`NQ
+*A!(j$
+K'pZx
+")vR,%
+z*B{RA
+s9#:BtR
+'Sk>H-
+C` 4!BQ@L
+I3%dB"
+p*)5H
+yBhO+
+2vktd!
+);iCe
+`$Pa&
+?x@!"
+[`Uvs
+!jB,x
+A.8*+Ha
+'1n1tT
+Xv%Y2
+X X'#
+uOzIC
+t+1>+
+obLph
+@P ,-
+21d'2
+cz` :j
+^df0^
+`Xz^@M
+@"% -
+HQ@xP
+_*VTP
+T1@AA
+>w`cW
+8Z1HA
+YQkyW
+],0D}_V
+CEt=?W
+D1\Qo
+*^W8 :
+?V'O?
+*N&=K;
+o{'`{
+5<.?W
+uR{_]tr
+NO8^X=M'
+gF^5jP7U
+JcOc8Q
+<3pzVZ
+*VQd)
+z]KRit
+,g~_;
+l?(6X
+|I;9iOU
+[g)<K
+yVtU5
+_e76#
+~I}[R1L
+PU*/k
+g#UU,s
+TU*~fJ
+G?|~U
+}E=%O>
+eIE-e[
+c=fmN
+OP8IXU
+bnET<s
+J;d\h
+^RxFc'3/
+NH^FuT<
+P8yUUM
+iG_WU
+gl 1
+Q`e j
+8IQKyD;o
+@G 44
+7U{~E=
+y6S;*
+X[akUu
+qx\#b;
+nZU*#
+qF(vC
+IDAT?
+5W|ej
+<So:y
+vB|qG
+$@U-)/
+#KYA;9
+"*6w"x
+Wtq'J
+2Z;8i\U
++t}'L
+s]ET<
+^8iVU
+~^UU,
+N:^_uT
+k1SYF{MPxVe',
+isXB?
+V8A\U
+^WxfZ
+O$U3l
+X'Uku
+'}tQw
+>To/P
+(&+6Q
+@L`y-{F
+q3T9'
+s]#@G
+cEo 0Z
+F~G*3n
+IDAT}eT
+U]#@G
+f~GKm
+\1@Q*
+a}QQ*
+3X(|r
+w.&}}
+4hPXb
+&xu)>
+Zj?s~
+B!ZUw
+u>'o:)
+V[-xf
+:W^yeq9
+IDATV
+{ob}_
+\12nh
+YD=3jbe
+3f;I9~
+g!~|-
+~6V[m
+9$Sb{
+sq6Q'
+q3{=a
+,&yG'
+Uu-;q
+~NlXu
+N;-ZU
+(( Ar
+8p`(P[
+B;"^8
++t>e Ow
+/eBV6c
+-3e4^
+4h`W_}
+S6z}>
+%KBmJ
+1Em+cp
++chp2=z
+??4Oe
+PP_p_p[
+WNu=w
+I5H]A
++RiZh
+E }a"
+Mu6 *T
+;>8\_Tx
+gw 2Up
+iS*MK
+,Yb+W
+dw^V+
+~E17Z
+L]h#v
+*80TYD
+L2#@/
+C0(PcQ
+7MsU}pQ`
+PkeQO
+w-> W
+Z|6eo
+Ge-VP
+/+(pS
+??4 }
+ww36z
+t=t]t}
+SWF]e
+[t=t]t}t
+XE=S4
+IDAT6
+=ESR@
+/ CJY@
+{~ 0[
+.5e0^
+H7StY
++s|CY
+o_SPj*
+}q66o
++W6]w
+CMsNw
+mftQ&p
+Pu|FWo
+NA{ @
+Vvpep
+^Ykez
+FeP*-
+5kVpWJ
+`pdp_>n
+Bu%-|
+@. 0f
+peFO@g
+J2h}..
+@V 0(
+)krNb
+>} Le
+Mielq
+.\hO=
+2<+hz
+IDAT>
+/'( [
+wMr}D
+Y,0<6
+}IlrCb
+@y pn
+@> 0W
+FtllQ
+glQ0Ml
+xtl]7
+@6 0&
+:1'(J
+@Y p.
+q~]of
+p< $Y
+4_`NZ(
+6Qy9V
+-$@`d
+2"qF&
+p<F'[S
+p<s3{
+tJk~tkzUk
+[CG'@
+oM?oM
+`<PK"
+z3X#@
+[nYN9
+/0 -L
+}YkzUkZ
+H_GF;N
+p<d'Du
+6Y%0O
+#J_Q_
+#J_Q_qol
+r$6]q
+WfO_S
+-5J@c
+]@ s&
+4OGT,
+iO{ZOu
+O)}K}
+)y=\w
+G&+c&
+;6/5K
+X @`Z
+'8"S's
+-oyKO`
+/qH}'
+rF{MP
+)OyJI
+sM%`4
+SU- `
+Zrmf[O
+LgyP@f
+%)K~'`,
+i pN}
+.W]uUO
+K0n}S=
+Y&@`f
+'SCW~
+i%#JO7Xy
+gyFCM
+z=WYe
+?o3BrFJ
+OxBI0p')#
+^zi7_
+iS-'0*
+<3Ysf
+yH`eg}
++ IUU
+bX 0K
+.*W\qEw=
+99#c'hl!
+tjSUU
+&x%AR
+IDAT,9^
+W5?GU*
+IOzR7K
+*iog}
+@UU=_dHI
+xVlv"
+I`MUM/
+mVUU%
+KWy/4
+hN z{
+|dwSF
+YguV'
+T;V[o
+}3JrF%
+tS}S{9
+ly}J`m
+cW\qE={;@6A
+( 4I[2
+IDATU
+V[u_K
+Z&@`r
+v[2:s
+JpwF>
+>aXl2
+A;-[i
+ne6##w
+p<ng<
+}U=}Y
+F TUU
+*W]uU
+IDAT`
+9?9wUu
+uCX;U"@
+yfI9s5
+|rw[U-
+~io=_<
+IDATr
+vZ;H;
+)n9'{
+-4J@c
+(kZEL`
+H`]`}
+wW\qE
+4iR$J
+:9|[z
+%!4Ed
+"JC<FY
+1"gkX=|
+9gXiLZ\
+o>Q;"]~1a
+[om\^
+Z0c 3
+29VW}Yx3
+X-V0K
+}G\Qi
+\pA$XC
+|T#s-#X
+gXh13,
+O= !@[u
+)SbM&
+s/W'8
+.XI-3\y
+`a9m^
+* Hp\
+Gd)ovJ
+7.UW?
+=7U!e
+a) Hp\J
+P%2(j
+^}NtA
+ETUoY
+I,q#<
+$p>B|
+bM!8~
+]w]L,
+h5i)7L/
+m7c]d
+J1an,c
+2W\qEd
+3#c u
+FcYO%
++CP6z
+4e8{r
+g5.va
+77DY\
+d?CHZI
+vXC~L
+7n\&\)
+Hp\!/B
+^E=W_}u
+@] Hp\W
+SJr}q
+5J!r#
++i_tV+)NUV
+7n\&\
+&4V U
+<yr&\
+9rd&,
+7n\$B
+3cM 2
+#FDB,
+IDATD"
+cO`opnv;
+"Q]1L
+?|QCX
+Gcbn#X
+u@Zcx
+|:k N>\
+>Or-r
+]VC`<'KN
+VZi%c
+),G;X
+yV^ye
+;a\!?
+y"<E$E
+wi7)2
+[v..J
+M uh'
+a]7LC
+Bi,2O
+l.{=g
+8,P'/
+1q}3X
+s5/ta
+)R#))
+-su#k<
+G.w0W<O
+*-"sr
+K|\9]D
+7on<Y
+p6?ma
+jO@%E@
+uV0c#
+]tQd-
+R %*E0
+DyXVK
+0Vt_|
+E"qXX
+.b#DG
+Lq,T#
+fXt+f
+=X*,V\G~
+^DgiE
+FaT^?
+'D0a\
+g:7w/&1
+I1X,C
+ay8)H
+T]`m]~
+<xpL|
+|~.Nt
+}\1.{nr
+@Y Hp\V
+)Ia"BL
+1_7bR
+b8, #
+!*f>d
+EJX8D
+yg Q>k
+'iyyVt
+.]bVJ
+9_yDIXtc,
+u#:u.
+Qur?D(
+obXO]
+e.+P?
+RK-e[o
+e .L|
+w\$4n
+k@4jZ
+Y\>Yn
+@1{`)
+UW]e{
+_?S;]
+k|vwY
+V[mUX
+zA?7b
+D0y>p/
+U+d?b
+lE0r\
+_8$Vr
+V/>s#89V
+dFpUmx
+poGpo+
+}G$xw
+1E0c>
+X->>g"
+xn"p:
+=:EPg
+Y-=Vc
+<2Ep}
+r~Wa;
+nZ8:VX
+IDATe
+]mG`Q
+3P(l!
+BaI3w
+M7]Zk
+|y;oG
+F|VG t
+VS;~~
+[nY]Y:
+ckV)~'Gpl
+UJ#@9
+[Iq #h2
+IDAT\
+N8!E e
+W_}5E@
+Ad-5X
+P;uS_
+SO=5=
+gNW]uU!
+IDAT@
+U}o<g
+~oe|1
+Ja_d^{
+^tC&@
+V[m5E
+,]5U/
+W^y%E
+h+)Vc
+X M5U
+U rml
+W\1U*
+SO=U(k%
+MW?U<c
+}4E_c
+c" 9VY
+GVWin
+mW*C3
+Cvb'"@
+:{`zO
+&sP1G
++pf~h
+0aB=o
+@K#l2W
+^ziZg
+&g;9+
++Yz&K
+I_bn$
+@ 8v
+1Yz%KM_
+;z|Wo
+IDATK
+p<8WC
+_`pG(
+87Ksd
+!Yjv|V<
+IDAToGQ
+9Ky e
+P>A9N
+[`9u?
+R-/Vv
+\]y~e
+>VnWr
+kUULv
+ji#m<R9
+jQ6}K
++Sneq=
+ri1U:
+\xf^_
+L9-zv
+{_9or
+Odg-W
+H/wD/B
+nU^R9N
+}<- i
+P>Tym
+TnE:M'q
+zk-gQ
+*;kQW
+he[kQL{k
+YCUwT
+x,*vt
+{+-7b
+_cZ%!
+b:(:>
+*xFc-r%
+7; s;
+XQae1
+;iQ19 9{
+H- iN
+*ggdVU
+498zu
+2or?=
+kQ690
+xZTMn
+?Zy[9
+oW>~|>[
+q]\4F
+q>'Z!
+NS*'9
+.kQLKimS
+=_T>Ly
+;J5W*
+_Sa5e
+VNUv[-
+s8{}Z
+%kQH+
+*<.-J
++?Z(U
+@f-j&_
+]5|D9NqPv\
+ZYR9O
+w:5\Zy
+}L-r'
+=[u^jQ5M
+Xz,>O
+\wi\1~
+\.9@z
+mxPyG
+P+/*?
+r~Yuo)
+|>/]V
+z,Gkcz
+ezl/=6
+g_>\G
+nu-'V.
+qw_?z
+UW]5,
+?:kG^
+IDAT1!M3
+,Yf3U
+>N9Q.
+gC?#fF
+gL?kf:
+gN?{fN
+Y4s"?
+Y43B?
+:Q`1ujA
+IDATg
+Z#P^`
+;vlq<
+`+;@h
+fW_}uZ
+q?*}]
+pqLSO=uaf
+9u/w.7
+p@\Uu
+O<18{
+Z!0Q+NR
+qua=I
+Q%3=fw
+g_uP\
++0I|z
+q8Ij_
+FU ~o
+p+nSf
+N=ckz
+D}3|<
+v+lw Qa
+lT;Fv
+IRyi7
+V[mU0*
+$}?g*
+~8-V]v
+7Bv68
+N=c[i
+{Y WOPo
+@`P 0X
+*O@k'
+[p \=
+o7:b?
+;bLtb
+xPV* 4
+8L[6g
+o}+8@
+9rdIPr
+IDAT9
+Al>Wzh
+3J:P1
+(j9nu
+6v@p\
+8X8{.
+Dv@rZfY^ I
+k*og<#
+UVY%8
+VX!x,%
+Sv'>{@
+IDATW
+L#!+0%8f
+zjl4_}
++\.#Y
+ZJr_`s
+8qbdo
+8.7!;
+>}zdw
+u.4W>
+FoV F
+b)iYej{
+U# 7m
+MA -[
+.-x1\7
+/u>#+
+P>YRP
+[l)It<
+s}7S@k
+hYIA]
+'[8pFA
+q<R!AF
+FqT ^
+i,(x.~4
+*MsuR
+*MpuR
+&+HHA
+Ti[W'Uj
+RsW'Uj
+N:ioW/U
+R7W'U
+fdA@#
+<P_w#Ey
+Ti;W'Uj
+}H'5w
+RKW'Uj
+*upuR
+Ti_W'U
+!RXJF
+e@6=?t}
+c T)K:
++X7(+
+=oK s
+FsTp[
+Fl WS
+&TQI?F
+{o)pK
+# fSp
+O#+\F
+FFS0O:
+#~%*VP
+<NtNo
+FWpm|C
+W0r|%m;x
+I'Y02
+9H FV D
+;wnd_
+IDATy
+|>-4i
+hDb}6
+8vjY@
+;OPQ}
+z+(.1
+];V>|
+~Y*)0V
+>Z"HT
+GAvURN-Z
+vmlWj
+Va{bG
+F6V p
+8Nr2)F
+i|PZ8
+)STT"M
+?|KA%,
+q%bs(
+<?h;U
+O{{*V
+0`@du
+6-\TQ
+c v)6
+/t)6M
+RY&m7
+\bJ.0
+..e:)(
+a.Mq)~
+^.p)r?
+n9~4kW
+`5zrk
+,25p9
+c,u[?
+r)[#I+
+[L9 p5F
+#nOJ3
+o]QdR
+z'tY&
+O=WE}Mt,
+c] O/
+LU}}Lw
+ng:/Aj
+U}}ltm
+5^}>:
+c]J5)8
+Yz6-r
+nBEY[T
+HfY4`
+p p p T
+GdvEy=Mv
+] O]\
+n16ite
+Z:v\Q
+y~ Ls
+Z5*qc
+bFS=W
+^W%6)
+JA><W
+4sEWImAp
++H_%w
+~w.0{
+D:^)9
+@`2a@
+a|0;=
+(8>^ow;[
+)vz&7
+VwO6>
+7H>69
+|9+y\
+{m>{p
+-D~b:ue
+sNdrnJ
+@`V`Z
+hAaW,m
+tcImW|
+'?R# @
+k@9[T{
+^)[->M
+\09Ot
+IDATk
+-XnavW
+-}[X=
+:>5c&@
+lW*>Ww$
+OI6~ _
+(8>Vn7#@
+?p\;g|09
+<+C|h
+6>3'~C
+d=[(y
+wH^%9
+1;uO3w
+984iqb
+0G~1y
+k<:;-
+wjR-,oqoW
+:4yK6
+_Z|8[
+<'\>y
+-*mqj
+bW>>g
+'W=~+
+5kawWI
+IWJ>g7Ne
+aalv'=w
+";-jM
+v,k.}
+bnWun1
+>TS"@
+7[,?,
+yW<N#
+(8>nq
+=s3&@
+(8>6j7"@
+?\S#@
+/p23Tp|2
+#$@`s
+]ixXx<{
+1?]s#@
+E^kQcr
+':s7'@
+QNsf|
+<k3%@`
+,q .M
+IDAT8a
+52PpO
+[l1[h
+Q0101
+a#a+a3a;aCq}
+GH8]i
+^%UiD
+zmy@i
+O?58'2
+<>l9!
+l7l8l9l:l;l<l=l
+V]uU?Kq
+EFf#e
+PbSy7.
+c[bcbkbsb{
+m >~[
+SO=e?
+[ f?d
+{xEPz
+mu*)C
+-"<<e.
+xc$*vyY
+ad"3O
+#dvyn
+ybx.O
+lTlUlVl
+`kbsb{
+lXlYlZl
+uCd65
+<qlSlT
+]vYIa
+RkBpw
+fuTCp
+1Wl_l`l
+l l!l"
+lZl[l\l
+?/8tz
+)UV5I
+/6 F}
+K/M<D
+'cVZi%
+W\Q/O
+s"3Ob
+UW]eG
+Bdl%l
+8cllglhl
+M* 2D(I
+-GUe7o
+lcldl
+]w]$V
+3l4l5l6l
+`#c+c3g,
+UL@S3
+:t0~%
+xsITPB
+'ONW1
+Na g |
+8gK:W]
+l2l3l4l
+<UTMI
+O\?;v
+u#~\W
+T+lolpl
+DWx,>
+l5l6l7l
+C# ])
++%kWG
+xj@lul
+yjTlwl
+b+b3b;
+Tclxl
+O>9N+"
+T{lGl
+Qp<(D
+=6~*[I
+lIlJ/KQ
+"6#q/`Sb[zY
+* hR"
+6,N+"
+^{lNlO/K
+=epz@
+&eWPns!
+2lMlQl
+!~9O8q
+D I@)
+gHe+)
+U:cMK
+x..fL
+r<r\|
+|scLW^
+&oZqt\r
+}\=DP
+lx\ui
+G]yz;[
+Ca?Oq
+u$BfM
+'u8&96
+4Q)L<
+Vphu-
+^jx!e
+{ /KQ
+b(W:z
+IDATI
+[n9K?|
+q:W$-
+wHM6qo
+kbfx F8
+B[DZk
+jQ9"G
+j &P^K
+w#hsm
+A;[Wy
+)+% 4
+o6DdEuP
+q8^_}
+[J?O>
+t<0'2
+zkI]q\
+*5Q6v
+s.4WW
+qaY}_j'
+0`@b(
+8##By
+k.^yy
+fy5g~
+u]y5my
+5"-Nv}
+%#O7x
+R"=7o
+d:},#HK
+Fabp%
+N;-1y
+2dH|=
+(g]A0
+,}&*MK
+=c 6e
+-c1&c
+S]uD@
+`:g~F
+nz|X8
+-swsd
+k7s%t
+W'"Pa
+ej1_l
+x .t|
+g?;wz
+T;uHs#
+6_G)D
+2/C %
+4k5_Y
++<M^E
+$ {;:
+?h7Hf
+sN)e]
+|}&YI
+KGjqVWC
+=Ktd~
+q2dQVP
+_IYdy
+yS7=N
+=4 aJ
+:`,e?
+\|,u.
+,qtXH
+#5Hf.
++t83W
+W_- $
+!Q!\l
+3S_ NZ
+|*oMZ
+|r4&3
+! HcA
+eX$dyw
+"w1"u,B
+9Wr_v
+zJ{g27"
+\?U{.
+sNG+j
+4v629
+t9pFr
+JT B!De
+Xgr)5i
+u#q8@
+H/ orR`$
+c`(WB
+0~>;X
+s.ZW8
+,H8BR
+SpF1v
+$oM`e
+=$yqx
+\/\_0
+('yiE
+HEFz-
+2nnf))/dnQ
+e"`{~e
+<WHRHX
+~<_0e<e
+}W{.V
+2!&A&
+ZH8^l
+#sA$2
+iVKGz
+cnM!u
+BL,%n-
+k'%]u7
+.GpI"m
+=uA kpp9j
+'H>nT
+So3c0
+S1-[C
+l"H<~
+&)n)npU
+IDAT"0
+6X{Lh
+DNo/U
+;Lh_=z
+XV(L9~
+)S"rs
+:YV]u
+1N3v07
+(W(Q0
+EcnHZ
+~Yt.y0N
+{#)pd
+_VZi%
+XzX U
+zK;Gf
+sQ;u.Yg
+O?]^z
++$1BVA
+azp.h
+L8y!b
+M1&Q|
+_~YHKy
+dZ.<j
+s!>sH
+FPF8n
+3bRxp
+U+.Isq
+Bo\7VI;ni^|
+XAHrH
+()%>%K
+8,$< s=
+)d.7~
+1aQH`bC
+p\%`;R
+f)JHK
+IDAT#F
+e_ )x
+p}nH1>
+v*`%5
+H2GJ:
+ChKsx
+b.Vln[#
+9tBz e
+sSgVB@0Dz3Ro
+/6/'|
+Oa,WC
+IDATN
+Bd7BXf
+\veLk
+D_b>%
+IqCR&
+SO=U8
+.}[ /
+N:)&I
+xxXJ^
+KN0!"
+boQ'E_e
+}:>kd
+$lT{{
+0E_-F
+`GAVc~
+$Iz{%u6
+KY\Hr.?yO
+[!3a!
+BkT.E>
+S79K8
+-}O9EF
+(:vA8
+q! sX
+<"$q%Dm
+A"]K2
+qk{Z3
+3fL,V
+vOkf^
+X+k)s
+4M%8t*EZO
+IDAT$S
+V2}$0
+/6>CN
+p0^Jz:NxX
+u:L{3
+93sBA
+XB }zg
+1_|(5O
+5SG$l
+n}$$;3
+D5o/U
+TXkz?
++$a \
+L V}+N
+CO$\%
+x<_o/
+,:i17
+.4{;:
+.\:e/ 7
+@RzL0
+CyP={
+D/Jxv<g_
+&JyPHe '
+b!666666 va'
+,DA10
+~Q),`
+9k9J'
+[oY8OE
+x0WGXFz
+us/K?
+~,A*v*
+K>aX17/
+9=BVD
+lX$Ft
+J,/?}
+Q,\|<{
+#:FG@;
+pL0fXQ
+,L_ 7
+K)#KZ~+
+?f)'K
+B]U1"
+jeW_}
+aY<_}
+M6IXSNDV
+Xc [b
+A7DbLb
+E#Q2u#*f
+xF9f%
+\N9hT^z
+5zXYI
+:pnj:
+rnj=|
+{x875
+9rdB4
+XdL26
+R Hp\*
+P[VZi%
+XC&G`
+lgX&/4Z
+[1Q3i
+b'DO>
+K(N\)
+"{DUC
+iIjrG
+eiq//P*Y5//
+j3n}X
+t_LhM
+`!ezn
+u0}-A<N
+K)'WZ
+,$c)9
+IDATHX
+| 'ls
+<RTZ0
+^x!Q=
+}7!pgA
+6CDLyX
+Hp\?~
+B4, b)6l
+%L^hai5
+#tExPJ
+_~yc,x
+b"s==
+)#r,V
+ycy k
+*6_E z
+[o=[k
+Fp FD
+ljmW{E@
+T?bO,
+IDAThB
+97}\.
+p_N~^"
+czLRV
+2 Hp\&
+=\)c7}}
+:~%7lJ
+qTjAp
+IDATQ
+KaX!7i
+D=\'8
+kwX2~
+&qlW]u
+!`EPK:
+W_}e\
+q>97]
+=>JiK
+w\?&O
+r=XI?
+IDATP
+S)ET,-
+R~C]k
+V_}u;
+_|q+u[`
+7n\$:C
+jq.RI
+3jYug
+h$-@E0
+l"A#y
+}z\s~
+sG;W]u
+9rd"i
+87QH#{XP
+!}#w#o
+ju.RE
+BG,zb
+RKyo$
+usn^~
+DNDoa
+1>in.&
+kW[m5
+0 V}w
+1f^@X-o
+;__jq
+o?K[9
+FWr.@y
+Le8V]uU[k
+jq.RU
+Jx~Vj|R'L
+(=f&M
+)U} (
+J=|K4@
+Hp\KGCmi
+|dQEX
+hQBZ%
+qS8Jj
+S'C0D
+?,r(UDI
+(IYD@
+r."X`
+po0%8
+VJ ^,
+|wwvf
+T![e!
+(A@A"
+F=} }
+&x/HN<
+o}8B5
+WLD)v}"(
+[lahag
+9F4Ka
+\2WT6o
+3,3-d
+aqBYD@
+1bD$X
+H;k(l
+w'(6w
+OZKO)F
+fG{cZ(
+V[-wU
+s8V^y
+Iyv!,L
+J2wA`
+!.i|\
+{{gtd
+s{gt,&
+HPpp=
+@ c.4
+>;Z|K
+}<}=&
+G[3_{J
+$urnrZ
+1&!hIc
+\3a]9
+dc>Zi
+A>hMN/
+A'42W
++O>,<
+IDATMB
+4iR$T
+$<r8z
+~8j=/|
+J"P;z
+_|q[d
+N$pnX
+n,W^ye
+IDATu
+KhyJx6
+UVY%v
+aVM S
+W_}5z
+^ ?9D@
+pV^Y~
+JUP!&
+;)l,Ji
+ThWNk
+IDAT7
+628:7
+RyT+,}}soq
+^>~xd
+B?D;}8
+]w]Kk +V
+] -AkX
+mf|qm
+TS%/]^
+B]ik:
+j[MZS
+;k~d1
+vnJ~>
+SOMdE
+cc?YD@
+0<mG{j
+O?=z)
+{gn I
+XTNxf8
+!@T..B
+w\naM
+_-M%c
+AX(|n{
+~\?\Gy
+W]uUC
+*IR6.
+Ws=\y
+J`bX:
+B^yL%BHy
+'W:^e<
+8Jbg/
+3NI1H
+M&o3I
+=~vFB
+MhaG;
+CM>ta
+m$sNG
+$<r8J ,
+4RE%p
+6twA{
+kF;s^
++yFuf
+N8b/gx
+Dd9D@
+@s7*U{
+'&r]j
+XxCPm
+EVx^?
+h{/Xs
+%LM V
+Dutp}_
+10.AK1
+}v4gJ
+F^APY+
+a;xf|
+qt,M c
+8+}1?
+rqYT=
+O\o::
+IDATn
+jB c,
+O !a<t
+X41Vm
+8~7<I
+M5#1FM
+@U (3
+.G cl
+*01'H
+@D@?"
+PK|_w
+0aBV\
+)o9E@
+VwWwWuU
+82qEb
+0,P_6
+$?~,Q
+?JTQK6
+kt+++
+}k <bJ
+gXE!;
+}k \k
+EkMZk
+%kMYk
+MWz}]
+8+qQB#@
+xGl."@
+Pp<}cO
+XLN"@
+Pp< E
+xW|.&@
+5ySw$@
+Pp<Oo
+DWz}]
+>C3 @
+=Vz}]
+*\>+'
+A;#;/M
+p{l:5>
+$6jUt{J
+VQoox
+Pp<QN7#@
+*7xcb
+n]W_@
+}%W~<1
+N{WN>91
+lG}):
+{fX#@
+J\#1h
+@` pyv
+91qiB#@
+ifqnb
+8#qQb
+O.Cw"@
+*6=`x`
+=41hWf
+k{a&V
+>%{W&6jU
+YmU0\
+=21he
+u6]}9
+{Tas.
+*:~^F
+*(=gu
+lOI|4
+O&@`)
+O$~9Q_
+K7mUh
+q}ynx
+r (8^
+|[B#09
+4%P_"
+[]W_^
+h:/H\
+U$[yT
+|*1h7
+Zs E<
+Ch|nX
+xAyE@
+(D@i"
+)Pj9J}
+Hp\OgK}
+a$ (,
+gj>[#D
+Y?%YQ"
+}wZVK
+c.,Om
+8qb$4
+3mC5j
+IDAT}v
+J;Dx}
+5#LC`
+zkcNf)
+..y$mP
+tHTD@
+N8!&6n
+687pF
+Fca<X\
+*A@u6
+L1?B:D
+s~9'.
+^xav(
+ry8"D]y
+s &~|!?
+;vl$ng
+IDAT(
+w~\>?
+X"_r.
+.td p py
+jXo/&Vf
+%$<K.
+rlF5-.
+!\2/B`
+BIyD@
+! G4]JW
+$K$((
+IDAT=
+vZfQ"
+.]\0:"
+nXM.g
+VJSQ^
+~[X:f
+v5,>#J^c
+_|a#G
+kIy7>
+#03Q,H
+E`fb8A"
+"03Qq
+,+NU&
+@E Hp\Q
+22m\}
+<0H$((
+{,o[S
+#vdnp
+wDby_
+(MsT>
+q"s n.
+<X6fOJ
+4!O,S3
+CTIY?
+>IJdPP
+fNq rq
+J"zue
+rIXAEH
+#{)/` 2ri
+}8y=*
+"BO[_
+lH{.//
+xQ!Vi+
+ZRT0n
+eID@J_
+]&>_%
+<wY+e<<$
+Ad)}CL
+IDAT.
+6,O#^
+Hs,=SAsYP
+_my}:.
+<|Q*CK>
+8qbY-
+c5Tc#
+Ws c?
+n1zY~
+\pA[a
+FX|Dh
+l"0Bp\ aC
+P k`.{
+<ndkeI
+76kO*
+o !7s
+*E`RX
+K:{!k
+,e\;i
+.y;6;!
+gc,x`O
+IDAT&",4
+I`lbTu-<
+=DEX6<
+PK{5{
+p>]?9
+en &"
+k"Jg>S
+(R,Jf
+`X9veVYe
+{*LKsO
+IDATOs
+[*LKs]
+[$LKs
+s=vZ}
+[W=VgE@
+{;LKs
+S{5%@
+e;TUUv
+N7MZH{
+8- w'
+K)3Xd\
+Kk{)-
+GQG@`
+8^Xok#@
+~ZUUe
+1eF}3s
+,9Gdx
+myI3/
+kW_}u7I,&j
+IDATD
+g<-Of
+"A~a%
+FKZsL
+_$H!u
+~u'P1
+fP^Z(M
+.%-<7
+s@=o&
+l8/j5
+-r<%`w
+^?KeF
+$`5-c%x-
+K_Zrm
+fI+V{
+z9G]z
+t#iq-u
+4U5> 3A{y
+|b:h`V
++W^ye
+7/J$x
+#]sZ,
+"D=o.
+_rP L`
+oM6{$
+I'uZg
+Ss.Ss?Jf
+@`) (
+<RUUi
+)6[F~
+'85AG
+UVYeV
+:A~B9
+!WiIf
+<3o9vi
+gx.]^
+}vI h=#
+iI0HZlN
+GUUug
+b@s|6
+AV]UU
+s|%p0
+_O*i 3
+NpYUU
+X]UU%/
+k$H4]
+JZ \s
+c5eKPL
+)eZCOP}
+FY& 2
+XUUI@
+YK~<-
+e/{YI
+2r|grl
+^p %\y
+?, |{
+?]?u~
+pNLYt
+P'uXz
+p<|S9
+UV) VN
+_~ysr
+k_[V^y
+W\qEs
+4W]uU
+TVe!@`
+W#%&@
+]tQ7]UU%
+mo{[g
+mg=o~
+YA>3X
+mo{[y
+[ _<>j
+wb+ @
+n[5#@
+/xAYs
+$IL&@
+yVN`q
+lKI@Y
+p<7?K
+@`i (-
+@`F H8
+M"FZ2)
+X_w'@
++$@`|
+VY$*gF
+qkD^W
+FWGym
+;7GS!@
+jy{4r
+w<""w
+^wmn]wWT2
+Syu\=+
+K>+wsnw
+1_D/%
+7J7"@
+zV39:
+GEdrs
+jy}4r~
+iW][t
+L*~WT
+;5gB{
+fpMW[
+@`: H8
+-~& X+
+uY!VwCDk
+GcRgD
+c~f3fG
+[+B!@
+&H w#^
+X=B!@
+wG|;"
+X2b$%
+L">$.
+|f&`Gu
+;1F}2
+vLr=w
+~t|<b
+/c}@&
+mT;J:_
+,JY&&
+ni5Fp|,
+!w-^?
+|F>kdW
+uQ&UW
+OGTK&
+&YFs$
+Cl&o^
+HJ&)w
+XO'@`&
+}SQ?7
+#Z%w'
+xCD>7
+N7??/
+(]]Sz
+p@Wg&
+s=g 08
+~<:rG
+FU2A4
+86*1_
+wR7$@
+xp&l]
+d"r~W
+o}ks7
+VH`F H8
+; +#@
+VH`f H8
+?a]O<
+xTl."@
+K==&-
+-oi>'
+h4J&9
+L wrm4
+zkaK.
+=.w9n7
+S;;O'0
+MU#wZ
+kukys
+_XV^y
+/}iO;
+grw&$
+3i9=W\q
+j?'?c
+*W\qEG
+IDATq
+8Cs"@`z
+'?)O>
+1%pW'
+>TVYe
+IVylw
+frgu@&`fRj&
+wM>+w
+>7X;?
+csl+2
+SK+)/
+_guZE~vr
+_wrp&U
+^;zz/
+[o]rG
+]w]Gr
+j'%NZ
+SO5wj~
+#wb^q
+g3y6w
+?PG~7.
+UGtM?
+{^/CG5&w
+L:nud
+g/?'qj
+g>wIo=h
+4's!@
+UW]ez
+E92E'
+l DW9
+w1=?z
+jLPQpY
+o\n{=7
+M{ecV
+\97 9
+#f vUPX
+&tYe<=
+}v([f
+Nq z{
+@{=7 2
+j+(QYO
+'?e]S
+yS9O|
+?7}Nu_
+<cW\q
+9rdAN
+3S;4k
+4?oRZ
+<poG>
+n lVP
+@f 0k
+/Lf~C.
+p@(0T
+r;GT?
+2ecMx
+)Clal
+uK:9e
+cW^ye
+ZS6so
+LkF 0i
+@~2`+K
+lz.:v
+\973v
+F*i)P\
+'h(HS
+W^1}&um}n5
+24+`4
+2W*;p
+t 5]{
+%8$_e
+s|sJu=
+2nFZ]K
+MYk+W
+{e.VP
+u2W Vp
+qFJgS
+_OVPvh
+VV[~7
+`ceiV
+Svfe+VY
+`Fde,V
+4Svce
+DJ`|p5o
+$4ee)
+O>9tNe
+>CJ R}
+z(kq|
+WsI:(p
++vdml
+E/01v
+IDATb
+z'&8L
+@! p*
+\`sl~
+wqb{63
+KtRNS
+Bs+GR
+i>0|n
+g31A8I
+yIDYND
+6}TbG[
+|~~[N
+|^O7;2
+<IFU)N
+D=CTJ
+_ (Z<
+7.1;y3
+7h.k`
+/HYi.
+-Or$&
+X<$g/
+m)[jO
+N$[R[
+:=o=.
+=T2ZW
+%Um^.;
+_((Z<
+KfcT{
+\//Va9
+G,G'#
+6Tq;k
+Jq?10g
+ncT{S<k=
+%0h[.
+ZSe_y
+g rd+
+^?xy-
+r<//N
+R'ygum
+xni\}
+Ziu])
+"*_.[9-\O
+c1RC!^
+]U~Wb
+9}<]$
+Xx^Q)c
+h/"fMt
+': ^H
+g}<:V
+:oD{{
+S| C+
+azsk#tt
+\wMwKp+4I
+N.9]VB
+E'o"G
+f;+Jp
+G<!kJ,aG
+q#bn]Mw9
+?<;[|
+r'/a3M
+\{7I_
+8ndRv5;
+;W\v{
+D{ K(
+|L<hw
+Nkk|]
+9kX X
+]5$;_
+5M[f$
+$Gq#U
+#u>_,o&ZNO
+$YUDb
+Q!g{B|N
+eZ9^r
+~FI ^M
+Py- m
+&qpyi
+=CT`W
+0'{=9
+?b9<b
+0hJ<!
+i?d{{I
+Ih+t{&
+vjV F
+j0E<_
+<)_4T
+D7j<lz
+|WU[una
+o"n0+
+,OmLa#0
+<WtW3
+$Ir j
+`M} l3
+w$eDl
+\cCD<
+<%:5r
+.E]?G
+CZnxms
+"I QF
+oL-qK
+MO^i*
+$IV+W
+e}5b]
+~O{}`
+9?/?f
+;04Z:
+FxY(S
+\2z-w
+!p+8Vmm
+4s{J]YqY_
+A8fG/
+(m@3o
+-J`]ai
+G*)IN
+^l9VQ
+8~88zX
+k4AIn
+oL-qKE/
+PGKSt
+KoLj'
+_Y7d}=
+`\{wg
+z</?u
+1Tc[S
+9=s50
+xU?ND;
+O`Cga
+M}d9Q=M
+-/Wyb
+|^O7;"
+/D"6.L
+eW=b/
+bp&:{
+(b=s&
+z5ic?i8
+Wz Rw
+K Cnx
+VY1Y[m
+3<^R%|
+*M7l}m
+IW^g>
+6i:53
+<7Axt
+bGD"x
+xwQ!I
+nI{}.
+6YNT_
+N.9]Vz
+D$& V
+R&3Aak
+lCPvg
+6OMgFj
+S94[NC
+I;z-w6$u
+q5b0(7Z
+r'vX<
+4t5}q>
+fg*Xq
+6%wJ`
+E|pj{V
+&k]RG
+T=c}~0
+6ca{N
+V|{.'J
+u9T{Y
+j@'<6
+ud{%5
+<8!cw
+I2z-w]A
+<81ZW
+RRO67
+ZSt7i
+L&t%g'
+S8v|0
+.vCrd
+m6.0+
+`'<vDj
+`fN5m
+mCk$yGJ
+BI:8'
+6-n@YU
+NLjoWb
+Bn3,6
+H"kZl
+$Y)cn%
+inME[
+A25*p
+y7"rI
+\Ld"9
+C?G V
+aVlr:
+~WkuO
+AyV@2
+#),)<
+j+),)<
+rHF ]
+qxqCJ
+\8/;(
+A87s[
+ybYCEq
+WzqT<
+~P}xOPz
+!^Y*b
+~]lW}
+.A7,Y;k
+A'??oy
+L3~t0]
+{*;{17K
+,<fK\`<
+Q_6f'
+)?v'A
+l{&b;5
+RqVlv|
+tyc"9
+m|:K!
+Kw{h#
+&/j=[
+}h{m=
+abAXL<
+fkQuWf:
+aAxEf_
+FJrENZ$
+[Content_Types].xml
+^k2#z
+_rels/.rels
+#V0;f
+tableStyles.xml
+7gx"C
+[Content_Types].xmlPK
+_rels/.relsPK
+tableStyles.xmlPK
+[Content_Types].xml|
+Z )9k
+/Ju"(
+drs/slideMasters/slideMaster1.xml
+4"TmW
+mfw/9
+DY[\9
+)F`g0
+drs/slideMasters/slideMaster1.xmlPK
+F~_|'
+0XFo;
+drs/shapexml.xml
+9+>!x+
+r;W%p
+drs/downrev.xmlD
+X6d0N
+drs/shapexml.xmlPK
+drs/downrev.xmlPK
+t'KroL%5
+E jl&
+jrCj{
+!9d9S
+3wW}8c
+5u#?y
+n!zf;
+0xrk!
+&6"A8
+theme/theme/themeManager.xml
+theme/theme/theme1.xml
+w toc'v
+ni^%3
+dHGN4
+)V+qki
+Yi+hei
+<{2Eah
+theme/theme/_rels/themeManager.xml.rels
+5 6?$Q
+K(M&$R(.1
+theme/theme/themeManager.xmlPK
+theme/theme/theme1.xmlPK
+theme/theme/_rels/themeManager.xml.relsPK
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?> <a:clrMap xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" bg1="lt1" tx1="dk1" bg2="lt2" tx2="dk2" accent1="accent1" accent2="accent2" accent3="accent3" accent4="accent4" accent5="accent5" accent6="accent6" hlink="hlink" folHlink="folHlink"/>P
+~`Or[
+drs/slideLayouts/slideLayout1.xml
+drs/slideLayouts/slideLayout1.xmlPK
+#@[#k:
+rafsoas^
+nZ.]_
+]#nv)J"
+tX#lY}e8
+# d[PTk
+v>`MQ
+Y'=hR
+7^&C&
+{cl u<
+%=rKo
+/_LtaE5
+Ji.qo
+=7<M}
+p84 `S
+J|c s#
+}.$lkk&
+6l8!jHl
+0F^-U
+fnrM4
+Q4lWP*
+SzYJyo
+5su(8*
+! dDZ
+>2b&rw}P)
+XBUJ?x
+F@u:>n
+/2eHJ
+P&)>>
+px1hEC
+|r~9:
+hT,\Tp
+0^R.z
+1!fkJm
+c ^7a
+?X~E[
+R5Ut<O
+Q77L@#
+~r2:%
+)-9+Dy
+<wl h6
+VF]6D(
+Click to edit Master text styles Second level Third level Fourth level Fifth level
+]L&^4
+)`<+#v~
+0m>9Li
+/5s (
+hT$4h
+wkgLM2AC
+9}L'L
+6,pyso
+B9pxP%
+g *<u-
+@ 7"s>S
+M=k)XR
+7:1Yg
+0ANu =
+dL&V4m
+cL-3>F+
+(MPvH
+/_[4n
+}_sh?
+2&~CD<
+H ;uK<]%
+++Gb;
+PzwF8
+bfs W
+j0mn)
+CYy_}
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?> <a:clrMap xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" bg1="lt1" tx1="dk1" bg2="lt2" tx2="dk2" accent1="accent1" accent2="accent2" accent3="accent3" accent4="accent4" accent5="accent5" accent6="accent6" hlink="hlink" folHlink="folHlink"/>
+U`^S1
+I@VEf
+"7MUV
+TY03|
+Xq4if
+3p18s
+qr|&<=
+&)Il;
+,RyN0
+Mu][u[
+n> 7x
+EF|,PR1
+,y?os
+sGPWR
+:DS]}
+V`[J@
+{PsM~\
+3@/9'
+P`x#=
+f[DdmZZQ
+zXZ-^
+th}^h
+Precise Trajectory Propagation and Events Prediction for Highly Eccentric Orbits
+CANDIDATE: Girish Gowda S Gowtham N Harshith S Purohith
+?{i2g
+a:LO9+
+^_5}|]
+\"w$g
+x*: R
+Elqv',
+SUPERVISOR: Mr. Vijay M
+S$KR^;
+Q+yRA~
+2[ k'
+#sgS4
+"V"Al
+ulSwt
+DATA SHEET
+*hG7 U
+RC4 \
+zj,b8,
+xH"#HL
+dlyLho
+fLV:*
+drs/e2oDoc.xml
+Zi5hV
+XpamQm j
+9&X{&
+t,s32
+/[K?|
+zKu6M
+DZ`xu
+2P'jo
+M%'Q4
+drs/e2oDoc.xmlPK
+<7p]V
+&g0eS
+_rels/.relsl
+Girish Gowda S, Gowtham N, Harshith S Purohith
+3EX-oo
+@ Vd(
+L9l9-X
+REGISTRATION NUMBER
+~:n^@0
+|{nMQF
+1AH23AS019, 1AH23AS020, 1AH23AS021
+\Zl]Z0
+REGISTERED FOR
+=7"C|*Q
+BACHELOR OF ENGINEERING
+].e, Y
+SPECILIALIZATION
+bV 1(
+EX.F7s
+AEROSPACE ENGINEERING [AEROSPACE STRUCTURES]
+CATEGORY
+=7"A\,P
+AZl]Z0
+FULL TIME
+EN14R
+DATE OF JOINING
+*bemZ
+`;n l
+/nA%A
+#ji d
+04/09/2023
+;:Wg2
+Moo&Xh
+O n;9
+xY~ !(u
+FIRST REVIEW MEETING
+`OkCe{
+15/04/2026
+Mhh* .
+m "&d
+pm %c
+2UY!W1
+e2cBI
+h+&J`
+^\3"B
+t]: i
+drs/downrev.xmlL
+:T [ s
+^M5I"
+og`5=
+2WE%W)
+K3nRzgm3
+?A!R]i
+FCJv)
+||2gP
+t[; i
+@-"~S
+|{JP 0p
+P5l),\
+:uMZ(
+2jAz$
+7KuKD
+M&oQd$%
+:?[bn
+REVIEW MEETING MEMBERS
+|V,./
+$R rXX
+_Hqd*
+c%XbC
+d0L\G
+PROJECT GUIDE
+gkj$s
+m.$mEw
+8YEcM
+L='GxK:
+HEAD OF DEPARTMENT
+ubMK[ "
+jqE]+
+PROJECT CO-ORDINATOR
+Mr. VIJAY M ASSISSTANT PROFESSOR DEPARTMENT OF AEROSPACE ENGINEERING ACS COLLEGE OF ENGINEERING Dr. SURESH C HEAD OF DEPARTMENT DEPARTMENT OF AEROSPACE ENGINEERING ACS COLLEGE OF ENGINEERING 3. Dr. DHANYA PRAKASH R BABU ASSOCIATE PROFESSOR DEPARTMENT OF AEROSPACE ENGINEERING ACS COLLEGE OF ENGINEERING
+r113\
+6V#$>
+C[)TM
+FA`G'
+WF\V-
+UVT n
+>eJ]^
+AREA OF THE PROJECT: SPACE MECHANICS NATURE OF THE PROJECT: TRAJECTORY CALCULATION, SIMULATION AND MISSION PLANNING
+57\Zf!Q%
+u+VJz
+Z{yoA
+k%0 !
+r1)3\
+8{Iu)pi
+zHlwc
+AGENDA
+0q-za$
+GE\G)
+r:LW70(
+xv![:
+@7^>^j
+WVvqe
+ZZl9=
+o9-veV
+INTRODUCTION LITERATURE SURVEY SUMMARY OF THE LITERATURE SURVEY PROBLEM STATEMENT OF THE PROJECT OBJECTIVE OF THE PROJECT METHODOLOGY WORK DONE WORK TO BE DONE GANTT CHART
+INTRODUCTION
+Introduction
+Zvl'1
+!_Z[Nz=
+sGqv/5X
+vU`)D
+|7p}7S
+u{n$\y
+46 ei(K
+T{3IE
+crLrLrLrLZmukx
+P(UwG
+LJc)el 9
+Highly Eccentric Orbits feature a massive altitude variance, sweeping from very close to the Earth (perigee) to tens of thousands of kilometers away (apogee). Critical Mission Applications: Geostationary Transfer Orbits (GTO): The essential stepping-stone path for delivering telecommunications satellites to the equator. High-Latitude Observation: Specialized paths like Molniya (12-hour) and Tundra (24-hour) orbits mimic geostationary coverage over polar regions, enabling continuous weather and intelligence monitoring. Deep Space Staging: Utilizing Lunar Gravity Assists (LGAs) from highly inclined parking orbits to save massive amounts of fuel during complex orbital plane changes.
+Zd}wb#
+e*V#Q*I;N
+q9U%Aa
+}Ig[9
+g{_GT
+6v3aL
+.r&()
+A !Mu
+x+K!n
+o(`6C
+TSS03
+=r%w2?
+|dJ#@
+Dqv- h
+I"cW)d>T
+;l(R ~\nF
+hR {d
+x1d=o&
+LHP7.
+d1N|O.w
+J2 perturbation It is the perturbation caused due to the oblateness of the Earth. Because the Earth spins, centrifugal force causes mass to collect around the equator. This makes the Earth an oblate spheroid rather than a perfect sphere. The Earth's equatorial radius is about 21 km larger than its polar radius. This additional mass around the equator exerts a non-uniform gravitational pull on satellites. Its effects on the trajectory of the satellite: It effects the orientation of the orbit in space. Precession of the perigee: the line joining the apogee and perigee rotates within the orbital plane. Recession of nodes: the entire plane of the orbit rotates around the Earth's polar axis.
+J&4< (
+Z{}oA
++%0 !
+amkXdF
+tS9 i
+bS"C~"?Ry
+&Yv>jDm
+lz19#
+^/&ft
+?$LeM
+O|G@{
+@=P5A
+LITERATURE REVIEW
+Yl(R#)'
+vH)?v
+Q"}x~>
+Yh0 -
+3f&.U
+F7 4r
+fJ?1O7)k
+]-??Ck
+@k|O!>Er
+0 g~]
+)1,$C-
+hN&N =.
+Serial Number
+Jlh^R
+Title of the paper/article
+mJ])e
+Name of the journal of proceedings
+=9_[Vp;L@
+M#GIr'
+>1_f}2
+Author(s)
+Year of Publication
+3:nC)"
+Research Focus
+N7m]v
+Ir' V
+JlhYR
+Research findings
+q "Dd
+Geostationary Orbit Transfer with Lunar Gravity Assist from Non-equatorial Launch Site
+The Journal of the Astronautical Sciences
+Su-Jin Choi, John Carrico, Mike Loucks, Hoonhee Lee, Sejin Kwon
+ls*u~/o
+LJ])e
+9)u{3<?
+WtZ'#2
+lJm)e
+E)&j+
+;;3oU
+5TPF7 U
+DopHH
+#k&W0b
+;61U.2
+IHC_6uY
+9E17QU
+W3Mx:
+%uB-%
+m?:ww
+cAh+zd
+t;fv(0J
+<8Gc\
+[l}7r
+D!HcG
+NW\*8
+o-+H'
+7 >v/
+yX-oo
+cW[g0
+QUe`I
+>^ `>
+y?;%+
+*6"A8
+7 >?^
+vC<y@<
+cWZg0
+Analysis of Geostationary Transfer Orbit Long Term Evolution and Lifetime.
+CNES (French Space Agency) / ISSFD
+Alain Lamy, Clemence Le Fevre and Bruno Sarli
+Analyzes the long-term dynamics of objects in Geostationary Transfer Orbits (GTO) to understand lifetime dependencies for compliance with space debris regulations, highlighting the extreme sensitivity to initial conditions.
+GTO trajectory predictions are highly complex because lunisolar gravitational perturbations at apogee couple with atmospheric drag at perigee, potentially causing dramatic jumps in perigee altitude when the semi-major axis reaches roughly 15,000 km.
+r1 3\
+fewCJ
+@ZkO8O
+Weuok
+TXPYh
+5/a+Dt
+b <I\
+Contemporaneous Monitoring of the Whole Dynamic Earth System from Space, Part I: System Simulation Study Using GEO and Molniya Orbits
+Remote Sensing
+Christopher Cullingworth and J P Muller
++NXT4`
+|cYA:K@
++NXT4
+> kl-
+mk*~N
+Proposes and simulates a constellation of low-cost 3U CubeSats utilizing a combination of GEO and Molniya orbits to provide global, true color imaging with 5-minute update timescales.
+}wv(l
+tRM+!^K
+- ()x
+hrOa>
+|{IP 0p
+8E#l7
+@7"];
+KjaEp
+=fwvv
+2e(G>
+d oaB
+qg"AG
+_$b L
++Caz<
+Rp9o'K
+#EX..Fs,
+57"C\,QA
+XhF'y
+Tn;=|
+Understanding the imaging capability of Tundra orbits compared to other orbits
+kg:n4|}
+IEEE Transactions on Geoscience and Remote Sensing
+:oS#2
+Zhenglong Li, Timothy J Schmit, Jun Li, Mathew M Gunshor and Frederick W Nagle
+cls)CY
+|}>?,@
+l|c{X
+Investigates the imaging capabilities of 24-hour highly elliptical Tundra orbits equipped with Advanced Baseline Imagers (ABI), comparing them with LEO and GEO platforms for high-latitude and polar observation.
+vZA29m
+Tundra satellites offer long dwell times near apogee, making them ideal for providing continuous GEO-like imagery (< 4 km footprint size) over polar areas like Alaska; assesses Data Continuity (DC) and Effective Footprint Size (EFS) for regional event predictions.
+T1]Y[
+bW's?
+U<M9s
+6096c
+?(BYg
+_)<%j
+% [-ta ~
+m.e(k
+{yC}k
+H]|<o
+On the Use of Satellites in Molniya Orbits for Meteorological Observation of Middle and High Latitudes
+O %i!
+Journal of Atmospheric and Oceanic Technology
+PcKEM
+Stanley Q Kidder and Thomas H Vondar Haar
+eo[q%
+RJA+z
+A correspondence note outlining the advantages of placing meteorological instruments in Molniya orbits to dramatically improve the temporal frequency of observations for phenomena like polar lows.
+rmr%#
+2Qi.W
+e2eBI
+%v7V;@
+B\JAMoMj9
+GA[1Q
+78$$S
+$J6\C
+P4v[D
+A Mr~
+` _~(T9
+<I7D>HFT
+B3 7|
+~UDmr
+].9r#
+F)R//E
+f4il).T{
+TJ_6d
+Dynamical Modeling and Lifetime Analysis of Geostationary Transfer Orbits
+Acta astronautica
+Yue Wang, Pini Gurfil
+P6d1L]G
+The study focuses on the long-term dynamical evolution and orbital lifetime of objects in Geostationary Transfer Orbits (GTO), specifically analyzing how perturbations like Earth's non-spherical gravity (J2), atmospheric drag,
+BhS)}^
+*li[Q
+The paper finds that GTO lifetimes are highly sensitive to initial orbital parameters and the argument of perigee, which determine whether lunisolar perturbations will naturally drive the perigee into the Earth's atmosphere. A key discovery is that by strategically selecting these initial launch conditions and debries affecting the satellite path
++47\Zf
+Q<MaW4
+3Y3[b
+c*eR+
+H{Q3"
+)?/vE
+6KK&A
+yX-Gw
+%=eJ=
+ZA4)?
+M+'I2
+39?XV
+26"A8
+z{=y-
+ANALYSIS OF GEOSTATIONARY TRANSFER ORBIT LONG TERM EVOLUTION AND LIFETIME
+CNES(French space agency)/ISSFD
++%X-'w
+Alain LAMY , Cl
+mence LE FEVRE , Bruno SARLI
+8PL6x
+zs=y-
+The primary objective of this study is to analyze the long-term orbital dynamics and decay of objects in Geostationary Transfer Orbits (GTO) to better understand the factors that most influence their orbital lifetime. To achieve this, the study investigates the complex interplay
+'~ W:
+The study concludes that GTO lifetime is extremely sensitive to initial conditions. A critical finding is the existence of a "resonant" phase when the semi-major axis reaches approximately 15,000 km; at this point, the perigee altitude can suddenly increase by hundreds of kilometers, effectively "stalling" the orbit and making precise lifetime predictions nearly impossible.
+\ *z+R
+,9gbYT
+;61T*
+5h_M[
+aZ[RD
+-8xva
+6ga.Y
+`rauEMT
+2QNe6&
+>wS;3|
+.|pVr]
+R*u{3.^@$
+Dynamical properties of the Molniya satellite constellation: Long-term evolution of orbital eccentricity
+5>8L9
+Elisa Maria Alessi, Alberto Buzzoni, J
+me Daquin, Albino Carbognani, Giacomo Tommei
+The research paper focuses on the development and evaluation of high-fidelity numerical and analytical models to predict the long-term orbital behavior of satellites in Molniya orbits. The primary research focus is on addressing the complex perturbations that affect these highly elliptical.
+tcm1l
+j;0 .
+eB\KAEoEj1
+= ~-Zw
+- (Ix
+,2#2`
+[}-C*
+6v#$>
+r.kfKLS
+s>I%k
+O|0]!sl
+1nt:=
+KtN}'
+R QB+
+EY`_[%
+rIb X
+{RCoohW
+WN7\+8
+35Wjq+
+Y)D F
+ooFXhw
+]!e(k
+WR{<&
+6V"A8
+\Zl8-
+!"kl-
+_yE}j
+_yF}h
+Tundra constellation design and stationkeeping
+ygjq%
++[(8~
+X;K n
+Journal of spacecrafts and rockets
+]hy{7
+Michael J Bruno, Henry J Pernicka
+]K6vg
+)r%5c
+The research focuses on the high-fidelity numerical and analytical modeling of the trajectory propagation for satellites in a Tundra orbit, which is a figure-eight geosynchronous orbit with high inclination (typically near 63.4
+) and high eccentricity.
+qu=8%w
+Literature Summary
+G8>+2 =]'t4<
+&L, #U
+`T@e`
+XTSCQr
+y.5\c
+-GUE>G
+7fn[7
+f =F`
+Dynamic Modeling & Lifetime Prediction: i) Long-term predictions for highly eccentric orbits (like GTOs) are extremely sensitive to initial conditions. ii)Accurate propagation must account for the complex coupling of lunisolar gravitational perturbations at apogee and atmospheric drag at perigee. Novel Trajectory Optimization: High-fidelity propagation models enable the design of complex, fuel-saving maneuvers. Example: Utilizing Lunar Gravity Assists (LGAs) to efficiently transfer satellites from highly inclined, non-equatorial parking orbits into geostationary orbits. Continuous High-Latitude Observation i)Tundra (24-hour) and Molniya (12-hour) orbits exploit a critical inclination of 63.4
+to prevent the argument of perigee from drifting. ii)This creates a prolonged "dwell time" near apogee, providing geostationary-like, continuous weather and earth observation over polar regions. Constellation Event Simulation i)Precise orbit simulators are required to predict real-time coverage events for HEO constellations. ii)These tools calculate dynamic footprint sizes, predict ground sample distances, and manage observation handoffs between multiple satellites.
+7'/))
+'hMT<
+'=Tb21<
+3{o!gx
+Dynamical Modeling and Lifetime Analysis of Geostationary Transfer Orbits i) Long-term predictions for highly eccentric orbits (like GTOs) are extremely sensitive to initial conditions. ii)Accurate propagation must account for the complex coupling of lunisolar gravitational perturbations at apogee and atmospheric drag at perigee. Analysis of Geostationary transfer orbit long term evolution and lifetime High-fidelity propagation models enable the design of complex, fuel-saving maneuvers. A critical finding is the existence of a "resonant" phase when the semi-major axis reaches approximately 15,000 km Dynamical properties of the Molniya satellite constellation: Long-term evolution of orbital eccentricity i) Development and evaluation of high-fidelity numerical and analytical models to predict the long-term orbital behavior of satellites in Molniya orbits. ii) By refining trajectory propagation algorithms, the study aims to improve the accuracy of position forecasting and life-cycle analysis for communication and early-warning satellites that require stable dwell times over high-latitude regions. Tundra constellation design and station keeping By analyzing these forces, the research seeks to improve the accuracy of long-term orbital position predictions and stability assessments for telecommunications and surveillance missions that require dwell time over high-latitude regions
+Problem Statement
+Objectives
+N(]62
+&A3|h
+{Py29
+tJZZU
+uK6_C
+e%,50#
+VM)TJ
+Integrate Coupled Perturbation Models: Develop a dynamic modeling environment that accurately couples low-altitude atmospheric drag (incorporating variable solar activity models) with high-altitude third-body lunisolar gravitational perturbations and Earth's spherical harmonics (e.g., J2 effects). Analyze Long-Term Sensitivity and Orbital Lifetime: Quantify the sensitivity of HEO trajectories (such as GTOs) to minor variations in initial conditions and space weather. The goal is to accurately predict orbital decay, atmospheric re-entry windows, and long-term satellite lifespans for space debris mitigation compliance. Predict Precise Short-Term Trajectory Events: Implement numerical search algorithms (e.g., Newton-Raphson differential correctors) to precisely predict and target short-term orbital events, such as calculating exact B-plane parameters for Lunar Gravity Assist (LGA) transfers from highly inclined orbits. Validate Predictive Accuracy: Benchmark the developed propagation framework against established high-fidelity astrodynamics software (e.g., FreeFlyer, GMAT) or historical mission data to verify its computational efficiency and event-prediction accuracy over extended durations. Creating a high fidelity, robust Open-Source application that can simulate trajectory propagation at HEOs and the transfer maneuvers for any two given orbits whose parameters like perigee, apogee, and inclination are specified.
+Methodology
+Work Done
+[mO#7
+'h3F7EI
+?rk/PdB
+g){<KA|
+AQ}9}
+Comprehensive Literature Survey: Analyzed key research on Highly Eccentric Orbits (HEOs), including GTOs, Molniya, and Tundra orbits, to identify current prediction limitations. Problem Identification: Formulated a targeted problem statement addressing the challenges of coupled dynamic environments Project Scoping: Defined the primary and specific sub-objectives required to solve the identified problem. Methodology Architecture: Designed the step-by-step workflow and propagation framework required for the simulation phases. Parameter Definition: Identified the core variables (e.g., J2 zonal harmonics, solar activity, 3rd-body gravity) needed for the high-fidelity dynamic model. Simulation of object in GTO in unperturbed condition without the consideration of any higher order perturbations in order to understand the trajectory propagation of the object at the most basic level.
+Work to be done
+Stage 1: Implementing the numerical integrator Implement and debug the trajectory propagation engine (e.g., Runge-Kutta 45 numerical integrator) on perturbed orbitals. Stage 3: Simulation Execution i)Track A:Run long-term simulations to analyze sensitivity and predict orbital lifetime/re-entry. ii)Track B: Execute short-term targeting algorithms (Newton-Raphson) for Lunar Gravity Assists. iii)Track C:Simulate HEO constellations to calculate real-time Earth coverage. Stage 4: Validation & Benchmarking Compare the framework's output against industry-standard astrodynamics software (e.g., FreeFlyer, GMAT) to verify accuracy. Stage 5: Compiling an application Developing an industry ready application with interactive UI to take in parameters like apogee, perigee positions, and inclination angle to simulate orbital propagation and transfer maneuvers between any two specified orbits considering fourth order perturbations.
+Simulation
+jyYVR i
+l2W]`
+2WE-7
+viH]d4
++% nHJ
+jm)1s
+drs/media/image1.png
+drs/downrev.xmlt
+*~[1F
+drs/_rels/shapexml.xml.rels
+R8+XJ
+2=3`xa
+drs/media/image1.pngPK
+drs/_rels/shapexml.xml.relsPK
+Gantt Chart
+cnx|:
+&]'c2
+j3yH~
+CX5p7X
+i} H:
+Sfa1sA$fT
+hE$v[
+,?h|]n
+February
+March
+k:lR-2
+lJ]!e
+April
+6U"C8
+E bA*mm
+E bA*
+Literature Review
+-7 vo
+Perturbation Model development
++9_[V0
+l,-6.-
+Data validation
+8Vp9(@
+WN7\+
+/F BD
+Event forecasting and optimization
+yX.NO
+N nzy
+/ nj>
+V6-hlh
+Report
+x;Zg0
+zU/47\Zf!Q.
+hDGC[1Q
++.<Bt
+9F1WQE
+THANK YOU
+elavarasan HP
+Harshith S Purohith
+Microsoft Office PowerPoint
+Widescreen
+PowerPoint Presentation
+Fonts Used
+Theme
+Slide Titles
+Created
+Creator
+LastSaved
+Producer
+Microsoft
+PowerPoint
