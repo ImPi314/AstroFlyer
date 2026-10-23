@@ -16,9 +16,6 @@ Features:
 =============================================================================
 """
 
-import os
-import sys
-import ctypes
 import math
 import numpy as np
 from scipy.integrate import solve_ivp
@@ -29,71 +26,25 @@ from .forces import ForceModelConfig, SimpleEarthRotation
 from .frames import EarthOrientation, FastEarthRotation, gcrf_to_geodetic
 
 # ==============================================================================
-# LAYER 1: COMPILED C++17 ASTRODYNAMICS MATH CORE BINDINGS (CTYPES INTEROP)
+# LAYER 1: MATH CORE
 # ==============================================================================
-_curr_dir = os.path.dirname(os.path.abspath(__file__))
-_parent_dir = os.path.dirname(_curr_dir)
-_candidate_paths = [
-    os.path.join(_parent_dir, "cpp_engine", "astro_physics_kernel.dll"),
-    os.path.join(getattr(sys, '_MEIPASS', ''), "astroflyer", "cpp_engine", "astro_physics_kernel.dll"),
-    os.path.join(getattr(sys, '_MEIPASS', ''), "cpp_engine", "astro_physics_kernel.dll"),
-    os.path.join(os.path.dirname(sys.executable), "_internal", "astroflyer", "cpp_engine", "astro_physics_kernel.dll"),
-    os.path.join(os.path.dirname(sys.executable), "_internal", "cpp_engine", "astro_physics_kernel.dll"),
-    os.path.join(os.path.dirname(sys.executable), "astroflyer", "cpp_engine", "astro_physics_kernel.dll"),
-    os.path.join(os.path.dirname(sys.executable), "cpp_engine", "astro_physics_kernel.dll")
-]
-_cpp_dll_path = next((p for p in _candidate_paths if os.path.exists(p)), _candidate_paths[0])
-
-_cpp_kernel = None
-# The C++ kernel still implements the old simplified physics (no DE440, no MSIS,
-# zonal-only gravity), so it is opt-in until it is ported and benchmarked.
-_USE_CPP_KERNEL = os.environ.get("ASTROFLYER_USE_CPP_KERNEL", "0") == "1"
-if _USE_CPP_KERNEL and os.path.exists(_cpp_dll_path):
-    try:
-        _cpp_kernel = ctypes.CDLL(_cpp_dll_path)
-        _cpp_kernel.compute_total_acceleration.argtypes = [
-            ctypes.c_double, ctypes.c_double, ctypes.c_double,
-            ctypes.c_int,
-            ctypes.POINTER(ctypes.c_double)
-        ]
-        _cpp_kernel.compute_total_acceleration.restype = None
-
-        if hasattr(_cpp_kernel, "compute_coupled_accelerations"):
-            _cpp_kernel.compute_coupled_accelerations.argtypes = [
-                ctypes.c_double, ctypes.c_double, ctypes.c_double,
-                ctypes.c_double, ctypes.c_double, ctypes.c_double,
-                ctypes.c_double,
-                ctypes.c_int,
-                ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
-                ctypes.c_double, ctypes.c_double,
-                ctypes.POINTER(ctypes.c_double),
-                ctypes.POINTER(ctypes.c_double)
-            ]
-            _cpp_kernel.compute_coupled_accelerations.restype = None
-
-        if hasattr(_cpp_kernel, "compute_batch_coupled_accelerations"):
-            _cpp_kernel.compute_batch_coupled_accelerations.argtypes = [
-                ctypes.c_int,
-                ctypes.POINTER(ctypes.c_double),
-                ctypes.POINTER(ctypes.c_double),
-                ctypes.POINTER(ctypes.c_double),
-                ctypes.c_int,
-                ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
-                ctypes.c_double, ctypes.c_double,
-                ctypes.POINTER(ctypes.c_double),
-                ctypes.POINTER(ctypes.c_double)
-            ]
-            _cpp_kernel.compute_batch_coupled_accelerations.restype = None
-    except Exception:
-        _cpp_kernel = None
+# The force model runs in NumPy, with the hot loops JIT-compiled by Numba when it
+# is installed (forces.py, ephemeris.py). The old C++ kernel in cpp_engine/ is
+# retired: it implemented the earlier simplified physics, and the full model
+# runs a day of HEO propagation in about a second without it.
 
 
 def get_engine_status():
-    """Returns status of the compiled C++17 Math Core."""
+    """Returns which math core the force model is using."""
+    try:
+        import numba
+        jit = f"Numba {numba.__version__}"
+    except ImportError:
+        jit = "none (plain NumPy)"
     return {
-        "c_plus_plus_kernel_loaded": _cpp_kernel is not None,
-        "kernel_binary": _cpp_dll_path if _cpp_kernel is not None else "Fallback NumPy/SciPy",
-        "standard": "C++17 (MSVC x64 /O2 SIMD)",
+        "c_plus_plus_kernel_loaded": False,
+        "kernel_binary": "NumPy/SciPy force model (forces.py)",
+        "jit": jit,
         "architecture_layer": "Layer 1 (The Math Core)"
     }
 
@@ -382,25 +333,6 @@ def full_production_eom(
     force_config (a forces.ForceModelConfig) takes precedence over the legacy flags.
     """
     vx, vy, vz = state[3:6]
-
-    if _cpp_kernel is not None and hasattr(_cpp_kernel, "compute_coupled_accelerations"):
-        a_buf = (ctypes.c_double * 3)()
-        deg = 4 if j4 != 0 else (3 if j3 != 0 else (2 if j2 != 0 else 0))
-        _cpp_kernel.compute_coupled_accelerations(
-            float(state[0]), float(state[1]), float(state[2]),
-            float(vx), float(vy), float(vz),
-            float(t),
-            deg,
-            1 if enable_third_body else 0,
-            1 if enable_third_body else 0,
-            1 if enable_drag else 0,
-            1 if enable_srp else 0,
-            float(b_star),
-            float(cr_area_over_m),
-            a_buf,
-            None
-        )
-        return [vx, vy, vz, a_buf[0], a_buf[1], a_buf[2]]
 
     cfg = force_config or _legacy_force_config(j2, j3, j4, b_star, cr_area_over_m, enable_drag,
                                                enable_third_body, enable_srp, enable_tesseral,

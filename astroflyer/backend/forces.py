@@ -17,7 +17,6 @@ without one, a z-axis GMST rotation is used, which is adequate only for tests.
 """
 
 import math
-import os
 from dataclasses import dataclass
 
 import numpy as np

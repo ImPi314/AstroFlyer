@@ -70,3 +70,6 @@ datasources/basilisk-2.11.1.zip
 datasources/gmat-win-R2026a.zip
 # Third-party redistributables dropped in for the installer build
 installer/redist/
+
+# Orekit reference data (downloaded by validation/orekit_crosscheck.py)
+astroflyer/validation/orekit-data/
