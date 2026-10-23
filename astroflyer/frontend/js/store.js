@@ -13,6 +13,7 @@ const state = {
     speed: 600,         // simulated seconds per real second
     views: null,        // display settings per view, see views/settings.js
     layout: 'grid',     // single | split | grid
+    workspace: 'mission',   // mission | analysis | data
 };
 
 export function get(key) {

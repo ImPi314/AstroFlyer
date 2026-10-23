@@ -1,0 +1,399 @@
+// Analysis and Data workspaces: tools that read the last run or ask the engine for one result.
+// The mission tree, inspector and timeline stay as they are while a tool is open.
+
+import * as store from './store.js';
+import { solveApogeeRaise, simulateFiniteBurn, EngineError } from './api.js';
+import { sampleIndex } from './results.js';
+import { startScriptRun } from './run.js';
+import { log } from './messages.js';
+import { elapsed, escapeHtml, icon, num, saveFile } from './format.js';
+import { token } from './views/colors.js';
+
+const TOOLS = {
+    analysis: [
+        ['events', 'Events'],
+        ['targeting', 'Targeting'],
+        ['lifetime', 'Lifetime'],
+        ['radiation', 'Radiation'],
+        ['covariance', 'Covariance'],
+    ],
+    data: [
+        ['script', 'Mission script'],
+        ['export', 'Export'],
+    ],
+};
+const PAGES = { events, targeting, lifetime, radiation, covariance, script, export: exportPage };
+
+let root;
+let page;
+const openTool = { analysis: 'events', data: 'script' };
+let eventFilter = 'all';
+let targetingState = { apogee: null, burn: null, busy: false, inputs: {} };   // inputs survive re-rendering
+let scriptDraft = null;   // the user's edits; null means "show the last run's script"
+let lifetimeChart = null;
+
+export function mountTools(element) {
+    root = element;
+    root.innerHTML = '<div class="tool-tabs" role="tablist"></div><div class="tool-page" role="tabpanel"></div>';
+    page = root.querySelector('.tool-page');
+    root.querySelector('.tool-tabs').addEventListener('click', (event) => {
+        const id = event.target.closest('[data-tool]')?.dataset.tool;
+        if (!id) return;
+        openTool[store.get('workspace')] = id;
+        render();
+    });
+    page.addEventListener('click', onPageClick);
+    page.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && event.target.matches('tr[data-t]')) seek(Number(event.target.dataset.t));
+    });
+    page.addEventListener('change', (event) => {
+        if (event.target.name === 'event-filter') {
+            eventFilter = event.target.value;
+            render();
+        }
+    });
+    page.addEventListener('input', (event) => {
+        if (event.target.name === 'script') scriptDraft = event.target.value;
+        if (event.target.closest('.tool-form')) targetingState.inputs[event.target.name] = event.target.value;
+    });
+    page.addEventListener('submit', (event) => {
+        event.preventDefault();
+        submitTargeting(event.target);
+    });
+    store.on(['workspace', 'result'], render);
+    store.on('run', (run) => {
+        const button = page.querySelector('[data-action="script-run"]');
+        if (button) button.disabled = run.status === 'running';
+    });
+    render();
+}
+
+function render() {
+    const workspace = store.get('workspace');
+    if (workspace === 'mission') return;
+    const current = openTool[workspace];
+    root.querySelector('.tool-tabs').innerHTML = TOOLS[workspace].map(([id, label]) =>
+        `<button type="button" role="tab" data-tool="${id}" aria-selected="${id === current}" class="tool-tab">${label}</button>`).join('');
+    lifetimeChart?.destroy();
+    lifetimeChart = null;
+    const result = store.get('result');
+    const needsRun = current !== 'script';
+    page.innerHTML = needsRun && !result
+        ? '<div class="empty"><p class="empty-title">No run yet</p><p>Press Run or F5. This tool works from the last run.</p></div>'
+        : PAGES[current](result);
+    if (current === 'lifetime' && result) drawLifetime(result);
+}
+
+function seek(t) {
+    store.set({ playing: false, time: t });
+}
+
+function at(result, t) {
+    return elapsed(t - result.times[0]);
+}
+
+function facts(rows) {
+    return `<dl class="facts">${rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>`;
+}
+
+// ---------- Events ----------
+
+function events(result) {
+    const rows = [
+        ...result.apsides.map((a) => ({ kind: 'apsides', t: a.t, name: a.kind === 'perigee' ? 'Perigee' : 'Apogee', detail: `${num(a.altitude_km)} km altitude` })),
+        ...result.nodes.map((n) => ({ kind: 'nodes', t: n.t, name: n.kind === 'ascending' ? 'Ascending node' : 'Descending node', detail: `Longitude ${num(n.longitude_deg, 1)} deg` })),
+        ...result.shadows.flatMap((s) => [
+            { kind: 'shadow', t: s.t0, name: 'Enters shadow', detail: `${num((s.t1 - s.t0) / 60, 1)} min in umbra` },
+            { kind: 'shadow', t: s.t1, name: 'Leaves shadow', detail: '' },
+        ]),
+        ...result.stations.flatMap((st) => st.passes.flatMap((p) => [
+            { kind: 'stations', t: p.t0, name: `Contact with ${st.name}`, detail: `${num((p.t1 - p.t0) / 60, 1)} min, peak elevation ${num(p.max_elevation_deg, 1)} deg` },
+            { kind: 'stations', t: p.t1, name: `Contact ends with ${st.name}`, detail: '' },
+        ])),
+    ].filter((row) => eventFilter === 'all' || row.kind === eventFilter).sort((a, b) => a.t - b.t);
+
+    const filters = [['all', 'All events'], ['apsides', 'Perigee and apogee'], ['nodes', 'Node crossings'], ['shadow', 'Shadow'], ['stations', 'Station contact']];
+    return `
+        <header class="tool-head">
+            <div>
+                <h2 class="tool-title">Events</h2>
+                <p class="tool-lead">Select an event to move the timeline to it.</p>
+            </div>
+            <label class="compact-select"><span class="visually-hidden">Show</span>
+                <select name="event-filter">${filters.map(([v, l]) => `<option value="${v}" ${v === eventFilter ? 'selected' : ''}>${l}</option>`).join('')}</select>
+            </label>
+        </header>
+        ${rows.length ? `<table class="data-table">
+            <thead><tr><th scope="col">Time</th><th scope="col">Event</th><th scope="col">Detail</th></tr></thead>
+            <tbody>${rows.map((row) => `<tr data-t="${row.t}" tabindex="0"><td class="num">${at(result, row.t)}</td><td>${escapeHtml(row.name)}</td><td class="muted">${row.detail}</td></tr>`).join('')}</tbody>
+        </table>` : '<p class="tool-lead">No events of this kind in this run.</p>'}`;
+}
+
+// ---------- Targeting ----------
+
+function perigeeState(result) {
+    const first = result.apsides.find((a) => a.kind === 'perigee');
+    const i = first ? sampleIndex(result, first.t) : 0;
+    return {
+        perigeeRadiusKm: result.earthRadiusKm + (first?.altitude_km ?? result.summary.perigee_alt_km),
+        perigeeSpeedKms: result.samples.speed_kms[i],
+    };
+}
+
+function targeting(result) {
+    const { perigeeRadiusKm, perigeeSpeedKms } = perigeeState(result);
+    const { apogee, burn, busy } = targetingState;
+    const mass = store.get('mission').spacecraft.mass;
+    const dvDefault = apogee ? Math.abs(apogee.optimal_delta_v_ms) : 1000;
+    return `
+        <header class="tool-head">
+            <div>
+                <h2 class="tool-title">Targeting</h2>
+                <p class="tool-lead">Both solvers start from this run's first perigee: radius ${num(perigeeRadiusKm, 1)} km, speed ${num(perigeeSpeedKms, 3)} km/s.</p>
+            </div>
+        </header>
+        <section class="tool-section">
+            <h3 class="section-title">Raise apogee with one perigee burn</h3>
+            <form class="tool-form" data-form="apogee" novalidate>
+                ${inputField('target', 'Target apogee radius', 'km', 42164, 'GEO radius is 42,164 km.')}
+                <button class="button button-primary" type="submit" ${busy ? 'disabled' : ''}>Solve</button>
+            </form>
+            ${apogee ? `
+                ${facts([
+                    ['Result', apogee.converged ? 'Converged' : 'Did not converge'],
+                    ['Burn at perigee', `${num(apogee.optimal_delta_v_ms, 2)} m/s`],
+                    ['Apogee radius reached', `${num(apogee.achieved_apogee_km, 1)} km`],
+                    ['Iterations', num(apogee.total_iterations)],
+                ])}
+                <table class="data-table compact">
+                    <thead><tr><th scope="col">Iteration</th><th scope="col" class="num">Burn (m/s)</th><th scope="col" class="num">Apogee radius (km)</th><th scope="col" class="num">Miss (km)</th></tr></thead>
+                    <tbody>${apogee.iteration_history.map((h) => `<tr><td>${h.iteration}</td><td class="num">${num(h.delta_v_ms, 3)}</td><td class="num">${num(h.achieved_apogee_km, 1)}</td><td class="num">${num(h.residual_km, 4)}</td></tr>`).join('')}</tbody>
+                </table>` : ''}
+        </section>
+        <section class="tool-section">
+            <h3 class="section-title">Finite burn with mass loss</h3>
+            <form class="tool-form" data-form="burn" novalidate>
+                ${inputField('dv', 'Velocity change', 'm/s', Math.round(dvDefault * 100) / 100)}
+                ${inputField('mass', 'Starting mass', 'kg', mass)}
+                ${inputField('thrust', 'Thrust', 'N', 450)}
+                ${inputField('isp', 'Specific impulse', 's', 315)}
+                <button class="button button-primary" type="submit" ${busy ? 'disabled' : ''}>Simulate</button>
+            </form>
+            ${burn ? facts([
+                ['Burn duration', `${num(burn.burn_duration_min, 1)} min`],
+                ['Propellant used', `${num(burn.propellant_consumed_kg, 1)} kg`],
+                ['Final mass', `${num(burn.final_mass_kg, 1)} kg`],
+                ['Ideal velocity change', `${num(burn.ideal_delta_v_ms, 1)} m/s`],
+                ['Gravity losses', `${num(burn.gravity_losses_ms, 1)} m/s`],
+                ['Effective velocity change', `${num(burn.actual_effective_delta_v_ms, 1)} m/s`],
+            ]) : ''}
+        </section>`;
+}
+
+function inputField(name, label, unit, fallback, hint = '') {
+    const value = escapeHtml(targetingState.inputs[name] ?? fallback);
+    return `<div class="field">
+        <label for="tool-${name}">${label}</label>
+        <div class="field-control"><input id="tool-${name}" name="${name}" type="number" step="any" min="0" value="${value}"><span class="field-unit">${unit}</span></div>
+        ${hint ? `<p class="field-hint">${hint}</p>` : ''}
+    </div>`;
+}
+
+async function submitTargeting(form) {
+    const values = Object.fromEntries([...form.querySelectorAll('input')].map((input) => [input.name, input.valueAsNumber]));
+    if (Object.values(values).some((v) => !Number.isFinite(v) || v <= 0)) {
+        log('error', 'Enter a positive number in every targeting field.');
+        return;
+    }
+    const result = store.get('result');
+    targetingState = { ...targetingState, busy: true };
+    render();
+    try {
+        if (form.dataset.form === 'apogee') {
+            const apogee = await solveApogeeRaise({ ...perigeeState(result), targetApogeeKm: values.target });
+            targetingState = { ...targetingState, apogee };
+            log('info', `Apogee raise ${apogee.converged ? 'converged' : 'did not converge'}: ${num(apogee.optimal_delta_v_ms, 2)} m/s at perigee.`);
+        } else {
+            const burn = await simulateFiniteBurn({ deltaVms: values.dv, massKg: values.mass, thrustN: values.thrust, ispS: values.isp });
+            targetingState = { ...targetingState, burn };
+            log('info', `Finite burn: ${num(burn.burn_duration_min, 1)} min, ${num(burn.propellant_consumed_kg, 1)} kg of propellant.`);
+        }
+    } catch (err) {
+        log('error', err instanceof EngineError ? err.message : `Unexpected error: ${err.message}`);
+    } finally {
+        targetingState = { ...targetingState, busy: false };
+        render();
+    }
+}
+
+// ---------- Lifetime ----------
+
+function lifetime(result) {
+    const { years, meetsIadc, series } = result.lifetime;
+    return `
+        <header class="tool-head">
+            <div>
+                <h2 class="tool-title">Lifetime</h2>
+                <p class="tool-lead">The engine's long-term decay estimate from the initial orbit.</p>
+            </div>
+        </header>
+        ${facts([
+            ['Estimated lifetime', years == null ? '–' : `${escapeHtml(years)} years`],
+            ['Meets the 25-year disposal guideline', meetsIadc == null ? '–' : meetsIadc ? 'Yes' : 'No'],
+        ])}
+        ${series ? `
+            <ul class="legend chart-legend">
+                <li><i class="key key-line key-apogee-line"></i>Apogee altitude</li>
+                <li><i class="key key-line key-perigee-line"></i>Perigee altitude</li>
+            </ul>
+            <div class="tool-chart" id="lifetime-chart"></div>` : '<p class="tool-lead">The engine did not report a decay history for this run.</p>'}`;
+}
+
+function drawLifetime(result) {
+    const series = result.lifetime.series;
+    const host = page.querySelector('#lifetime-chart');
+    if (!series || !host) return;
+    const axis = { stroke: token('--muted'), grid: { stroke: token('--line') }, ticks: { stroke: token('--line') }, font: `12px ${token('--font')}`, labelFont: `12px ${token('--font')}` };
+    lifetimeChart = new window.uPlot({
+        width: host.clientWidth || 600,
+        height: 280,
+        legend: { show: false },
+        cursor: { show: false },
+        scales: { x: { time: false } },
+        axes: [{ ...axis, label: 'Years', size: 44 }, { ...axis, label: 'Altitude (km)', size: 72, values: (u, splits) => splits.map((v) => num(v)) }],
+        series: [{}, { stroke: token('--track-high'), width: 1.5 }, { stroke: token('--track-low'), width: 1.5 }],
+    }, [series.years, series.apogee_altitude_km, series.perigee_altitude_km], host);
+}
+
+// ---------- Radiation and covariance ----------
+
+function radiation(result) {
+    const { totalDoseRad, crossings } = result.radiation;
+    const time = (belt) => crossings.filter((c) => c.belt === belt).reduce((sum, c) => sum + (c.t1 - c.t0), 0) / 60;
+    return `
+        <header class="tool-head">
+            <div>
+                <h2 class="tool-title">Radiation</h2>
+                <p class="tool-lead">Belt crossings in this run. Dose and L-shell over time are in Plot, under Radiation.</p>
+            </div>
+        </header>
+        ${facts([
+            ['Total dose', `${num(totalDoseRad, 2)} rad(Si)`],
+            ['Inner belt crossings', `${num(crossings.filter((c) => c.belt === 'Inner').length)}, ${num(time('Inner'), 1)} min`],
+            ['Outer belt crossings', `${num(crossings.filter((c) => c.belt === 'Outer').length)}, ${num(time('Outer'), 1)} min`],
+        ])}
+        ${crossings.length ? `<table class="data-table">
+            <thead><tr><th scope="col">Enters</th><th scope="col">Belt</th><th scope="col" class="num">Duration (min)</th></tr></thead>
+            <tbody>${crossings.map((c) => `<tr data-t="${c.t0}" tabindex="0"><td class="num">${at(result, c.t0)}</td><td>${c.belt} belt</td><td class="num">${num((c.t1 - c.t0) / 60, 1)}</td></tr>`).join('')}</tbody>
+        </table>` : ''}`;
+}
+
+function covariance(result) {
+    const c = result.covariance;
+    return `
+        <header class="tool-head">
+            <div>
+                <h2 class="tool-title">Covariance</h2>
+                <p class="tool-lead">Position uncertainty carried along the orbit by the state transition matrix. The radial, in-track and cross-track histories are in Plot, under Covariance.</p>
+            </div>
+        </header>
+        ${facts([
+            ['Starting 1-sigma position', `${num(c.initialSigmaM, 1)} m`],
+            ['Final 1-sigma position', `${num(c.finalSigmaM, 1)} m`],
+            ['Final radial', `${num(c.finalRadialM, 1)} m`],
+            ['Final in-track', `${num(c.finalIntrackM, 1)} m`],
+            ['Final cross-track', `${num(c.finalCrosstrackM, 1)} m`],
+            ['Transition matrix determinant', num(c.stmDeterminant, 6)],
+        ])}
+        <p class="tool-lead">A determinant of exactly 1 means the uncertainty volume is preserved, as it should be with conservative forces only.</p>`;
+}
+
+// ---------- Data: mission script and export ----------
+
+function script(result) {
+    const text = scriptDraft ?? result?.script ?? '';
+    const running = store.get('run').status === 'running';
+    return `
+        <header class="tool-head">
+            <div>
+                <h2 class="tool-title">Mission script</h2>
+                <p class="tool-lead">The engine reads the six orbit elements (SMA, ECC, INC, RAAN, AOP, TA) from the script. Propagator and spacecraft properties come from the inspector.</p>
+            </div>
+            <div class="tool-actions">
+                <button class="button" type="button" data-action="script-reset" ${result ? '' : 'disabled'}>${icon('rotate-ccw')}Use last run's script</button>
+                <button class="button" type="button" data-action="script-save" ${text ? '' : 'disabled'}>${icon('download')}Save</button>
+                <button class="button button-primary" type="button" data-action="script-run" ${running ? 'disabled' : ''}>${icon('play')}Run script</button>
+            </div>
+        </header>
+        <label class="visually-hidden" for="script-text">Mission script</label>
+        <textarea class="code-editor" id="script-text" name="script" spellcheck="false" placeholder="Run the mission once to start from its script, or paste a script here.">${escapeHtml(text)}</textarea>`;
+}
+
+function exportPage(result) {
+    const name = store.get('mission').spacecraft.name.replace(/[^\w.-]+/g, '_');
+    const block = (title, lead, text, action) => `
+        <section class="tool-section">
+            <header class="section-head">
+                <div><h3 class="section-title">${title}</h3><p class="tool-lead">${lead}</p></div>
+                <button class="button" type="button" data-action="${action}" ${text ? '' : 'disabled'}>${icon('download')}Save</button>
+            </header>
+            ${text ? `<pre class="code-block">${escapeHtml(text)}</pre>` : '<p class="tool-lead">The engine did not return this for the last run.</p>'}
+        </section>`;
+    return `
+        <header class="tool-head">
+            <div>
+                <h2 class="tool-title">Export</h2>
+                <p class="tool-lead">Files describe the last run of ${escapeHtml(store.get('mission').spacecraft.name)} and save as ${escapeHtml(name)}.tle, .opm and .csv.</p>
+            </div>
+        </header>
+        ${block('Two-line element set', 'Mean elements in the NORAD TLE layout.', result.tle, 'save-tle')}
+        ${block('CCSDS orbit parameter message', 'The starting state as a CCSDS OPM.', result.opm, 'save-opm')}
+        <section class="tool-section">
+            <header class="section-head">
+                <div><h3 class="section-title">Ephemeris table</h3><p class="tool-lead">${num(result.times.length)} points of time, inertial position and velocity as CSV.</p></div>
+                <button class="button" type="button" data-action="save-csv">${icon('download')}Save</button>
+            </header>
+        </section>`;
+}
+
+function ephemerisCsv(result) {
+    const lines = ['time_s,x_km,y_km,z_km,vx_kms,vy_kms,vz_kms'];
+    result.times.forEach((t, i) => {
+        const p = result.inertialKm;
+        const v = result.velocityKms;
+        lines.push([t, p[i * 3], p[i * 3 + 1], p[i * 3 + 2], v[i * 3], v[i * 3 + 1], v[i * 3 + 2]].map((x) => Number(x).toPrecision(12)).join(','));
+    });
+    return `${lines.join('\n')}\n`;
+}
+
+function onPageClick(event) {
+    const row = event.target.closest('tr[data-t]');
+    if (row) {
+        seek(Number(row.dataset.t));
+        return;
+    }
+    const result = store.get('result');
+    const name = store.get('mission').spacecraft.name.replace(/[^\w.-]+/g, '_');
+    switch (event.target.closest('[data-action]')?.dataset.action) {
+        case 'script-run': {
+            const text = page.querySelector('#script-text').value;
+            if (!text.trim()) {
+                log('error', 'The script is empty.');
+                return;
+            }
+            startScriptRun(text);
+            break;
+        }
+        case 'script-reset':
+            scriptDraft = null;
+            render();
+            break;
+        case 'script-save':
+            saveFile(`${name}.script`, page.querySelector('#script-text').value);
+            break;
+        case 'save-tle': saveFile(`${name}.tle`, result.tle); break;
+        case 'save-opm': saveFile(`${name}.opm`, result.opm); break;
+        case 'save-csv': saveFile(`${name}.csv`, ephemerisCsv(result), 'text/csv'); break;
+        default: break;
+    }
+}

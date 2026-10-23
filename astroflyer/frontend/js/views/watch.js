@@ -7,15 +7,17 @@ import { PARAMETERS, formatValue } from '../parameters.js';
 import { elapsed, num, sci } from '../format.js';
 
 const LIGHTING = { SUNLIGHT: 'Sunlight', PENUMBRA: 'Penumbra', UMBRA: 'Umbra' };
+const DASH = '–';
 
 // Every row the watch can show: the shared numeric parameters plus two states.
 const ROWS = [
-    ...PARAMETERS.map((p) => ({ key: p.key, label: p.label, unit: p.unit, value: (r, i) => formatValue(p, r.samples[p.key][i]) })),
-    { key: 'lighting', label: 'Lighting', unit: '', value: (r, i) => LIGHTING[r.samples.lighting?.[i]] ?? '–' },
-    { key: 'stations', label: 'Stations in view', unit: '', value: (r, i) => stationsInView(r, r.times[i]) || 'None' },
+    ...PARAMETERS.map((p) => ({ group: p.group, key: p.key, label: p.label, unit: p.unit, value: (r, i) => formatValue(p, r.samples[p.key]?.[i]) })),
+    { group: 'Orbit', key: 'lighting', label: 'Lighting', unit: '', value: (r, i) => LIGHTING[r.samples.lighting?.[i]] ?? DASH },
+    { group: 'Orbit', key: 'stations', label: 'Stations in view', unit: '', value: (r, i) => stationsInView(r, r.times[i]) || 'None' },
+    { group: 'Radiation', key: 'radiation_zone', label: 'Radiation zone', unit: '', value: (r, i) => r.samples.radiation_zone?.[i] ?? DASH },
 ];
 
-export const WATCH_ROWS = ROWS.map(({ key, label }) => ({ key, label }));
+export const WATCH_ROWS = ROWS.map(({ group, key, label }) => ({ group, key, label }));
 
 let root;
 let held = false;

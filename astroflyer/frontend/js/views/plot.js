@@ -3,7 +3,7 @@
 
 import * as store from '../store.js';
 import { sampleIndex } from '../results.js';
-import { PARAMETERS, parameter } from '../parameters.js';
+import { PARAMETERS, GROUPS, parameter } from '../parameters.js';
 import { icon, num, sci } from '../format.js';
 import { token } from './colors.js';
 
@@ -13,6 +13,7 @@ let body;
 let chart = null;
 let builtFor = null;   // [result, parameter key] the chart was built from
 let hours = [];        // x values: elapsed hours of each output point
+let values = [];       // y values as drawn (non-positive values dropped on a log scale)
 let shownIndex = -1;   // last point drawn
 
 export function mountPlot(element, tools) {
@@ -20,7 +21,7 @@ export function mountPlot(element, tools) {
     tools.innerHTML = `
         <label class="compact-select">
             <span class="visually-hidden">Parameter</span>
-            <select data-plot="y">${PARAMETERS.map((p) => `<option value="${p.key}">${p.label}</option>`).join('')}</select>
+            <select data-plot="y">${GROUPS.map((group) => `<optgroup label="${group}">${PARAMETERS.filter((p) => p.group === group).map((p) => `<option value="${p.key}">${p.label}</option>`).join('')}</optgroup>`).join('')}</select>
         </label>
         <button class="icon-button" type="button" data-plot="png" aria-label="Save as PNG" title="Save as PNG">${icon('download')}</button>`;
     tools.querySelector('[data-plot="y"]').addEventListener('change', (event) => setY(event.target.value));
@@ -64,11 +65,18 @@ function build() {
     builtFor = [result, key];
     shownIndex = -1;
     chart?.destroy();
+    chart = null;
     body.innerHTML = '';
 
     const p = parameter(key);
     hours = result.times.map((t) => (t - result.times[0]) / 3600);
-    const ys = result.samples[key];
+    const raw = result.samples[key];
+    if (!raw) {
+        body.innerHTML = `<div class="empty"><p class="empty-title">${p.label} is not in this run</p><p>The engine did not report it. Pick another parameter.</p></div>`;
+        return;
+    }
+    values = p.log ? raw.map((v) => (v > 0 ? v : null)) : raw;
+    const ys = values.filter((v) => v !== null);
     const axis = {
         stroke: token('--muted'),
         grid: { stroke: token('--line'), width: 1 },
@@ -80,14 +88,14 @@ function build() {
         ...size(),
         legend: { show: false },
         cursor: { y: false, points: { show: false }, drag: { x: false, y: false } },
-        scales: { x: { time: false, range: [hours[0], hours.at(-1)] }, y: { range: (u, min, max) => padRange(Math.min(...ys), Math.max(...ys)) } },
+        scales: { x: { time: false, range: [hours[0], hours.at(-1)] }, y: p.log ? { distr: 3 } : { range: () => padRange(Math.min(...ys), Math.max(...ys)) } },
         axes: [
             { ...axis, label: 'Elapsed (h)', size: 44 },
             { ...axis, label: p.unit ? `${p.label} (${p.unit})` : p.label, size: 72, values: (u, splits) => tickLabels(p, splits) },
         ],
         series: [{}, { stroke: token('--track-low'), width: 1.5, points: { show: false } }],
         hooks: { draw: [drawCursor] },
-    }, [hours, ys], body);
+    }, [hours, values], body);
 
     chart.over.addEventListener('pointerdown', (event) => {
         const seek = (e) => {
@@ -123,7 +131,7 @@ function update() {
     const last = settings().reveal ? sampleIndex(result, store.get('time')) : hours.length - 1;
     if (last !== shownIndex) {
         shownIndex = last;
-        chart.setData([hours.slice(0, last + 1), result.samples[settings().y].slice(0, last + 1)], false);   // redraws, cursor included
+        chart.setData([hours.slice(0, last + 1), values.slice(0, last + 1)], false);   // redraws, cursor included
     } else {
         chart.redraw(false, false);
     }

@@ -30,6 +30,16 @@ export function icon(name, label) {
     return `<svg class="icon" ${a11y}><use href="icons/icons.svg#${name}"></use></svg>`;
 }
 
+// Hands a text file to the browser's (or desktop window's) save dialog.
+export function saveFile(name, text, type = 'text/plain') {
+    const url = URL.createObjectURL(new Blob([text], { type }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = name;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 export function escapeHtml(text) {
     return String(text).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 }

@@ -24,6 +24,11 @@
                 <span class="brand-name">AstroFlyer</span>
             </div>
             <span class="topbar-mission" id="topbar-mission"></span>
+            <div class="workspace-switch" id="workspace-switch" role="tablist" aria-label="Workspace">
+                <button type="button" role="tab" data-workspace="mission" aria-selected="true">Mission</button>
+                <button type="button" role="tab" data-workspace="analysis" aria-selected="false">Analysis</button>
+                <button type="button" role="tab" data-workspace="data" aria-selected="false">Data</button>
+            </div>
             <div class="layout-controls" id="layout-controls" role="group" aria-label="View layout"></div>
             <a class="topbar-link" href="THIRD_REVIEW_COMPLETE_PROJECT_GUIDE.pdf" target="_blank" rel="noopener">Handbook</a>
         </header>
@@ -34,6 +39,7 @@
         </nav>
 
         <main class="workspace" id="workspace" aria-label="Views"></main>
+        <main class="tools" id="tools" aria-label="Tools" hidden></main>
 
         <aside class="inspector" id="inspector" aria-label="Inspector"></aside>
 

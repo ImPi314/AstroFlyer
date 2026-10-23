@@ -2,6 +2,7 @@
 // This is the only place that knows the payload's field names.
 
 const DEG = Math.PI / 180;
+const ZONES = { FREE_SPACE: 'Outside the belts', INNER_PROTON_BELT: 'Inner belt', OUTER_ELECTRON_BELT: 'Outer belt', RADIATION_SLOT_REGION: 'Slot region' };
 
 // The engine rotates the Earth by its own angle and does not report it, so read it back
 // from its outputs: inertial right ascension minus Earth-fixed longitude, unwrapped.
@@ -21,6 +22,8 @@ export function fromPayload(payload) {
     const theta = earthRotation(payload.position_m, payload.longitude_deg);
     const inertialKm = new Float32Array(times.length * 3);
     const fixedKm = new Float32Array(times.length * 3);
+    const velocityKms = new Float64Array(times.length * 3);
+    payload.velocity_ms.forEach(([vx, vy, vz], i) => velocityKms.set([vx / 1000, vy / 1000, vz / 1000], i * 3));
     payload.position_m.forEach(([x, y, z], i) => {
         const c = Math.cos(theta[i]);
         const s = Math.sin(theta[i]);
@@ -30,6 +33,11 @@ export function fromPayload(payload) {
     const events = payload.events_suite ?? {};
     const eclipses = events.solar_eclipses ?? {};
     const stations = Object.values(events.ground_stations ?? {});
+    const forces = payload.force_diagnostics ?? {};
+    const radiation = payload.radiation_belts ?? {};
+    const covariance = payload.covariance_dispersion ?? {};
+    const subsystems = payload.fsw_subsystems ?? {};
+    const lifetime = events.multi_decadal_lifetime ?? {};
 
     return {
         times,
@@ -47,12 +55,35 @@ export function fromPayload(payload) {
             longitude_deg: payload.longitude_deg,
             energy_error: payload.energy_error,
             lighting: eclipses.regimes ?? null,
+            a_central: forces.a_central_ms2,
+            a_j2: forces.a_j2_ms2,
+            a_j3: forces.a_j3_ms2,
+            a_j4: forces.a_j4_ms2,
+            a_tesseral: forces.a_tesseral_ms2,
+            a_sun: forces.a_sun_ms2,
+            a_moon: forces.a_moon_ms2,
+            a_drag: forces.a_drag_ms2,
+            a_srp: forces.a_srp_ms2,
+            l_shell: radiation.l_shell_series,
+            b_field_ut: radiation.b_field_series_ut,
+            dose_rate: radiation.dose_rate_rad_hr,
+            dose_total: radiation.cumulative_dose_rad,
+            radiation_zone: radiation.regimes_series?.map((z) => ZONES[z] ?? z) ?? null,
+            sigma_radial_m: covariance.sigma_radial_m,
+            sigma_intrack_m: covariance.sigma_intrack_m,
+            sigma_crosstrack_m: covariance.sigma_crosstrack_m,
+            solar_power_w: subsystems.solar_power_w,
+            battery_soc_pct: subsystems.battery_soc_pct,
+            temperature_c: subsystems.temperature_c,
+            wheel1_rpm: subsystems.rw1_rpm,
+            wheel2_rpm: subsystems.rw2_rpm,
         },
         theta,
         // The radius the engine measures altitude from, so the drawn Earth matches its altitudes.
         earthRadiusKm: Math.hypot(...payload.position_m[0]) / 1000 - payload.altitude_km[0],
         inertialKm,
         fixedKm,
+        velocityKms,
         // Sun direction in the inertial frame. The engine's shadow model uses a fixed Sun on +X
         // until it reports one, so the night side drawn here matches its shadow events.
         sunDirection: payload.sun_direction_eci ?? [1, 0, 0],
@@ -75,6 +106,35 @@ export function fromPayload(payload) {
             contact_min: st.total_contact_min,
             passes: st.passes.map((p) => ({ t0: p.aos_epoch_s, t1: p.los_epoch_s, max_elevation_deg: p.max_elevation_deg })),
         })),
+        nodes: (events.exact_nodal_events ?? []).map((ev) => ({
+            kind: ev.event_type === 'ASCENDING_NODE' ? 'ascending' : 'descending',
+            t: ev.epoch_s,
+            longitude_deg: ev.longitude_deg,
+        })),
+        radiation: {
+            totalDoseRad: Number(radiation.summary?.total_ionizing_dose_rad ?? NaN),
+            crossings: (radiation.crossing_events ?? []).map((ev) => ({
+                belt: ev.belt?.startsWith('INNER') ? 'Inner' : 'Outer',
+                t0: ev.ingress_s,
+                t1: ev.egress_s,
+            })),
+        },
+        covariance: {
+            initialSigmaM: Number(covariance.summary?.initial_1sigma_pos_m ?? NaN),
+            finalSigmaM: Number(covariance.summary?.final_1sigma_pos_m ?? NaN),
+            finalRadialM: Number(covariance.summary?.final_radial_dispersion_m ?? NaN),
+            finalIntrackM: Number(covariance.summary?.final_intrack_dispersion_m ?? NaN),
+            finalCrosstrackM: Number(covariance.summary?.final_crosstrack_dispersion_m ?? NaN),
+            stmDeterminant: Number(covariance.summary?.stm_determinant ?? NaN),
+        },
+        lifetime: {
+            years: lifetime.lifetime_assessment?.orbital_lifetime_years ?? null,
+            meetsIadc: lifetime.lifetime_assessment?.iadc_25_year_rule_compliant ?? null,
+            series: lifetime.trajectory_decay_timeseries ?? null,
+        },
+        script: payload.script_workbench?.script_content ?? '',
+        tle: payload.ccsds_interoperability?.tle_string ?? '',
+        opm: payload.ccsds_interoperability?.opm_string ?? '',
         summary: {
             perigee_alt_km: payload.active_orbit_config.perigee_alt_km,
             apogee_alt_km: payload.active_orbit_config.apogee_alt_km,

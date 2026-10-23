@@ -58,6 +58,7 @@ export function mountWorkspace(element, layoutControls) {
     store.on('selection', (selection) => {
         if (!selection.startsWith('view:')) return;
         focus = selection.slice(5);
+        store.set({ workspace: 'mission' });
         if (store.get('layout') === 'single') arrange();
     });
     store.on('layout', arrange);

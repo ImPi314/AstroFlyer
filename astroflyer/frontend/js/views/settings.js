@@ -1,7 +1,7 @@
 // Display settings for each view. They change what is drawn, never the mission,
 // so the inspector applies them immediately instead of through Apply.
 
-import { PARAMETERS } from '../parameters.js';
+import { PARAMETERS, GROUPS } from '../parameters.js';
 import { WATCH_ROWS } from './watch.js';
 
 export const VIEWS = [
@@ -31,7 +31,7 @@ export const defaultViewSettings = {
         y: 'altitude_km',
         reveal: false,
     },
-    watch: Object.fromEntries(WATCH_ROWS.map((row) => [row.key, true])),
+    watch: Object.fromEntries(WATCH_ROWS.map((row) => [row.key, row.group === 'Orbit'])),
 };
 
 export const viewSchemas = {
@@ -77,7 +77,7 @@ export const viewSchemas = {
             {
                 title: 'Data',
                 fields: [
-                    { key: 'y', label: 'Parameter', type: 'select', options: PARAMETERS.map((p) => [p.key, p.unit ? `${p.label} (${p.unit})` : p.label]) },
+                    { key: 'y', label: 'Parameter', type: 'select', options: PARAMETERS.map((p) => [p.key, `${p.group}: ${p.label}`]) },
                     { key: 'reveal', label: 'Draw only up to the current time', type: 'checkbox' },
                 ],
             },
@@ -85,11 +85,9 @@ export const viewSchemas = {
     },
     watch: {
         title: 'Watch',
-        groups: [
-            {
-                title: 'Rows',
-                fields: WATCH_ROWS.map((row) => ({ key: row.key, label: row.label, type: 'checkbox' })),
-            },
-        ],
+        groups: GROUPS.map((group) => ({
+            title: group,
+            fields: WATCH_ROWS.filter((row) => row.group === group).map((row) => ({ key: row.key, label: row.label, type: 'checkbox' })),
+        })),
     },
 };
