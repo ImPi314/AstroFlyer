@@ -8,8 +8,8 @@ echo.
 echo [*] Launching Desktop Application...
 echo.
 
-if exist "%~dp0dist\AstroFlyer_HEO_Studio\AstroFlyer_HEO_Studio.exe" (
-    start "" "%~dp0dist\AstroFlyer_HEO_Studio\AstroFlyer_HEO_Studio.exe"
+if exist "%~dp0dist\AstroFlyer_HEO\AstroFlyer.exe" (
+    start "" "%~dp0dist\AstroFlyer_HEO\AstroFlyer.exe"
     exit
 ) else (
     echo [*] Launching via Python Desktop Launcher...

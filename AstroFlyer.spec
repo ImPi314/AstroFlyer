@@ -1,80 +1,71 @@
 # -*- mode: python ; coding: utf-8 -*-
 """
-PyInstaller Spec File for AstroFlyer HEO Standalone Desktop Application
-Aerospace Engineering Major Project - ACS College of Engineering
+PyInstaller spec for the AstroFlyer HEO offline desktop app (the only spec; build with build_release.py).
+
+Onedir build -> dist/AstroFlyer_HEO/AstroFlyer.exe with runtime files under _internal/astroflyer/.
+Ships only what the running app needs: frontend, offline data, the C++ kernel DLL and the icon.
+Dev-only libraries (PDF/report generation, plotting) are excluded; see requirements-dev.txt.
 """
 
 import os
-import sys
+from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs, collect_submodules
 
-block_cipher = None
 project_root = os.path.abspath(os.getcwd())
+pkg = os.path.join(project_root, 'astroflyer')
 
 datas = [
-    (os.path.join(project_root, 'astroflyer', 'frontend'), os.path.join('astroflyer', 'frontend')),
-    (os.path.join(project_root, 'astroflyer', 'datasources'), os.path.join('astroflyer', 'datasources')),
-    (os.path.join(project_root, 'astroflyer', 'data'), os.path.join('astroflyer', 'data')),
-    (os.path.join(project_root, 'astroflyer', 'figures'), os.path.join('astroflyer', 'figures')),
-    (os.path.join(project_root, 'astroflyer', 'cpp_engine'), os.path.join('astroflyer', 'cpp_engine')),
-    (os.path.join(project_root, 'astroflyer', 'icon.ico'), 'astroflyer'),
-    (os.path.join(project_root, 'astroflyer', 'THIRD_REVIEW_COMPLETE_PROJECT_GUIDE.pdf'), 'astroflyer'),
+    (os.path.join(pkg, 'frontend'), os.path.join('astroflyer', 'frontend')),
+    (os.path.join(pkg, 'resources'), os.path.join('astroflyer', 'resources')),
+    (os.path.join(pkg, 'datasources'), os.path.join('astroflyer', 'datasources')),
+    (os.path.join(pkg, 'data', 'AstroFlyer_HEO_Mission_Plan.MissionPlan'), os.path.join('astroflyer', 'data')),
+    (os.path.join(pkg, 'icon.ico'), 'astroflyer'),
 ]
+datas = [d for d in datas if os.path.exists(d[0])]
 
-binaries = [
-    (os.path.join(project_root, 'astroflyer', 'cpp_engine', 'astro_physics_kernel.dll'), os.path.join('astroflyer', 'cpp_engine')),
-    (os.path.join(project_root, 'astroflyer', 'cpp_engine', 'astro_physics_kernel.dll'), '.'),
-]
+# The C++ kernel is optional at runtime (astro_engine falls back to Python), but a release should ship it.
+kernel_dll = os.path.join(pkg, 'cpp_engine', 'astro_physics_kernel.dll')
+binaries = []
+if os.path.exists(kernel_dll):
+    binaries.append((kernel_dll, os.path.join('astroflyer', 'cpp_engine')))
+else:
+    print('[!] astro_physics_kernel.dll not found; run astroflyer/cpp_engine/compile_kernel.bat first.')
 
-hiddenimports = [
-    'webview',
-    'webview.platforms.winforms',
-    'ctypes',
-    'numpy',
-    'scipy',
-    'scipy.integrate',
-    'scipy.spatial.transform',
-    'matplotlib',
-    'reportlab',
-    'reportlab.lib',
-    'reportlab.platypus',
-    'reportlab.pdfgen',
-    'astroflyer',
-    'astroflyer.backend',
-    'astroflyer.backend.app_server',
-    'astroflyer.backend.astro_engine',
-    'astroflyer.backend.ecr_mf_controller',
-    'astroflyer.backend.event_predictor',
-    'astroflyer.backend.benchmark_comparison',
-    'astroflyer.backend.trajectory_engine',
-    'astroflyer.backend.fsw_subsystems',
-    'astroflyer.backend.time_systems',
-    'astroflyer.backend.radiation_belts',
-    'astroflyer.backend.covariance_engine',
-    'astroflyer.backend.differential_corrector',
-    'astroflyer.backend.constellation_engine',
-    'astroflyer.backend.ccsds_exporter',
-    'astroflyer.backend.mission_plan_io',
-    'astroflyer.core',
-    'astroflyer.core.mission_plan_io',
-]
+# pyerfa (leap seconds, EOP interpolation in backend/eop.py) ships a compiled extension
+try:
+    binaries += collect_dynamic_libs('erfa')
+    datas += collect_data_files('erfa')
+    erfa_imports = collect_submodules('erfa')
+except Exception:
+    erfa_imports = []
+
+# Backend modules are imported both as 'backend.*' (astroflyer/ on sys.path) and 'astroflyer.backend.*'
+backend_modules = sorted(
+    f[:-3] for f in os.listdir(os.path.join(pkg, 'backend')) if f.endswith('.py') and f != '__init__.py'
+)
+hiddenimports = (
+    ['webview', 'webview.platforms.winforms', 'webview.platforms.edgechromium', 'clr_loader', 'pythonnet',
+     'scipy.integrate', 'scipy.spatial.transform', 'astroflyer', 'astroflyer.resource_paths',
+     'astroflyer.offline_data', 'resource_paths', 'offline_data']
+    + [f'backend.{m}' for m in backend_modules]
+    + [f'astroflyer.backend.{m}' for m in backend_modules]
+    + erfa_imports
+)
 
 a = Analysis(
     ['main.py'],
-    pathex=[project_root, os.path.join(project_root, 'astroflyer')],
+    pathex=[project_root, pkg],
     binaries=binaries,
     datas=datas,
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=['tkinter', 'unittest'],
-    win_no_prefer_redirects=False,
-    win_private_assemblies=False,
-    cipher=block_cipher,
+    excludes=['tkinter', 'pytest', 'matplotlib', 'reportlab', 'pandas', 'lxml', 'IPython',
+              'PyQt5', 'PyQt6', 'PySide2', 'PySide6'],
     noarchive=False,
 )
 
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+pyz = PYZ(a.pure, a.zipped_data)
 
 exe = EXE(
     pyz,
@@ -92,7 +83,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=os.path.join(project_root, 'astroflyer', 'icon.ico'),
+    icon=os.path.join(pkg, 'icon.ico'),
 )
 
 coll = COLLECT(

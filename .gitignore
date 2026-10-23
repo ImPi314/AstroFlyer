@@ -68,3 +68,7 @@ _incoming_patches/
 .pytest_cache/
 datasources/basilisk-2.11.1.zip
 datasources/gmat-win-R2026a.zip
+# Offline data that is fetched at build time, not committed (see tools/fetch_offline_data.py)
+astroflyer/resources/ephemeris/*.bsp
+# Third-party redistributables dropped in for the installer build
+installer/redist/

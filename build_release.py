@@ -3,6 +3,7 @@ AstroFlyer HEO - Release Build & Installer Packaging Pipeline
 Department of Aerospace Engineering, ACS College of Engineering
 
 Orchestrates:
+0. Preflight: C++ kernel DLL built, offline data present (astroflyer/resources/manifest.json)
 1. PyInstaller standalone onedir compilation -> dist/AstroFlyer_HEO/AstroFlyer.exe
 2. Inno Setup installer compilation -> dist_installer/AstroFlyer_HEO_v1.0_Setup.exe
 3. Integrity and checksum verification
@@ -31,6 +32,31 @@ def compute_sha256(filepath):
     return h.hexdigest()
 
 
+def preflight():
+    """Stops the build when a required runtime file is missing; warns about optional ones."""
+    ok = True
+    if sys.version_info >= (3, 14):
+        print("[!] Python 3.14+: check that pythonnet (pywebview's WebView2 backend) installs; 3.12/3.13 are safest.")
+    dll = os.path.join(PROJECT_ROOT, "astroflyer", "cpp_engine", "astro_physics_kernel.dll")
+    if not os.path.exists(dll):
+        print("[ERROR] astro_physics_kernel.dll missing. Run astroflyer\\cpp_engine\\compile_kernel.bat first.")
+        ok = False
+    sys.path.insert(0, os.path.join(PROJECT_ROOT, "astroflyer"))
+    import offline_data
+    for item in offline_data.data_status():
+        if item["present"]:
+            print(f"      [+] {item['file']} (valid until {item['valid_until']})")
+        elif item["required"]:
+            print(f"[ERROR] Required offline data missing: astroflyer/resources/{item['file']}")
+            ok = False
+        else:
+            print(f"      [-] Optional {item['file']} not bundled (python tools/fetch_offline_data.py)")
+    redist = os.path.join(PROJECT_ROOT, "installer", "redist", "MicrosoftEdgeWebView2RuntimeInstallerX64.exe")
+    if not os.path.exists(redist):
+        print("      [-] No offline WebView2 installer in installer/redist/; setup will ask users without WebView2 to install it.")
+    return ok
+
+
 def main():
     print("=" * 80)
     print("      ASTROFLYER HEO - STANDALONE EXE & INSTALLER BUILD PIPELINE")
@@ -38,11 +64,17 @@ def main():
     print("=" * 80)
     start_time = time.time()
 
+    print("\n[*] [0/3] Preflight checks...")
+    if not preflight():
+        sys.exit(1)
+
     # Step 1: Ensure PDF is generated and up to date
     pdf_path = os.path.join(PROJECT_ROOT, "THIRD_REVIEW_COMPLETE_PROJECT_GUIDE.pdf")
     if not os.path.exists(pdf_path):
         print("\n[*] [1/3] Generating publication-grade Technical Handbook PDF...")
-        subprocess.run([sys.executable, "main.py", "--pdf"], cwd=PROJECT_ROOT, check=True)
+        # Needs the dev requirements (reportlab); the handbook ships beside the app, not inside it
+        if subprocess.run([sys.executable, "main.py", "--pdf"], cwd=PROJECT_ROOT).returncode != 0:
+            print("[!] PDF generation failed (pip install -r requirements-dev.txt); continuing without it.")
     else:
         print("\n[*] [1/3] Technical Handbook PDF verified.")
 

@@ -1,0 +1,8 @@
+# Development, report and build tooling. Not bundled into the desktop app.
+-r requirements.txt
+pyinstaller>=6.6
+pytest>=8
+matplotlib>=3.8
+reportlab>=4.0
+pandas>=2.1
+lxml>=5.0

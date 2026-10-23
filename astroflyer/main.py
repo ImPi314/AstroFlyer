@@ -7,7 +7,6 @@ ACS College of Engineering - Aerospace Engineering Department
 import os
 import sys
 import threading
-import time
 import argparse
 import webbrowser
 
@@ -15,7 +14,21 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
 
-from backend.app_server import run_server
+from backend.app_server import create_server, run_server
+
+
+def start_server_thread(port=8003):
+    """Binds 127.0.0.1 before returning, so the window never opens on a server that isn't listening.
+    Keeps the fixed port when it's free (stable origin, so browser storage persists) and falls back to
+    an OS-chosen free port when it's busy."""
+    try:
+        httpd = create_server(port)
+    except OSError:
+        print(f"[!] Port {port} is busy; using a free port instead.")
+        httpd = create_server(0)
+    server_thread = threading.Thread(target=run_server, kwargs={"httpd": httpd}, daemon=True)
+    server_thread.start()
+    return server_thread, httpd.server_address[1]
 
 
 def start_desktop_application(port=8003):
@@ -23,18 +36,15 @@ def start_desktop_application(port=8003):
     print("      ASTROFLYER HEO - PRODUCTION DESKTOP FLIGHT DYNAMICS STUDIO")
     print("      ACS College of Engineering | Aerospace Engineering Major Project")
     print("=" * 80)
-    print(f"[*] Initializing local astrodynamics micro-kernel daemon on port {port}...")
-    
-    server_thread = threading.Thread(target=run_server, args=(port,), daemon=True)
-    server_thread.start()
-    time.sleep(0.6)
+    server_thread, port = start_server_thread(port)
+    print(f"[*] Local astrodynamics micro-kernel daemon listening on 127.0.0.1:{port}")
     
     try:
         import webview
         print("[*] Launching native Windows desktop application window (WebView2 engine)...")
         window = webview.create_window(
             title="AstroFlyer HEO - Flight Dynamics & Trajectory Operations Studio",
-            url=f"http://localhost:{port}",
+            url=f"http://127.0.0.1:{port}",
             width=1440,
             height=920,
             min_size=(1024, 700),
@@ -45,13 +55,13 @@ def start_desktop_application(port=8003):
     except Exception as e:
         print(f"[!] Desktop window manager notice: {e}")
         print("[*] Falling back to default desktop view...")
-        webbrowser.open(f"http://localhost:{port}")
+        webbrowser.open(f"http://127.0.0.1:{port}")
         server_thread.join()
 
 
 def main():
     parser = argparse.ArgumentParser(description="AstroFlyer HEO Third Review Desktop Launcher")
-    parser.add_argument('--port', type=int, default=8003, help="Internal port for offline daemon")
+    parser.add_argument('--port', type=int, default=8003, help="Internal port for offline daemon (falls back to a free port if busy)")
     parser.add_argument('--pdf', action='store_true', help="Re-generate Technical Handbook PDF")
     parser.add_argument('--browser', action='store_true', help="Open in browser instead of desktop window")
     args = parser.parse_args()
@@ -60,10 +70,8 @@ def main():
         from scripts.generate_review_pdf import build_pdf
         build_pdf()
     elif args.browser:
-        server_thread = threading.Thread(target=run_server, args=(args.port,), daemon=True)
-        server_thread.start()
-        time.sleep(0.5)
-        webbrowser.open(f"http://localhost:{args.port}")
+        server_thread, port = start_server_thread(args.port)
+        webbrowser.open(f"http://127.0.0.1:{port}")
         server_thread.join()
     else:
         start_desktop_application(port=args.port)

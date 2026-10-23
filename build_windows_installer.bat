@@ -4,6 +4,7 @@ echo ===========================================================================
 echo    ASTROFLYER HEO - STANDALONE OFFLINE DESKTOP EXE & INSTALLER BUILDER
 echo ==============================================================================
 echo.
-python "%~dp0installer\build_desktop_package.py"
+cd /d "%~dp0"
+python build_release.py
 echo.
 pause

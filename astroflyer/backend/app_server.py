@@ -11,8 +11,8 @@ import math
 import time
 import json
 import urllib.parse
-from http.server import HTTPServer, SimpleHTTPRequestHandler
-from typing import Any, cast, override
+from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+from typing import Any, Optional, cast, override
 import numpy as np
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -979,13 +979,19 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
             self.send_json({"status": "404", "message": f"Endpoint {path} not found"}, status_code=404)
 
 
-def run_server(port: int = 8003) -> None:
-    server_address = ('', port)
-    httpd = HTTPServer(server_address, ThirdReviewAppHandler)
+def create_server(port: int = 8003, host: str = "127.0.0.1") -> ThreadingHTTPServer:
+    """Binds the API/frontend server. Port 0 lets the OS pick a free port (read it from server_address)."""
+    return ThreadingHTTPServer((host, port), ThirdReviewAppHandler)
+
+
+def run_server(port: int = 8003, host: str = "127.0.0.1", httpd: Optional[ThreadingHTTPServer] = None) -> None:
+    if httpd is None:
+        httpd = create_server(port, host)
+    port = httpd.server_address[1]
     print(f"==========================================================================")
     print(f" ASTROFLYER HEO - THIRD REVIEW PRODUCTION FLIGHT DYNAMICS SERVER")
     print(f" High-Precision Trajectory Propagation & Mission Events Prediction")
-    print(f" Serving AstroFlyer HEO Flight Operations Studio at: http://localhost:{port}")
+    print(f" Serving AstroFlyer HEO Flight Operations Studio at: http://127.0.0.1:{port}")
     print(f"==========================================================================")
     try:
         httpd.serve_forever()

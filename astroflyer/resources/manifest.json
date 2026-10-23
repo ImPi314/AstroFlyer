@@ -1,0 +1,29 @@
+{
+  "_comment": "Offline data shipped with AstroFlyer. Nothing here is downloaded at runtime. Refresh with tools/fetch_offline_data.py on a machine with internet, then rebuild.",
+  "files": {
+    "iers/Leap_Second.dat": {
+      "owner": "backend/eop.py",
+      "source": "IERS Bulletin C (via astropy-iers-data)",
+      "valid_until": "2027-06-28",
+      "required": true
+    },
+    "iers/finals2000A.all": {
+      "owner": "backend/eop.py",
+      "source": "IERS Rapid Service finals2000A (via astropy-iers-data)",
+      "valid_until": null,
+      "required": true
+    },
+    "spaceweather/SW-All.csv": {
+      "owner": "offline_data.py",
+      "source": "https://celestrak.org/SpaceData/SW-All.csv",
+      "valid_until": null,
+      "required": false
+    },
+    "ephemeris/de440s.bsp": {
+      "owner": "not wired yet",
+      "source": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de440s.bsp",
+      "valid_until": "2150-01-22",
+      "required": false
+    }
+  }
+}
