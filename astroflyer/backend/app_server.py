@@ -10,6 +10,7 @@ import sys
 import math
 import time
 import json
+import socket
 import urllib.parse
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from typing import Any, Optional, cast, override
@@ -979,9 +980,22 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
             self.send_json({"status": "404", "message": f"Endpoint {path} not found"}, status_code=404)
 
 
+class LocalAppServer(ThreadingHTTPServer):
+    """Refuses a port another process already holds, so the launcher can fall back to a free one.
+    On Windows SO_REUSEADDR lets a second bind succeed on a busy port, so it is off there and
+    SO_EXCLUSIVEADDRUSE is set instead."""
+    allow_reuse_address = sys.platform != "win32"
+    daemon_threads = True
+
+    def server_bind(self) -> None:
+        if sys.platform == "win32" and hasattr(socket, "SO_EXCLUSIVEADDRUSE"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        super().server_bind()
+
+
 def create_server(port: int = 8003, host: str = "127.0.0.1") -> ThreadingHTTPServer:
     """Binds the API/frontend server. Port 0 lets the OS pick a free port (read it from server_address)."""
-    return ThreadingHTTPServer((host, port), ThirdReviewAppHandler)
+    return LocalAppServer((host, port), ThirdReviewAppHandler)
 
 
 def run_server(port: int = 8003, host: str = "127.0.0.1", httpd: Optional[ThreadingHTTPServer] = None) -> None:
