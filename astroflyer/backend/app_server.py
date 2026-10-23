@@ -61,6 +61,7 @@ from backend.fsw_subsystems import (
     BasiliskSubsystems, BasiliskAttitudeGuidance, BasiliskMissionSimulator
 )
 from backend.time_systems import TimeStandardEngine, CoordinateFrameEngine
+from backend.epoch import Epoch
 from backend.radiation_belts import RadiationBeltModel, RadiationParetoOptimizer
 from backend.covariance_engine import CovarianceEngine, CovarianceSteeredAdaptiveStepController
 from backend.differential_corrector import DifferentialCorrector, FiniteBurnEngine, MultiBurnPerigeePumpingPlanner
@@ -695,6 +696,13 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
             num_orbits = max(0.5, min(20.0, _get_float_param(params, 'num_orbits', 3.0)))
             model_type: str = _get_str_param(params, 'model', _get_str_param(params, 'gravity_model', 'coupled'))
             method_type: str = _get_str_param(params, 'method', _get_str_param(params, 'integrator', 'Radau'))
+            # Initial-state epoch (ISO 8601, UTC unless tagged TAI/TT/TDB/UT1/GPS); default J2000.0
+            epoch_text: str = _get_str_param(params, 'epoch', '')
+            try:
+                initial_epoch = Epoch.coerce(epoch_text or None)
+            except ValueError as exc:
+                self.send_json({"error": str(exc)}, 400)
+                return
             pts_val = _get_int_param(params, 'num_points', _get_int_param(params, 'points', 0))
             if pts_val <= 0:
                 pts_per_orb = _get_int_param(params, 'points_per_orbit', 400)
@@ -736,7 +744,7 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
 
             # 4. Integrate Coupled Equations of Motion in Real-Time
             t_solve_start = time.time()
-            engine = ThirdReviewEngine(y0)
+            engine = ThirdReviewEngine(y0, epoch=initial_epoch)
             sol: dict[str, Any] = cast(dict[str, Any], engine.propagate(
                 t_span,
                 num_points=num_points,
@@ -870,7 +878,7 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
             cov_engine = CovarianceEngine()
             cov_data = cov_engine.propagate_stm_and_covariance(times_arr, pos_arr, vel_arr)
 
-            time_engine = TimeStandardEngine()
+            time_engine = TimeStandardEngine(epoch=initial_epoch)
             time_scales_data = time_engine.epoch_seconds_to_all_scales(float(times_arr[-1]))
 
             exact_apsides = predictor.predict_apsidal_events(times_arr, pos_arr, vel_arr)
@@ -931,6 +939,10 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
                 "raan_deg": cast(np.ndarray, sol['raan_deg']).tolist(),
                 "arg_perigee_deg": cast(np.ndarray, sol['arg_perigee_deg']).tolist(),
                 "true_anomaly_deg": ta_deg_arr.tolist(),
+                "epoch_utc": sol['epoch_utc'],
+                "utc_iso": sol['utc_iso'],
+                "frame": sol['frame'],
+                "eop_in_range": sol['eop_in_range'],
                 "latitude_deg": cast(np.ndarray, sol['latitude_deg']).tolist(),
                 "longitude_deg": cast(np.ndarray, sol['longitude_deg']).tolist(),
                 "energy_error": cast(np.ndarray, sol['energy_fractional_error']).tolist(),

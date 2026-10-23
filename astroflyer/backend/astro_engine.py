@@ -23,6 +23,9 @@ import math
 import numpy as np
 from scipy.integrate import solve_ivp
 
+from .epoch import Epoch
+from .frames import EarthOrientation, FastEarthRotation, gcrf_to_geodetic
+
 # ==============================================================================
 # LAYER 1: COMPILED C++17 ASTRODYNAMICS MATH CORE BINDINGS (CTYPES INTEROP)
 # ==============================================================================
@@ -254,23 +257,15 @@ def calculate_theoretical_j2_drifts(a, e, inc, num_orbits, mu=MU_EARTH, r_e=R_EA
     }
 
 
-def eci_to_ecef_geodetic(r_eci, t_seconds, omega_e=OMEGA_EARTH):
-    """Converts ECI position vector to ECEF Latitude, Longitude, and Altitude."""
-    theta_gst = (omega_e * t_seconds) % (2.0 * math.pi)
-    cos_t = math.cos(theta_gst)
-    sin_t = math.sin(theta_gst)
+def eci_to_ecef_geodetic(r_eci, t_seconds, omega_e=OMEGA_EARTH, epoch=None):
+    """GCRF position (m) at t_seconds after `epoch` -> geodetic (lat_deg, lon_deg, height_km).
 
-    x_ecef =  cos_t * r_eci[0] + sin_t * r_eci[1]
-    y_ecef = -sin_t * r_eci[0] + cos_t * r_eci[1]
-    z_ecef = r_eci[2]
-
-    r_mag = math.sqrt(x_ecef**2 + y_ecef**2 + z_ecef**2)
-    alt_km = (r_mag - R_EARTH) / 1000.0
-
-    lat_rad = math.asin(max(-1.0, min(1.0, z_ecef / r_mag)))
-    lon_rad = math.atan2(y_ecef, x_ecef)
-
-    return math.degrees(lat_rad), math.degrees(lon_rad), alt_km
+    Uses the IAU 2006/2000A Earth orientation chain with IERS EOP and the
+    WGS-84 ellipsoid. `epoch` defaults to J2000.0; omega_e is kept for
+    backward compatibility and no longer used.
+    """
+    lat, lon, h_m = gcrf_to_geodetic(np.asarray(r_eci, dtype=float), Epoch.coerce(epoch) + float(t_seconds))
+    return lat, lon, h_m / 1000.0
 
 
 # ==============================================================================
@@ -447,9 +442,17 @@ def full_production_eom(
     enable_tesseral=True,
     enable_relativity=True,
     b_star=0.015,
-    cr_area_over_m=0.02
+    cr_area_over_m=0.02,
+    epoch_tt_j2000_s=0.0,
+    earth_rotation=None
 ):
-    """Full coupled equations of motion with optional C++17 native acceleration."""
+    """Full coupled equations of motion with optional C++17 native acceleration.
+
+    t is seconds after the initial epoch. epoch_tt_j2000_s is that epoch as TT
+    seconds past J2000.0, so the force model's TT time is epoch_tt_j2000_s + t.
+    earth_rotation is a frames.FastEarthRotation; earth_rotation.matrix(t) gives
+    the GCRF -> ITRF rotation for tesserals and co-rotating drag.
+    """
     vx, vy, vz = state[3:6]
 
     if _cpp_kernel is not None and hasattr(_cpp_kernel, "compute_coupled_accelerations"):
@@ -503,8 +506,10 @@ class ThirdReviewEngine:
     """
     Final Production Propagator & Mission Analysis Engine for the Third Review.
     """
-    def __init__(self, initial_state, mu=MU_EARTH, r_e=R_EARTH):
+    def __init__(self, initial_state, mu=MU_EARTH, r_e=R_EARTH, epoch=None):
+        """initial_state is a GCRF state [m, m/s] at `epoch` (Epoch, ISO string, or None for J2000.0)."""
         self.y0 = np.array(initial_state, dtype=np.float64)
+        self.epoch = Epoch.coerce(epoch)
         self.mu = mu
         self.r_e = r_e
 
@@ -550,8 +555,13 @@ class ThirdReviewEngine:
             third_b_v = enable_third_body
             srp_v = enable_srp
 
+        epoch_tt_j2000_s = self.epoch - Epoch.j2000()     # TAI and TT differ by a constant
+        earth_rotation = FastEarthRotation(self.epoch, t_span[0], t_span[1])
+
         eom = lambda t, y: full_production_eom(
             t, y,
+            epoch_tt_j2000_s=epoch_tt_j2000_s,
+            earth_rotation=earth_rotation,
             mu=self.mu,
             r_e=self.r_e,
             j2=j2_v,
@@ -579,7 +589,11 @@ class ThirdReviewEngine:
         n_pts = len(times)
         r_mags = np.linalg.norm(pos, axis=1)
         v_mags = np.linalg.norm(vel, axis=1)
-        alt_km = (r_mags - self.r_e) / 1000.0
+
+        # Earth orientation for the whole output grid, built once
+        orientation = EarthOrientation(self.epoch, times)
+        lat_arr, lon_arr, height_m = gcrf_to_geodetic(pos, self.epoch, orientation=orientation)
+        alt_km = height_m / 1000.0
 
         a_arr = np.zeros(n_pts)
         e_arr = np.zeros(n_pts)
@@ -589,8 +603,6 @@ class ThirdReviewEngine:
         nu_arr = np.zeros(n_pts)
         energy_arr = np.zeros(n_pts)
         h_arr = np.zeros(n_pts)
-        lat_arr = np.zeros(n_pts)
-        lon_arr = np.zeros(n_pts)
 
         for i in range(n_pts):
             elem = cartesian_to_keplerian(pos[i], vel[i], mu=self.mu)
@@ -602,10 +614,6 @@ class ThirdReviewEngine:
             nu_arr[i] = math.degrees(elem['nu'])
             energy_arr[i] = elem['energy']
             h_arr[i] = elem['h_mag']
-
-            lat, lon, _ = eci_to_ecef_geodetic(pos[i], times[i])
-            lat_arr[i] = lat
-            lon_arr[i] = lon
 
         energy_err = np.abs((energy_arr - self.initial_energy) / self.initial_energy)
         h_err = np.abs((h_arr - self.initial_h) / self.initial_h)
@@ -703,6 +711,10 @@ class ThirdReviewEngine:
             'h_fractional_error': h_err,
             'latitude_deg': lat_arr,
             'longitude_deg': lon_arr,
+            'epoch_utc': self.epoch.iso('UTC'),
+            'utc_iso': [(self.epoch + float(t)).iso('UTC') for t in times],
+            'frame': 'GCRF',
+            'eop_in_range': bool(orientation.eop_in_range),
             'model': model_clean,
             'method': method,
             'force_diagnostics': force_diag
