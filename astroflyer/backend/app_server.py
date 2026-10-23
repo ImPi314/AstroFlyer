@@ -943,6 +943,10 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
                 "utc_iso": sol['utc_iso'],
                 "frame": sol['frame'],
                 "eop_in_range": sol['eop_in_range'],
+                "epoch": sol['epoch'],
+                "events": sol['events'],
+                "position_itrf_m": cast(np.ndarray, sol['position_itrf_m']).tolist(),
+                "velocity_itrf_ms": cast(np.ndarray, sol['velocity_itrf_ms']).tolist(),
                 "latitude_deg": cast(np.ndarray, sol['latitude_deg']).tolist(),
                 "longitude_deg": cast(np.ndarray, sol['longitude_deg']).tolist(),
                 "energy_error": cast(np.ndarray, sol['energy_fractional_error']).tolist(),
@@ -987,6 +991,9 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
                 "benchmark_summary": HEOBenchmarkSuite().generate_benchmark_report(),
                 "ecr_mf_certificates": certificates
             }
+            # Unit Sun vector in the frame of position_m; absent outside the bundled DE440 years
+            if sol.get('sun_direction_eci') is not None:
+                payload["sun_direction_eci"] = cast(np.ndarray, sol['sun_direction_eci']).tolist()
             self.send_json(payload)
         else:
             self.send_json({"status": "404", "message": f"Endpoint {path} not found"}, status_code=404)
