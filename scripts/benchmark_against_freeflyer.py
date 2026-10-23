@@ -8,16 +8,15 @@ and computes sub-meter trajectory residuals, energy invariant conservation, and 
 
 import os
 import sys
-import re
 import time
 import subprocess
 import numpy as np
 
 # Ensure project paths
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ZEROETH_DIR = os.path.join(ROOT_DIR, "zeroeth review")
-sys.path.insert(0, ZEROETH_DIR)
-sys.path.insert(0, os.path.join(ZEROETH_DIR, "core"))
+ASTROFLYER_DIR = os.path.join(ROOT_DIR, "astroflyer")
+sys.path.insert(0, ROOT_DIR)
+sys.path.insert(0, ASTROFLYER_DIR)
 
 from core.astro_engine import (
     TrajectoryEngine, cartesian_to_keplerian, keplerian_to_cartesian,
@@ -26,63 +25,29 @@ from core.astro_engine import (
 
 FF_CLI_PATH = r"C:\Program Files\FreeFlyer-8.0.1.75482685\resources\bin\ff-cli.exe"
 OUTPUT_DIR = os.path.join(ROOT_DIR, "datasources", "freeflyer_reference", "_Output_Files")
-BENCHMARK_PLAN_PATH = os.path.join(ROOT_DIR, "datasources", "freeflyer_reference", "mission_plans", "AstroFlyer_Validation_Molniya.MissionPlan")
+BENCHMARK_PLAN_PATH = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT_DIR, "datasources", "freeflyer_reference", "AstroFlyer_Validation_Molniya.MissionPlan")
 TRUTH_REPORT_PATH = os.path.join(OUTPUT_DIR, "AstroFlyer_FreeFlyer_Truth.txt")
-DOCS_REPORT_PATH = os.path.join(ZEROETH_DIR, "docs", "FREEFLYER_CROSS_VALIDATION_REPORT.md")
-ROOT_REPORT_PATH = os.path.join(ROOT_DIR, "FREEFLYER_CROSS_VALIDATION_REPORT.md")
+DOCS_REPORT_PATH = os.path.join(ROOT_DIR, "docs", "reports", "FREEFLYER_CROSS_VALIDATION_REPORT.md")
+ROOT_REPORT_PATH = os.path.join(ROOT_DIR, "docs", "reports", "FREEFLYER_CROSS_VALIDATION_REPORT.md")
 
 
-def generate_freeflyer_validation_mission_plan(output_plan_path, duration_hours=12.0):
+def require_user_supplied_mission_plan(plan_path):
     """
-    Generates a flight-certified FreeFlyer Mission Plan XML based on the official
-    HighlyEllipticalVariableStepProp.MissionPlan template, tailored for AstroFlyer cross-validation.
+    AstroFlyer does not ship FreeFlyer sample Mission Plans. The benchmark needs a
+    report-enabled plan built in the user's own licensed FreeFlyer install; exit
+    with instructions when it is missing.
     """
-    os.makedirs(os.path.dirname(output_plan_path), exist_ok=True)
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-
-    template_path = os.path.join(ROOT_DIR, "datasources", "freeflyer_reference", "mission_plans", "HighlyEllipticalVariableStepProp.MissionPlan")
-    with open(template_path, "r", encoding="utf-8") as f:
-        text = f.read()
-
-    # 1. Update simulation duration: 'TS(5 days)' -> 'TS({duration_hours} hours)'
-    text = re.sub(r"While\s*\(Spacecraft1\.ElapsedTime\s*<\s*TS\([^)]+\)\);", f"While (Spacecraft1.ElapsedTime < TS({duration_hours} hours));", text)
-
-    # 2. Update output file target
-    text = text.replace("HighlyEllipticalVariableStepProp.txt", "AstroFlyer_FreeFlyer_Truth.txt")
-
-    # 3. Update Report Header
-    # Match the header block
-    text = re.sub(
-        r'Report\s*"Epoch.*?to\s*ReportInterface1[^;]*;',
-        'Report "ElapsedSec,X_km,Y_km,Z_km,VX_kms,VY_kms,VZ_kms,StepSize_sec,Height_km" to ReportInterface1 without headers without pad;',
-        text
+    if os.path.exists(plan_path):
+        return
+    sys.exit(
+        "[-] FreeFlyer benchmark plan not found:\n"
+        f"    {plan_path}\n"
+        "    AstroFlyer no longer bundles FreeFlyer sample Mission Plans. Build a Molniya\n"
+        "    plan in your own FreeFlyer install that reports ElapsedSec,X,Y,Z,VX,VY,VZ (km, km/s),\n"
+        "    StepSize and Height to AstroFlyer_FreeFlyer_Truth.txt, save it at the path above,\n"
+        "    or pass its path as the first argument. Starting elements can be exported with\n"
+        "    core.mission_plan_io.export_to_mission_plan."
     )
-
-    # 4. Update Report Data in the main while loop
-    replacement_report = (
-        'Report Spacecraft1.ElapsedTime.ToSeconds<14,4>, ",",'
-        ' Spacecraft1.X<16,6>, ",",'
-        ' Spacecraft1.Y<16,6>, ",",'
-        ' Spacecraft1.Z<16,6>, ",",'
-        ' Spacecraft1.VX<16,6>, ",",'
-        ' Spacecraft1.VY<16,6>, ",",'
-        ' Spacecraft1.VZ<16,6>, ",",'
-        ' (Spacecraft1.Propagator AsType RK89).StepJustTaken<12,4>, ",",'
-        ' Spacecraft1.Height<16,6>'
-        ' to ReportInterface1 without headers without pad;'
-    )
-
-    # Replace the existing report to ReportInterface1
-    text = re.sub(
-        r'Report\s*Spacecraft1\.EpochText.*?to\s*ReportInterface1\s*without\s*headers;',
-        replacement_report,
-        text,
-        flags=re.DOTALL
-    )
-
-    with open(output_plan_path, "w", encoding="utf-8") as f:
-        f.write(text)
-    print(f"[+] Generated FreeFlyer Mission Plan: {output_plan_path}")
 
 
 def run_freeflyer_headless(plan_path):
@@ -173,8 +138,9 @@ def run_benchmark():
     print("  Industry Truth Benchmark: Runge-Kutta 8(9) vs. C++17 Radau-IIA")
     print("=" * 80)
 
-    # 1. Generate & Run FreeFlyer
-    generate_freeflyer_validation_mission_plan(BENCHMARK_PLAN_PATH, duration_hours=12.0)
+    # 1. Run FreeFlyer on the user-supplied plan
+    require_user_supplied_mission_plan(BENCHMARK_PLAN_PATH)
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
     ff_runtime = run_freeflyer_headless(BENCHMARK_PLAN_PATH)
 
     # 2. Parse Truth Ephemeris
