@@ -8,7 +8,7 @@ Dev-only libraries (PDF/report generation, plotting) are excluded; see requireme
 """
 
 import os
-from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs, collect_submodules
+from PyInstaller.utils.hooks import collect_all, collect_data_files, collect_dynamic_libs, collect_submodules
 
 project_root = os.path.abspath(os.getcwd())
 pkg = os.path.join(project_root, 'astroflyer')
@@ -38,6 +38,15 @@ try:
 except Exception:
     erfa_imports = []
 
+# pymsis (NRLMSIS drag density) ships a compiled Fortran extension plus .parm data files
+try:
+    msis_datas, msis_binaries, msis_imports = collect_all('pymsis')
+    datas += msis_datas
+    binaries += msis_binaries
+    erfa_imports += msis_imports
+except Exception:
+    print('[!] pymsis not installed; drag will use the fallback atmosphere.')
+
 # Backend modules are imported both as 'backend.*' (astroflyer/ on sys.path) and 'astroflyer.backend.*'
 backend_modules = sorted(
     f[:-3] for f in os.listdir(os.path.join(pkg, 'backend')) if f.endswith('.py') and f != '__init__.py'
@@ -45,7 +54,7 @@ backend_modules = sorted(
 hiddenimports = (
     ['webview', 'webview.platforms.winforms', 'webview.platforms.edgechromium', 'clr_loader', 'pythonnet',
      'scipy.integrate', 'scipy.spatial.transform', 'astroflyer', 'astroflyer.resource_paths',
-     'astroflyer.offline_data', 'resource_paths', 'offline_data']
+     'astroflyer.offline_data', 'resource_paths', 'offline_data', 'jplephem', 'jplephem.spk']
     + [f'backend.{m}' for m in backend_modules]
     + [f'astroflyer.backend.{m}' for m in backend_modules]
     + erfa_imports
