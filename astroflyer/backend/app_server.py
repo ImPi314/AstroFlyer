@@ -725,7 +725,7 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
             srp_area = _get_float_param(params, 'srp_area', 15.0)
 
             # Atmospheric B* parameter and SRP area-to-mass
-            b_star = (cd * drag_area) / (2.0 * max(10.0, spacecraft_mass))
+            b_star = (cd * drag_area) / max(10.0, spacecraft_mass)  # Cd*A/m; the EOM applies the 1/2
             cr_area_over_m = (cr * srp_area) / max(10.0, spacecraft_mass)
 
             # Initial State Vector via Classical Keplerian Conversion

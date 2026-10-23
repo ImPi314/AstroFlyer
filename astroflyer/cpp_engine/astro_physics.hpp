@@ -240,7 +240,7 @@ namespace AstroCore {
         return r * factor;
     }
 
-    inline Vector3D ComputeJ2Accel(const Vector3D& r, double mu = MU_EARTH, double r_e = R_EARTH, double j2 = J2_EARTH) {
+    inline Vector3D ComputeJ2Accel(const Vector3D& r, double mu = MU_EARTH, double r_e = R_EARTH_EQ, double j2 = J2_EARTH) {
         double r_mag = r.norm();
         if (r_mag < 1000.0) return Vector3D(0, 0, 0);
         double r2 = r_mag * r_mag;
@@ -255,7 +255,7 @@ namespace AstroCore {
         return {ax_j2, ay_j2, az_j2};
     }
 
-    inline Vector3D ComputeJ3Accel(const Vector3D& r, double mu = MU_EARTH, double r_e = R_EARTH, double j3 = J3_EARTH) {
+    inline Vector3D ComputeJ3Accel(const Vector3D& r, double mu = MU_EARTH, double r_e = R_EARTH_EQ, double j3 = J3_EARTH) {
         double r_mag = r.norm();
         if (r_mag < 1000.0) return Vector3D(0, 0, 0);
         double r2 = r_mag * r_mag;
@@ -264,12 +264,12 @@ namespace AstroCore {
 
         double ax_j3 = -factor_j3 * (r.x / r_mag) * (3.0 * z_r - 7.0 * (z_r * z_r * z_r));
         double ay_j3 = -factor_j3 * (r.y / r_mag) * (3.0 * z_r - 7.0 * (z_r * z_r * z_r));
-        double az_j3 = -factor_j3 * (3.0 * (z_r * z_r) - 7.0 * std::pow(z_r, 4.0) - 0.6);
+        double az_j3 = -factor_j3 * (6.0 * (z_r * z_r) - 7.0 * std::pow(z_r, 4.0) - 0.6);
 
         return {ax_j3, ay_j3, az_j3};
     }
 
-    inline Vector3D ComputeJ4Accel(const Vector3D& r, double mu = MU_EARTH, double r_e = R_EARTH, double j4 = J4_EARTH) {
+    inline Vector3D ComputeJ4Accel(const Vector3D& r, double mu = MU_EARTH, double r_e = R_EARTH_EQ, double j4 = J4_EARTH) {
         double r_mag = r.norm();
         if (r_mag < 1000.0) return Vector3D(0, 0, 0);
         double r2 = r_mag * r_mag;
@@ -284,7 +284,7 @@ namespace AstroCore {
         return {ax_j4, ay_j4, az_j4};
     }
 
-    inline Vector3D ComputeTesseralAccel(const Vector3D& r, double t_seconds, double mu = MU_EARTH, double r_e = R_EARTH) {
+    inline Vector3D ComputeTesseralAccel(const Vector3D& r, double t_seconds, double mu = MU_EARTH, double r_e = R_EARTH_EQ) {
         double r_mag = r.norm();
         if (r_mag < 1000.0) return Vector3D(0, 0, 0);
         double theta_gst = std::fmod(OMEGA_EARTH * t_seconds, 2.0 * PI);

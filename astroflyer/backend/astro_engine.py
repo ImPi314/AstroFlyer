@@ -6,10 +6,10 @@ Part of Major Project: Precise Trajectory Propagation & Events Prediction for HE
 Final Production Release: High-Fidelity Coupled Mechanics & V&V Certification
 
 Features:
-  - Vectorized Coupled EOM: Central Gravity + J2, J3, J4 Geopotentials
-  - Third-Body Gravitational Perturbations (Sun & Moon Point-Mass Ephemerides)
-  - Atmospheric Drag with Earth Co-rotation & Exponential Scale Height
-  - Solar Radiation Pressure (SRP) with Conical Shadow Gating
+  - Coupled EOM: EGM2008 spherical-harmonic gravity (up to 70x70), see forces.py
+  - Third-Body Sun & Moon gravity from the bundled JPL DE440 ephemeris
+  - Atmospheric Drag with NRLMSISE-00 density and Earth co-rotation
+  - Solar Radiation Pressure (SRP) with conical umbra/penumbra shadow
   - Instantaneous Perturbation Acceleration Decomposition
   - Machine-Precision Stiff Radau-IIA & RK45 Numerical Integrators
   - Energy Invariant Monitoring (|ΔE/E₀| ≤ 10⁻¹¹)
@@ -23,7 +23,9 @@ import math
 import numpy as np
 from scipy.integrate import solve_ivp
 
+from . import forces
 from .epoch import Epoch
+from .forces import ForceModelConfig, SimpleEarthRotation
 from .frames import EarthOrientation, FastEarthRotation, gcrf_to_geodetic
 
 # ==============================================================================
@@ -43,7 +45,10 @@ _candidate_paths = [
 _cpp_dll_path = next((p for p in _candidate_paths if os.path.exists(p)), _candidate_paths[0])
 
 _cpp_kernel = None
-if os.path.exists(_cpp_dll_path):
+# The C++ kernel still implements the old simplified physics (no DE440, no MSIS,
+# zonal-only gravity), so it is opt-in until it is ported and benchmarked.
+_USE_CPP_KERNEL = os.environ.get("ASTROFLYER_USE_CPP_KERNEL", "0") == "1"
+if _USE_CPP_KERNEL and os.path.exists(_cpp_dll_path):
     try:
         _cpp_kernel = ctypes.CDLL(_cpp_dll_path)
         _cpp_kernel.compute_total_acceleration.argtypes = [
@@ -96,17 +101,17 @@ def get_engine_status():
 # ==============================================================================
 # ASTRODYNAMICAL CONSTANTS (WGS-84 / IERS / NASA JPL Standards)
 # ==============================================================================
-MU_EARTH = 3.986004418e14          # Earth's gravitational parameter (m^3/s^2)
-R_EARTH = 6371000.0                # Mean Earth radius (m)
+MU_EARTH = forces.MU_EARTH          # EGM2008 GM, 3.986004415e14 m^3/s^2 (same value the gravity field uses)
+R_EARTH = 6371000.0                # Mean Earth radius (m); display only, never a harmonic reference radius
 R_EARTH_EQ = 6378137.0             # Equatorial Earth radius (m)
-J2_EARTH = 1.08262668e-3           # Earth J2 zonal harmonic
-J3_EARTH = -2.53241052e-6          # Earth J3 zonal harmonic (pear shape)
-J4_EARTH = -1.61992164e-6          # Earth J4 zonal harmonic
-OMEGA_EARTH = 7.2921159e-5         # Earth rotation rate (rad/s)
+J2_EARTH = forces.J2_EARTH         # EGM2008 unnormalized zonals (reference radius forces.R_GRAVITY_REF)
+J3_EARTH = forces.J3_EARTH
+J4_EARTH = forces.J4_EARTH
+OMEGA_EARTH = forces.OMEGA_EARTH   # Earth rotation rate (rad/s)
 
 # Third-Body Parameters (NASA JPL DE440)
-MU_SUN = 1.32712440018e20          # Sun gravitational parameter (m^3/s^2)
-MU_MOON = 4.9048695e12             # Moon gravitational parameter (m^3/s^2)
+MU_SUN = forces.MU_SUN             # DE440 Sun gravitational parameter (m^3/s^2)
+MU_MOON = forces.MU_MOON           # DE440 Moon gravitational parameter (m^3/s^2)
 AU_METERS = 149597870700.0         # Astronomical Unit (m)
 D_MOON_MEAN = 384400000.0          # Mean Earth-Moon distance (m)
 
@@ -230,7 +235,7 @@ def cartesian_to_keplerian(r_vec, v_vec, mu=MU_EARTH):
     }
 
 
-def calculate_theoretical_j2_drifts(a, e, inc, num_orbits, mu=MU_EARTH, r_e=R_EARTH, j2=J2_EARTH):
+def calculate_theoretical_j2_drifts(a, e, inc, num_orbits, mu=MU_EARTH, r_e=forces.R_GRAVITY_REF, j2=J2_EARTH):
     """
     Calculates first-order theoretical secular precession rates from Lagrange Planetary Equations.
     """
@@ -271,6 +276,25 @@ def eci_to_ecef_geodetic(r_eci, t_seconds, omega_e=OMEGA_EARTH, epoch=None):
 # ==============================================================================
 # DETAILED PERTURBATION ACCELERATION DECOMPOSITION
 # ==============================================================================
+def _legacy_force_config(j2, j3, j4, b_star, cr_area_over_m, enable_drag=True, enable_third_body=True,
+                         enable_srp=True, enable_tesseral=True, enable_relativity=True):
+    """Maps the older J2/J3/J4 + enable_* arguments onto a ForceModelConfig."""
+    cfg = ForceModelConfig(cd_area_over_m=b_star, cr_area_over_m=cr_area_over_m, drag=enable_drag,
+                           third_body=enable_third_body, srp=enable_srp, relativity=enable_relativity)
+    if j2 == 0:
+        cfg.gravity_degree, cfg.gravity_order = 0, 0
+    elif j3 == 0 and j4 == 0:
+        cfg.gravity_degree, cfg.gravity_order = 2, 0
+    elif not enable_tesseral:
+        cfg.gravity_order = 0
+    return cfg
+
+
+def _earth_rotation_at(t, epoch_tt_j2000_s, earth_rotation):
+    rot = earth_rotation if earth_rotation is not None else SimpleEarthRotation(epoch_tt_j2000_s)
+    return rot.matrix(t), rot.omega(t)
+
+
 def compute_acceleration_components(
     state,
     t,
@@ -280,152 +304,54 @@ def compute_acceleration_components(
     j3=J3_EARTH,
     j4=J4_EARTH,
     b_star=0.015,
-    cr_area_over_m=0.02
+    cr_area_over_m=0.02,
+    force_config=None,
+    epoch_tt_j2000_s=0.0,
+    earth_rotation=None
 ):
-    """Computes exact 3D acceleration vectors and scalar magnitudes for all forces."""
-    x, y, z, vx, vy, vz = state
-    r = math.sqrt(x**2 + y**2 + z**2)
-    r2, r3, r4 = r**2, r**3, r**4
-    z2 = z**2
+    """
+    Acceleration vectors and magnitudes for every force term (GCRF, m/s^2).
+    b_star is Cd*A/m (m^2/kg). The J2/J3/J4 terms are reported separately for
+    display; 'a_tesseral' is the rest of the spherical-harmonic field.
+    mu and r_e are kept for backward compatibility; the gravity model's own
+    GM and reference radius are always used.
+    """
+    cfg = force_config or _legacy_force_config(j2, j3, j4, b_star, cr_area_over_m)
+    r = np.asarray(state[0:3], dtype=float)
+    v = np.asarray(state[3:6], dtype=float)
+    rot, omega = _earth_rotation_at(t, epoch_tt_j2000_s, earth_rotation)
+    comps = forces.acceleration_components(epoch_tt_j2000_s + t, r, v, cfg, rot, omega)
 
-    # 1. Central Point-Mass Gravity
-    a_central = np.array([-(mu / r3) * x, -(mu / r3) * y, -(mu / r3) * z])
+    r_body = rot @ r
+    zonal = {}
+    for n in (2, 3, 4):
+        if cfg.gravity_degree >= n:
+            zonal[n] = rot.T @ forces.harmonic_acceleration_body(r_body, n, 0, n_min=n)
+        else:
+            zonal[n] = np.zeros(3)
+    a_tesseral = comps["harmonics"] - zonal[2] - zonal[3] - zonal[4]
 
-    # 2. J2 Zonal Harmonic
-    factor_j2 = (1.5 * j2 * mu / r2) * (r_e / r)**2
-    a_j2 = np.array([
-        -factor_j2 * (x / r) * (1.0 - 5.0 * (z2 / r2)),
-        -factor_j2 * (y / r) * (1.0 - 5.0 * (z2 / r2)),
-        -factor_j2 * (z / r) * (3.0 - 5.0 * (z2 / r2))
-    ])
-
-    # 3. J3 Zonal Harmonic (Pear-Shape)
-    factor_j3 = (2.5 * j3 * mu / r2) * (r_e / r)**3
-    z_r = z / r
-    a_j3 = np.array([
-        -factor_j3 * (x / r) * (3.0 * z_r - 7.0 * (z_r**3)),
-        -factor_j3 * (y / r) * (3.0 * z_r - 7.0 * (z_r**3)),
-        -factor_j3 * (3.0 * (z_r**2) - 7.0 * (z_r**4) - 0.6)
-    ])
-
-    # 4. J4 Zonal Harmonic
-    factor_j4 = (j4 * mu / r2) * (r_e / r)**4
-    z2_r2 = z2 / r2
-    a_j4 = (5.0 / 8.0) * factor_j4 * np.array([
-        (x / r) * (3.0 - 42.0 * z2_r2 + 63.0 * (z2_r2**2)),
-        (y / r) * (3.0 - 42.0 * z2_r2 + 63.0 * (z2_r2**2)),
-        (z / r) * (15.0 - 70.0 * z2_r2 + 63.0 * (z2_r2**2))
-    ])
-
-    # 5. Third-Body Gravitational Perturbations (Sun & Moon)
-    eps = math.radians(23.44)
-    n_sun = 2.0 * math.pi / (365.25 * 86400.0)
-    lam_sun = n_sun * t
-    r_sun_vec = AU_METERS * np.array([
-        math.cos(lam_sun),
-        math.sin(lam_sun) * math.cos(eps),
-        math.sin(lam_sun) * math.sin(eps)
-    ])
-    d_sc_sun = np.array([x, y, z]) - r_sun_vec
-    dist_sc_sun = float(np.linalg.norm(d_sc_sun))
-    dist_sun = float(np.linalg.norm(r_sun_vec))
-    a_sun = -MU_SUN * ((d_sc_sun / dist_sc_sun**3) + (r_sun_vec / dist_sun**3))
-
-    n_moon = 2.0 * math.pi / (27.32166 * 86400.0)
-    lam_moon = n_moon * t
-    inc_moon = math.radians(23.44 + 5.14)
-    r_moon_vec = D_MOON_MEAN * np.array([
-        math.cos(lam_moon),
-        math.sin(lam_moon) * math.cos(inc_moon),
-        math.sin(lam_moon) * math.sin(inc_moon)
-    ])
-    d_sc_moon = np.array([x, y, z]) - r_moon_vec
-    dist_sc_moon = float(np.linalg.norm(d_sc_moon))
-    dist_moon = float(np.linalg.norm(r_moon_vec))
-    a_moon = -MU_MOON * ((d_sc_moon / dist_sc_moon**3) + (r_moon_vec / dist_moon**3))
-
-    # 6. Atmospheric Drag
-    alt_m = r - r_e
-    a_drag = np.zeros(3)
-    if alt_m < 800000.0:
-        rho = RHO_0 * math.exp(-max(0.0, alt_m) / H_SCALE)
-        v_rel_x = vx + OMEGA_EARTH * y
-        v_rel_y = vy - OMEGA_EARTH * x
-        v_rel_z = vz
-        v_rel = math.sqrt(v_rel_x**2 + v_rel_y**2 + v_rel_z**2)
-        factor_drag = -0.5 * rho * b_star * v_rel
-        a_drag = np.array([factor_drag * v_rel_x, factor_drag * v_rel_y, factor_drag * v_rel_z])
-
-    # 7. Solar Radiation Pressure (SRP)
-    s_hat = np.array([1.0, 0.0, 0.0])
-    r_proj = x * s_hat[0] + y * s_hat[1] + z * s_hat[2]
-    d_perp = math.sqrt(max(0.0, r**2 - r_proj**2))
-    in_shadow = (r_proj < 0) and (d_perp < r_e)
-    if not in_shadow:
-        p_srp_mag = P_SR_1AU * cr_area_over_m
-        a_srp = -p_srp_mag * s_hat
-    else:
-        a_srp = np.zeros(3)
-
-    # 8. Earth Tesseral & Sectoral Harmonics (C22, S22 Equatorial Ellipticity)
-    theta_gst = (OMEGA_EARTH * t) % (2.0 * math.pi)
-    x_ecef = math.cos(theta_gst) * x + math.sin(theta_gst) * y
-    y_ecef = -math.sin(theta_gst) * x + math.cos(theta_gst) * y
-    z_ecef = z
-    r_xy2 = max(1.0, x_ecef**2 + y_ecef**2)
-    lon_ecef = math.atan2(y_ecef, x_ecef)
-    cos2l = math.cos(2.0 * lon_ecef)
-    sin2l = math.sin(2.0 * lon_ecef)
-    fac_22 = (3.0 * mu * (r_e**2) / (r**4))
-    a_tess_r = -fac_22 * (C22_EARTH * cos2l + S22_EARTH * sin2l) * (r_xy2 / r2)
-    a_tess_lam = (2.0 * fac_22 * (-C22_EARTH * sin2l + S22_EARTH * cos2l)) * math.sqrt(r_xy2) / r
-    r_unit = np.array([x, y, z]) / r
-    east_unit = np.array([-math.sin(theta_gst + lon_ecef), math.cos(theta_gst + lon_ecef), 0.0])
-    a_tesseral = a_tess_r * r_unit + a_tess_lam * east_unit
-
-    # 9. General Relativity Post-Newtonian Schwarzschild Acceleration
-    v_vec = np.array([vx, vy, vz])
-    v2 = float(np.dot(v_vec, v_vec))
-    r_dot_v = float(np.dot(np.array([x, y, z]), v_vec))
-    c2 = SPEED_OF_LIGHT**2
-    gr_fac = mu / (c2 * r3)
-    a_relativity = gr_fac * ((4.0 * mu / r - v2) * np.array([x, y, z]) + 4.0 * r_dot_v * v_vec)
-
-    # 10. Earth Albedo & Terrestrial Infrared Radiation (TIR)
-    flux_tir = (TIR_SURFACE_FLUX / SPEED_OF_LIGHT) * ((r_e / r)**2)
-    albedo_flux = 0.0
-    if not in_shadow:
-        albedo_flux = P_SR_1AU * ALBEDO_REFLECTIVITY * ((r_e / r)**2) * max(0.0, np.dot(r_unit, -s_hat))
-    a_albedo = (flux_tir + albedo_flux) * cr_area_over_m * r_unit
-
-    a_tot = a_central + a_j2 + a_j3 + a_j4 + a_moon + a_sun + a_drag + a_srp + a_tesseral + a_relativity + a_albedo
-
-    return {
-        "a_central": a_central,
-        "a_central_mag": float(np.linalg.norm(a_central)),
-        "a_j2": a_j2,
-        "a_j2_mag": float(np.linalg.norm(a_j2)),
-        "a_j3": a_j3,
-        "a_j3_mag": float(np.linalg.norm(a_j3)),
-        "a_j4": a_j4,
-        "a_j4_mag": float(np.linalg.norm(a_j4)),
+    vectors = {
+        "a_central": comps["central"],
+        "a_j2": zonal[2],
+        "a_j3": zonal[3],
+        "a_j4": zonal[4],
         "a_tesseral": a_tesseral,
-        "a_tesseral_mag": float(np.linalg.norm(a_tesseral)),
-        "a_relativity": a_relativity,
-        "a_relativity_mag": float(np.linalg.norm(a_relativity)),
-        "a_albedo": a_albedo,
-        "a_albedo_mag": float(np.linalg.norm(a_albedo)),
-        "a_moon": a_moon,
-        "a_moon_mag": float(np.linalg.norm(a_moon)),
-        "a_sun": a_sun,
-        "a_sun_mag": float(np.linalg.norm(a_sun)),
-        "a_drag": a_drag,
-        "a_drag_mag": float(np.linalg.norm(a_drag)),
-        "a_srp": a_srp,
-        "a_srp_mag": float(np.linalg.norm(a_srp)),
-        "a_total": a_tot,
-        "a_total_mag": float(np.linalg.norm(a_tot))
+        "a_relativity": comps["relativity"],
+        "a_albedo": comps["albedo"],
+        "a_moon": comps["moon"],
+        "a_sun": comps["sun"],
+        "a_drag": comps["drag"],
+        "a_srp": comps["srp"],
     }
+    vectors["a_total"] = sum(vectors.values())
+    out = {}
+    for key, vec in vectors.items():
+        out[key] = vec
+        out[key + "_mag"] = float(np.linalg.norm(vec))
+    out["shadow_factor"] = comps["shadow_factor"]
+    out["density_kg_m3"] = comps["density"]
+    return out
 
 
 def full_production_eom(
@@ -444,14 +370,16 @@ def full_production_eom(
     b_star=0.015,
     cr_area_over_m=0.02,
     epoch_tt_j2000_s=0.0,
-    earth_rotation=None
+    earth_rotation=None,
+    force_config=None
 ):
-    """Full coupled equations of motion with optional C++17 native acceleration.
+    """Full coupled equations of motion.
 
     t is seconds after the initial epoch. epoch_tt_j2000_s is that epoch as TT
     seconds past J2000.0, so the force model's TT time is epoch_tt_j2000_s + t.
     earth_rotation is a frames.FastEarthRotation; earth_rotation.matrix(t) gives
-    the GCRF -> ITRF rotation for tesserals and co-rotating drag.
+    the GCRF -> ITRF rotation for gravity harmonics and co-rotating drag.
+    force_config (a forces.ForceModelConfig) takes precedence over the legacy flags.
     """
     vx, vy, vz = state[3:6]
 
@@ -474,29 +402,12 @@ def full_production_eom(
         )
         return [vx, vy, vz, a_buf[0], a_buf[1], a_buf[2]]
 
-    acc_data = compute_acceleration_components(
-        state, t,
-        mu=mu, r_e=r_e,
-        j2=j2, j3=j3, j4=j4,
-        b_star=b_star,
-        cr_area_over_m=cr_area_over_m
-    )
-    
-    total_acc = acc_data["a_central"] + acc_data["a_j2"] + acc_data["a_j3"] + acc_data["a_j4"]
-    if enable_third_body:
-        total_acc += acc_data["a_moon"] + acc_data["a_sun"]
-    if enable_drag:
-        total_acc += acc_data["a_drag"]
-    if enable_srp:
-        total_acc += acc_data["a_srp"]
-    if enable_tesseral:
-        total_acc += acc_data["a_tesseral"]
-    if enable_relativity:
-        total_acc += acc_data["a_relativity"]
-    # Albedo
-    total_acc += acc_data["a_albedo"]
-
-    return [vx, vy, vz, total_acc[0], total_acc[1], total_acc[2]]
+    cfg = force_config or _legacy_force_config(j2, j3, j4, b_star, cr_area_over_m, enable_drag,
+                                               enable_third_body, enable_srp, enable_tesseral,
+                                               enable_relativity)
+    rot, omega = _earth_rotation_at(t, epoch_tt_j2000_s, earth_rotation)
+    acc = forces.total_acceleration(epoch_tt_j2000_s + t, state[0:3], state[3:6], cfg, rot, omega)
+    return [vx, vy, vz, acc[0], acc[1], acc[2]]
 
 
 # ==============================================================================
@@ -540,38 +451,42 @@ class ThirdReviewEngine:
         t_eval = np.linspace(t_span[0], t_span[1], num_points)
 
         model_clean = str(model).lower()
-        if model_clean == 'two_body':
-            j2_v, j3_v, j4_v = 0.0, 0.0, 0.0
-            drag_v, third_b_v, srp_v = False, False, False
-        elif model_clean == 'j2':
-            j2_v, j3_v, j4_v = J2_EARTH, 0.0, 0.0
-            drag_v, third_b_v, srp_v = False, False, False
-        elif model_clean == 'j2_j3_j4':
-            j2_v, j3_v, j4_v = J2_EARTH, J3_EARTH, J4_EARTH
-            drag_v, third_b_v, srp_v = False, False, False
-        else:
-            j2_v, j3_v, j4_v = J2_EARTH, J3_EARTH, J4_EARTH
-            drag_v = enable_drag
-            third_b_v = enable_third_body
-            srp_v = enable_srp
+        cfg = ForceModelConfig.for_model(
+            model_clean,
+            cd_area_over_m=b_star,
+            cr_area_over_m=cr_area_over_m,
+            gravity_degree=kwargs.get('gravity_degree'),
+            gravity_order=kwargs.get('gravity_order'),
+            relativity=kwargs.get('enable_relativity'),
+            albedo=kwargs.get('enable_albedo'),
+            f107=kwargs.get('f107'),
+            f107a=kwargs.get('f107a'),
+            ap=kwargs.get('ap'),
+        )
+        if model_clean not in ('two_body', 'j2', 'j2_j3_j4'):
+            cfg.drag = bool(enable_drag)
+            cfg.third_body = bool(enable_third_body)
+            cfg.srp = bool(enable_srp)
+        self.force_config = cfg
+        j2_v = J2_EARTH if cfg.gravity_degree >= 2 else 0.0
+        j3_v = J3_EARTH if cfg.gravity_degree >= 3 else 0.0
+        j4_v = J4_EARTH if cfg.gravity_degree >= 4 else 0.0
+        drag_v, third_b_v, srp_v = cfg.drag, cfg.third_body, cfg.srp
 
-        epoch_tt_j2000_s = self.epoch - Epoch.j2000()     # TAI and TT differ by a constant
+        epoch_tt = float(self.epoch - Epoch.j2000())     # TAI and TT differ by a constant
         earth_rotation = FastEarthRotation(self.epoch, t_span[0], t_span[1])
 
         eom = lambda t, y: full_production_eom(
             t, y,
-            epoch_tt_j2000_s=epoch_tt_j2000_s,
-            earth_rotation=earth_rotation,
-            mu=self.mu,
-            r_e=self.r_e,
-            j2=j2_v,
-            j3=j3_v,
-            j4=j4_v,
+            j2=j2_v, j3=j3_v, j4=j4_v,
             enable_drag=drag_v,
             enable_third_body=third_b_v,
             enable_srp=srp_v,
             b_star=b_star,
-            cr_area_over_m=cr_area_over_m
+            cr_area_over_m=cr_area_over_m,
+            epoch_tt_j2000_s=epoch_tt,
+            earth_rotation=earth_rotation,
+            force_config=cfg
         )
 
         solver_method = method
@@ -619,79 +534,43 @@ class ThirdReviewEngine:
         h_err = np.abs((h_arr - self.initial_h) / self.initial_h)
 
         # Full time-series Force Breakdown Diagnostics
-        force_diag = {}
-        if _cpp_kernel is not None and hasattr(_cpp_kernel, "compute_batch_coupled_accelerations"):
-            c_r = (ctypes.c_double * (3 * n_pts))(*pos.flatten())
-            c_v = (ctypes.c_double * (3 * n_pts))(*vel.flatten())
-            c_t = (ctypes.c_double * n_pts)(*times)
-            c_a_tot = (ctypes.c_double * (3 * n_pts))()
-            c_brk = (ctypes.c_double * (10 * n_pts))()
-            deg = 4 if j4_v != 0 else (3 if j3_v != 0 else (2 if j2_v != 0 else 0))
-            _cpp_kernel.compute_batch_coupled_accelerations(
-                n_pts, c_r, c_v, c_t,
-                deg,
-                1 if third_b_v else 0,
-                1 if third_b_v else 0,
-                1 if drag_v else 0,
-                1 if srp_v else 0,
-                float(b_star),
-                float(cr_area_over_m),
-                c_a_tot,
-                c_brk
+        a_c = np.zeros(n_pts)
+        a_j2 = np.zeros(n_pts)
+        a_j3 = np.zeros(n_pts)
+        a_j4 = np.zeros(n_pts)
+        a_tess = np.zeros(n_pts)
+        a_sun = np.zeros(n_pts)
+        a_moon = np.zeros(n_pts)
+        a_drag = np.zeros(n_pts)
+        a_srp = np.zeros(n_pts)
+        a_tot = np.zeros(n_pts)
+        for i in range(n_pts):
+            d = compute_acceleration_components(
+                np.concatenate([pos[i], vel[i]]), float(times[i]),
+                force_config=cfg, epoch_tt_j2000_s=epoch_tt, earth_rotation=earth_rotation
             )
-            brk_arr = np.array(c_brk, dtype=np.float64).reshape((n_pts, 10))
-            force_diag = {
-                'a_central_ms2': brk_arr[:, 0].tolist(),
-                'a_j2_ms2': brk_arr[:, 1].tolist(),
-                'a_j3_ms2': brk_arr[:, 2].tolist(),
-                'a_j4_ms2': brk_arr[:, 3].tolist(),
-                'a_tesseral_ms2': brk_arr[:, 4].tolist(),
-                'a_sun_ms2': brk_arr[:, 5].tolist(),
-                'a_moon_ms2': brk_arr[:, 6].tolist(),
-                'a_drag_ms2': brk_arr[:, 7].tolist(),
-                'a_srp_ms2': brk_arr[:, 8].tolist(),
-                'a_total_ms2': brk_arr[:, 9].tolist()
-            }
-        else:
-            a_c = np.zeros(n_pts)
-            a_j2 = np.zeros(n_pts)
-            a_j3 = np.zeros(n_pts)
-            a_j4 = np.zeros(n_pts)
-            a_tess = np.zeros(n_pts)
-            a_sun = np.zeros(n_pts)
-            a_moon = np.zeros(n_pts)
-            a_drag = np.zeros(n_pts)
-            a_srp = np.zeros(n_pts)
-            a_tot = np.zeros(n_pts)
-            for i in range(n_pts):
-                d = compute_acceleration_components(
-                    np.concatenate([pos[i], vel[i]]), float(times[i]),
-                    mu=self.mu, r_e=self.r_e,
-                    j2=j2_v, j3=j3_v, j4=j4_v,
-                    b_star=b_star, cr_area_over_m=cr_area_over_m
-                )
-                a_c[i] = d["a_central_mag"]
-                a_j2[i] = d["a_j2_mag"]
-                a_j3[i] = d["a_j3_mag"]
-                a_j4[i] = d["a_j4_mag"]
-                a_tess[i] = d["a_tesseral_mag"]
-                a_sun[i] = d["a_sun_mag"]
-                a_moon[i] = d["a_moon_mag"]
-                a_drag[i] = d["a_drag_mag"]
-                a_srp[i] = d["a_srp_mag"]
-                a_tot[i] = d["a_total_mag"]
-            force_diag = {
-                'a_central_ms2': a_c.tolist(),
-                'a_j2_ms2': a_j2.tolist(),
-                'a_j3_ms2': a_j3.tolist(),
-                'a_j4_ms2': a_j4.tolist(),
-                'a_tesseral_ms2': a_tess.tolist(),
-                'a_sun_ms2': a_sun.tolist(),
-                'a_moon_ms2': a_moon.tolist(),
-                'a_drag_ms2': a_drag.tolist(),
-                'a_srp_ms2': a_srp.tolist(),
-                'a_total_ms2': a_tot.tolist()
-            }
+            a_c[i] = d["a_central_mag"]
+            a_j2[i] = d["a_j2_mag"]
+            a_j3[i] = d["a_j3_mag"]
+            a_j4[i] = d["a_j4_mag"]
+            a_tess[i] = d["a_tesseral_mag"]
+            a_sun[i] = d["a_sun_mag"]
+            a_moon[i] = d["a_moon_mag"]
+            a_drag[i] = d["a_drag_mag"]
+            a_srp[i] = d["a_srp_mag"]
+            a_tot[i] = d["a_total_mag"]
+        force_diag = {
+            'a_central_ms2': a_c.tolist(),
+            'a_j2_ms2': a_j2.tolist(),
+            'a_j3_ms2': a_j3.tolist(),
+            'a_j4_ms2': a_j4.tolist(),
+            'a_tesseral_ms2': a_tess.tolist(),
+            'a_sun_ms2': a_sun.tolist(),
+            'a_moon_ms2': a_moon.tolist(),
+            'a_drag_ms2': a_drag.tolist(),
+            'a_srp_ms2': a_srp.tolist(),
+            'a_total_ms2': a_tot.tolist()
+        }
 
         return {
             'times': times,
