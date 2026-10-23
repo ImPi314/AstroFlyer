@@ -7,7 +7,7 @@ import { elapsed, num, sci } from '../format.js';
 const LIGHTING = { SUNLIGHT: 'Sunlight', PENUMBRA: 'Penumbra', UMBRA: 'Umbra' };
 
 const ROWS = [
-    ['Elapsed', '', (r, i) => elapsed(r.times[i] - r.times[0]).slice(3)],
+    // Values are the engine's output point at or before the timeline's time.
     ['Altitude', 'km', (r, i) => num(r.samples.altitude_km[i], 1)],
     ['Speed', 'km/s', (r, i) => num(r.samples.speed_kms[i], 3)],
     ['Semi-major axis', 'km', (r, i) => num(r.samples.sma_km[i], 1)],
@@ -26,10 +26,10 @@ const ROWS = [
 let root;
 let held = false;
 
-export function mountWatch(element) {
-    root = element;
-    root.addEventListener('change', (event) => {
-        if (event.target.name !== 'hold') return;
+export function mountWatch(body, tools) {
+    root = body;
+    tools.innerHTML = '<label class="toggle"><input type="checkbox" name="hold"> Hold values</label>';
+    tools.querySelector('input').addEventListener('change', (event) => {
         held = event.target.checked;
         if (!held) renderValues();
     });
@@ -65,14 +65,10 @@ function render() {
         ['Solve time', `${num(s.solve_s, 2)} s`],
     ];
     root.innerHTML = `
-        <header class="view-head">
-            <h2 class="view-title">Watch</h2>
-            <label class="toggle"><input type="checkbox" name="hold" ${held ? 'checked' : ''}> Hold values</label>
-        </header>
         <dl class="summary">${facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>
         <table class="watch-table">
             <thead><tr><th scope="col">Parameter</th><th scope="col" class="num">Value</th><th scope="col">Unit</th></tr></thead>
-            <tbody>${ROWS.map(([label, unit]) => `<tr><th scope="row">${label}</th><td class="num"></td><td class="unit">${unit}</td></tr>`).join('')}</tbody>
+            <tbody><tr><th scope="row">Elapsed</th><td class="num" data-elapsed></td><td class="unit"></td></tr>${ROWS.map(([label, unit]) => `<tr><th scope="row">${label}</th><td class="num"></td><td class="unit">${unit}</td></tr>`).join('')}</tbody>
         </table>`;
     renderValues();
 }
@@ -81,6 +77,7 @@ function renderValues() {
     const result = store.get('result');
     if (!result || !root.querySelector('.watch-table')) return;
     const i = sampleIndex(result, store.get('time'));
-    const cells = root.querySelectorAll('.watch-table td.num');
+    root.querySelector('[data-elapsed]').textContent = elapsed(store.get('time') - result.times[0]).slice(3);
+    const cells = root.querySelectorAll('.watch-table td.num:not([data-elapsed])');
     ROWS.forEach(([, , value], row) => { cells[row].textContent = value(result, i); });
 }

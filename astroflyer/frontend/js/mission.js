@@ -102,17 +102,17 @@ export const schemas = {
     },
 };
 
-export function visibleFields(kind, values) {
-    return schemas[kind].groups.map((group) => ({
+export function visibleFields(schema, values) {
+    return schema.groups.map((group) => ({
         ...group,
         fields: group.fields.filter((field) => !field.when || field.when(values)),
     }));
 }
 
 // Returns { key: message } for every visible field that is invalid.
-export function validate(kind, values) {
+export function validate(schema, values) {
     const errors = {};
-    for (const group of visibleFields(kind, values)) {
+    for (const group of visibleFields(schema, values)) {
         for (const field of group.fields) {
             const value = values[field.key];
             if (field.type === 'text' && !String(value).trim()) {
@@ -126,7 +126,7 @@ export function validate(kind, values) {
             }
         }
     }
-    if (kind === 'spacecraft' && apsides(values) && !errors.hp && !errors.ha && values.ha <= values.hp) {
+    if (schema === schemas.spacecraft && apsides(values) && !errors.hp && !errors.ha && values.ha <= values.hp) {
         errors.ha = 'Apogee must be higher than perigee.';
     }
     return errors;

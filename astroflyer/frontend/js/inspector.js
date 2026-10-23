@@ -1,8 +1,10 @@
 // Inspector: edits the selected mission object as a draft, applied with Apply or on Run.
+// View settings change only what is drawn, so they apply as soon as they are valid.
 
 import * as store from './store.js';
 import { schemas, validate, visibleFields } from './mission.js';
 import { escapeHtml, icon, num } from './format.js';
+import { viewSchemas } from './views/settings.js';
 
 const EDITABLE = ['spacecraft', 'propagator'];
 const drafts = {};
@@ -16,7 +18,16 @@ export function mountInspector(element) {
     root.addEventListener('click', onClick);
     store.on('selection', render);
     store.on('result', render);
+    // Keep the viewpoint fields current while the camera is dragged, but never re-render under the user's cursor.
+    store.on('views', () => {
+        if (viewId() && !root.contains(document.activeElement)) render();
+    });
     render();
+}
+
+function viewId() {
+    const id = store.get('selection').replace(/^view:/, '');
+    return viewSchemas[id] ? id : null;
 }
 
 // On narrow windows the inspector slides over the views; selecting an object opens it.
@@ -29,7 +40,7 @@ export function applyAll() {
     let ok = true;
     let mission = store.get('mission');
     for (const kind of EDITABLE) {
-        if (Object.keys(validate(kind, drafts[kind])).length) {
+        if (Object.keys(validate(schemas[kind], drafts[kind])).length) {
             ok = false;
         } else if (isDirty(kind)) {
             mission = { ...mission, [kind]: { ...drafts[kind] } };
@@ -37,7 +48,7 @@ export function applyAll() {
     }
     store.set({ mission });
     if (!ok) {
-        const bad = EDITABLE.find((kind) => Object.keys(validate(kind, drafts[kind])).length);
+        const bad = EDITABLE.find((kind) => Object.keys(validate(schemas[kind], drafts[kind])).length);
         store.set({ selection: bad });
         openInspector();
     }
@@ -59,19 +70,16 @@ function render() {
     const selection = store.get('selection');
     const close = `<button class="icon-button inspector-close" type="button" data-action="close" aria-label="Close inspector">${icon('x')}</button>`;
     if (EDITABLE.includes(selection)) root.innerHTML = renderForm(selection, close);
+    else if (viewId()) root.innerHTML = renderViewForm(viewId(), close);
     else if (selection.startsWith('station:')) root.innerHTML = renderStation(Number(selection.split(':')[1]), close);
     else root.innerHTML = renderWatchInfo(close);
 }
 
 function renderForm(kind, close) {
     const values = drafts[kind];
-    const errors = validate(kind, values);
+    const errors = validate(schemas[kind], values);
     const dirty = isDirty(kind);
-    const groups = visibleFields(kind, values).map((group) => `
-        <details class="field-group" open>
-            <summary>${icon('chevron-down')}<span>${group.title}</span></summary>
-            ${group.fields.map((field) => renderField(field, values[field.key], errors[field.key])).join('')}
-        </details>`).join('');
+    const groups = renderGroups(schemas[kind], values, errors);
     return `
         <header class="inspector-head">
             <div>
@@ -86,6 +94,27 @@ function renderForm(kind, close) {
             <button class="button" type="button" data-action="revert" ${dirty ? '' : 'disabled'}>${icon('rotate-ccw')}Revert</button>
             <button class="button button-primary" type="button" data-action="apply" ${dirty && !Object.keys(errors).length ? '' : 'disabled'}>${icon('check')}Apply</button>
         </footer>`;
+}
+
+function renderGroups(schema, values, errors) {
+    return visibleFields(schema, values).map((group) => `
+        <details class="field-group" open>
+            <summary>${icon('chevron-down')}<span>${group.title}</span></summary>
+            ${group.fields.map((field) => renderField(field, values[field.key], errors[field.key])).join('')}
+        </details>`).join('');
+}
+
+function renderViewForm(id, close) {
+    const values = store.get('views')[id];
+    return `
+        <header class="inspector-head">
+            <div>
+                <h2 class="inspector-title">${viewSchemas[id].title}</h2>
+                <p class="inspector-kind">View settings, applied as you change them</p>
+            </div>
+            ${close}
+        </header>
+        <form class="inspector-body" data-view="${id}" novalidate>${renderGroups(viewSchemas[id], values, {})}</form>`;
 }
 
 function renderField(field, value, error) {
@@ -159,10 +188,23 @@ function readValue(input) {
     return input.value;
 }
 
+// A valid view setting goes straight to the store; an invalid one only shows its error.
+function setViewValue(id, input) {
+    const views = store.get('views');
+    const values = { ...views[id], [input.dataset.key]: readValue(input) };
+    const errors = validate(viewSchemas[id], values);
+    showErrors(errors);
+    if (!errors[input.dataset.key]) store.set({ views: { ...views, [id]: values } });
+}
+
 function onInput(event) {
     const input = event.target;
     const form = input.closest('form');
     if (!form || input.tagName === 'SELECT' || input.type === 'checkbox') return;
+    if (form.dataset.view) {
+        setViewValue(form.dataset.view, input);
+        return;
+    }
     const kind = form.dataset.kind;
     drafts[kind][input.dataset.key] = readValue(input);
     updateStatus(kind);
@@ -172,6 +214,10 @@ function onChange(event) {
     const input = event.target;
     const form = input.closest('form');
     if (!form) return;
+    if (form.dataset.view) {
+        setViewValue(form.dataset.view, input);
+        return;
+    }
     const kind = form.dataset.kind;
     drafts[kind][input.dataset.key] = readValue(input);
     if (input.tagName === 'SELECT' || input.type === 'checkbox') {
@@ -184,7 +230,16 @@ function onChange(event) {
 
 // Updates errors and the Apply state in place, so typing never loses focus.
 function updateStatus(kind) {
-    const errors = validate(kind, drafts[kind]);
+    const errors = validate(schemas[kind], drafts[kind]);
+    showErrors(errors);
+    const dirty = isDirty(kind);
+    root.querySelector('.inspector-state').textContent = dirty ? 'Unapplied changes' : 'Applied';
+    root.querySelector('[data-action="revert"]').disabled = !dirty;
+    root.querySelector('[data-action="apply"]').disabled = !dirty || Object.keys(errors).length > 0;
+    if (kind === 'spacecraft') root.querySelector('.inspector-title').textContent = drafts.spacecraft.name || 'Spacecraft';
+}
+
+function showErrors(errors) {
     for (const fieldEl of root.querySelectorAll('[data-field]')) {
         const key = fieldEl.dataset.field;
         const error = errors[key];
@@ -197,11 +252,6 @@ function updateStatus(kind) {
         const ids = [fieldEl.querySelector('.field-hint')?.id, error ? errorEl.id : null].filter(Boolean);
         if (ids.length) control.setAttribute('aria-describedby', ids.join(' ')); else control.removeAttribute('aria-describedby');
     }
-    const dirty = isDirty(kind);
-    root.querySelector('.inspector-state').textContent = dirty ? 'Unapplied changes' : 'Applied';
-    root.querySelector('[data-action="revert"]').disabled = !dirty;
-    root.querySelector('[data-action="apply"]').disabled = !dirty || Object.keys(errors).length > 0;
-    if (kind === 'spacecraft') root.querySelector('.inspector-title').textContent = drafts.spacecraft.name || 'Spacecraft';
 }
 
 function onClick(event) {
@@ -213,7 +263,7 @@ function onClick(event) {
     }
     if (action === 'apply') {
         const kind = store.get('selection');
-        if (Object.keys(validate(kind, drafts[kind])).length) return;
+        if (Object.keys(validate(schemas[kind], drafts[kind])).length) return;
         store.set({ mission: { ...store.get('mission'), [kind]: { ...drafts[kind] } } });
         render();
     }

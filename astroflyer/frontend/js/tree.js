@@ -3,6 +3,7 @@
 import * as store from './store.js';
 import { escapeHtml, icon } from './format.js';
 import { openInspector } from './inspector.js';
+import { VIEWS } from './views/settings.js';
 
 let root;
 const expanded = new Set(['stations', 'outputs']);
@@ -34,7 +35,7 @@ function items() {
         },
         {
             id: 'outputs', icon: 'file-output', label: 'Outputs', group: true,
-            children: [{ id: 'view:watch', icon: 'list', label: 'Watch' }],
+            children: VIEWS.map((view) => ({ id: `view:${view.id}`, icon: view.icon, label: view.label })),
         },
     ];
 }

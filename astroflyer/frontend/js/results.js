@@ -1,8 +1,32 @@
 // Turns the engine's /api/propagate payload into the one shape every view reads.
 // This is the only place that knows the payload's field names.
 
+const DEG = Math.PI / 180;
+
+// The engine rotates the Earth by its own angle and does not report it, so read it back
+// from its outputs: inertial right ascension minus Earth-fixed longitude, unwrapped.
+function earthRotation(positions, longitudesDeg) {
+    const theta = new Float64Array(positions.length);
+    let previous = 0;
+    positions.forEach(([x, y], i) => {
+        let angle = Math.atan2(y, x) - longitudesDeg[i] * DEG;
+        if (i > 0) angle -= 2 * Math.PI * Math.round((angle - previous) / (2 * Math.PI));
+        theta[i] = previous = angle;
+    });
+    return theta;
+}
+
 export function fromPayload(payload) {
     const times = payload.times_sec;
+    const theta = earthRotation(payload.position_m, payload.longitude_deg);
+    const inertialKm = new Float32Array(times.length * 3);
+    const fixedKm = new Float32Array(times.length * 3);
+    payload.position_m.forEach(([x, y, z], i) => {
+        const c = Math.cos(theta[i]);
+        const s = Math.sin(theta[i]);
+        inertialKm.set([x / 1000, y / 1000, z / 1000], i * 3);
+        fixedKm.set([(c * x + s * y) / 1000, (-s * x + c * y) / 1000, z / 1000], i * 3);
+    });
     const events = payload.events_suite ?? {};
     const eclipses = events.solar_eclipses ?? {};
     const stations = Object.values(events.ground_stations ?? {});
@@ -24,7 +48,14 @@ export function fromPayload(payload) {
             energy_error: payload.energy_error,
             lighting: eclipses.regimes ?? null,
         },
-        position_m: payload.position_m,
+        theta,
+        // The radius the engine measures altitude from, so the drawn Earth matches its altitudes.
+        earthRadiusKm: Math.hypot(...payload.position_m[0]) / 1000 - payload.altitude_km[0],
+        inertialKm,
+        fixedKm,
+        // Sun direction in the inertial frame. The engine's shadow model uses a fixed Sun on +X
+        // until it reports one, so the night side drawn here matches its shadow events.
+        sunDirection: payload.sun_direction_eci ?? [1, 0, 0],
         apsides: (events.exact_apsidal_events ?? []).map((ev) => ({
             kind: ev.event_type === 'APOAPSIS_PASSAGE' ? 'apogee' : 'perigee',
             t: ev.epoch_s,
@@ -80,4 +111,26 @@ export function eventTimes(result) {
         ...result.stations.flatMap((st) => st.passes.flatMap((p) => [p.t0, p.t1])),
     ];
     return [...new Set(points)].sort((a, b) => a - b);
+}
+
+// Interpolated state at time t: inertial and Earth-fixed position in km and the Earth's rotation.
+export function stateAt(result, t) {
+    const i = sampleIndex(result, t);
+    const j = Math.min(i + 1, result.times.length - 1);
+    const f = j === i ? 0 : (t - result.times[i]) / (result.times[j] - result.times[i]);
+    const mix = (array) => [0, 1, 2].map((k) => array[i * 3 + k] + f * (array[j * 3 + k] - array[i * 3 + k]));
+    const { latitude_deg: lat, longitude_deg: lon } = result.samples;
+    let dLon = lon[j] - lon[i];
+    dLon -= 360 * Math.round(dLon / 360);
+    const lonDeg = lon[i] + f * dLon;
+    const fixed = mix(result.fixedKm);
+    return {
+        index: i,
+        inertial: mix(result.inertialKm),
+        fixed,
+        theta: result.theta[i] + f * (result.theta[j] - result.theta[i]),
+        latDeg: lat[i] + f * (lat[j] - lat[i]),
+        lonDeg: lonDeg - 360 * Math.round(lonDeg / 360),
+        radiusKm: Math.hypot(...fixed),
+    };
 }
