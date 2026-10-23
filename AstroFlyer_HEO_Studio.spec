@@ -1,41 +1,31 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-
 a = Analysis(
-    ['zeroeth review/main.py'],
-    pathex=['zeroeth review'],
+    ['astroflyer/main.py'],
+    pathex=['astroflyer'],
     binaries=[
-        ('zeroeth review/cpp_engine/astro_physics_kernel.dll', 'cpp_engine'),
-        ('zeroeth review/cpp_engine/astro_physics_kernel.dll', '.')
+        ('astroflyer/cpp_engine/astro_physics_kernel.dll', 'cpp_engine'),
+        ('astroflyer/cpp_engine/astro_physics_kernel.dll', '.')
     ],
     datas=[
-        ('zeroeth review/gui', 'gui'),
-        ('zeroeth review/core', 'core'),
-        ('zeroeth review/data', 'data'),
-        ('zeroeth review/scripts', 'scripts'),
-        ('zeroeth review/ZEROETH_REVIEW_COMPLETE_PROJECT_GUIDE.pdf', '.')
+        ('astroflyer/backend', 'backend'),
+        ('astroflyer/frontend', 'frontend'),
+        ('astroflyer/scripts', 'scripts'),
+        ('astroflyer/figures', 'figures'),
+        ('astroflyer/THIRD_REVIEW_COMPLETE_PROJECT_GUIDE.pdf', '.')
     ],
     hiddenimports=[
-        'PyQt6',
-        'PyQt6.QtCore',
-        'PyQt6.QtGui',
-        'PyQt6.QtWidgets',
-        'PyQt6.QtOpenGL',
-        'PyQt6.QtOpenGLWidgets',
-        'pyqtgraph',
-        'pyqtgraph.opengl',
-        'OpenGL',
-        'OpenGL.GL',
-        'OpenGL.GLU',
+        'webview',
         'numpy',
         'scipy',
         'scipy.integrate',
+        'http.server',
         'PIL'
     ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=['webview', 'http.server'],
+    excludes=[],
     noarchive=False,
     optimize=0,
 )

@@ -1,20 +1,16 @@
 """
-AstroCore Root Module Proxy - Mission Plan Compatibility
-Exposes mission plan export/import from zeroeth review/core/mission_plan_io.py
+AstroCore Root Module Proxy - freeflyer_interop
+Exposes FreeFlyer mission plan serialization from astroflyer.backend.freeflyer_interop
 """
 
 import os
 import sys
-import importlib.util
 
-_target_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..", "zeroeth review", "core", "freeflyer_interop.py")
+_curr_dir = os.path.dirname(os.path.abspath(__file__))
+_root_dir = os.path.dirname(_curr_dir)
+if _root_dir not in sys.path:
+    sys.path.insert(0, _root_dir)
+
+from astroflyer.backend.freeflyer_interop import (
+    export_to_mission_plan, import_from_mission_plan
 )
-
-_spec = importlib.util.spec_from_file_location("zeroeth_freeflyer_interop", _target_path)
-_mod = importlib.util.module_from_spec(_spec)
-sys.modules["zeroeth_freeflyer_interop"] = _mod
-_spec.loader.exec_module(_mod)
-
-export_to_mission_plan = _mod.export_to_mission_plan
-import_from_mission_plan = _mod.import_from_mission_plan

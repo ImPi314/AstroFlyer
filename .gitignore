@@ -61,3 +61,10 @@ ENV/
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# Local-only: incoming patches, test/build caches, archives over 50 MB
+_incoming_patches/
+*.pyc
+.pytest_cache/
+datasources/basilisk-2.11.1.zip
+datasources/gmat-win-R2026a.zip

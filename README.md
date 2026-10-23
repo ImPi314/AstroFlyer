@@ -51,7 +51,7 @@ Designed to industrial standards (NASA GMAT, FreeFlyer, ISRO, and Basilisk FSW a
 
 ```
 major_project_py/
-├── third review/             # Final Production Release
+├── astroflyer/               # Primary Production Aerospace Application
 │   ├── backend/              # Astrodynamics engine, FSW subsystems, server & REST APIs
 │   │   ├── astro_engine.py   # High-order coupled equations of motion & Radau-IIA solver
 │   │   ├── app_server.py     # Production HTTP server and JSON telemetry endpoints
@@ -64,13 +64,23 @@ major_project_py/
 │   │   ├── index.html        # Multi-tab console with HUD overlays
 │   │   ├── styles.css        # FreeFlyer dark operations theme
 │   │   └── js/               # Viewport 3D, 2D ground track, and telemetry controllers
-│   ├── main.py               # Standalone desktop application launcher (WebView2)
-│   └── cpp_engine/           # C++17 SIMD math kernel bindings
-├── second review/            # Second Review baseline
-├── first review/             # First Review baseline
-├── zeroeth review/           # Conceptual foundation & baseline analysis
-├── literature_survey/        # Research survey and theoretical background
+│   ├── cpp_engine/           # C++17 SIMD math kernel bindings
+│   ├── figures/              # Verification figures and LaTeX equations
+│   ├── scripts/              # Verification & benchmark scripts
+│   └── main.py               # Application desktop launcher
+├── core/                     # Clean root import proxy
+├── datasources/              # FreeFlyer reference mission plans and station data
+├── docs/                     # Central documentation library
+│   ├── abstract/             # Formal IEEE / VTU project abstracts
+│   ├── handbooks/            # Technical handbooks and defense guides
+│   ├── reports/              # Cross-validation & UI/UX gap analyses
+│   └── screenshots/          # Mission control operations screenshots
+├── literature_survey/        # Research papers & Elicit prior-art surveys
 ├── installer/                # Inno Setup Windows desktop packaging scripts
+├── archive/                  # Historical review milestones safely preserved
+│   └── review_milestones/    # Zeroeth, First, and Second review snapshots
+├── main.py                   # Root application launcher
+├── LAUNCH_ASTROFLYER_DESKTOP_APP.bat # One-click Windows desktop launcher
 └── README.md
 ```
 
@@ -85,12 +95,15 @@ major_project_py/
 
 ### Quick Start
 ```bash
-# Launch the AstroFlyer Desktop App
-python "third review/main.py"
+# Launch the AstroFlyer Desktop App (Root launcher)
+python main.py
+
+# Or via the one-click Windows launcher
+LAUNCH_ASTROFLYER_DESKTOP_APP.bat
 ```
 Or start the dedicated flight dynamics server directly:
 ```bash
-python "third review/backend/app_server.py"
+python astroflyer/backend/app_server.py
 ```
 Then navigate to `http://localhost:8003` in any modern web browser.
 
