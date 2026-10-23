@@ -3,7 +3,8 @@
 PyInstaller spec for the AstroFlyer HEO offline desktop app (the only spec; build with build_release.py).
 
 Onedir build -> dist/AstroFlyer_HEO/AstroFlyer.exe with runtime files under _internal/astroflyer/.
-Ships only what the running app needs: frontend, offline data, the C++ kernel DLL and the icon.
+Ships only what the running app needs: frontend, offline data and the icon. The C++ kernel is retired
+(cpp_engine/ sources stay in the repo for reference) and is not bundled.
 Dev-only libraries (PDF/report generation, plotting) are excluded; see requirements-dev.txt.
 """
 
@@ -22,13 +23,7 @@ datas = [
 ]
 datas = [d for d in datas if os.path.exists(d[0])]
 
-# The C++ kernel is optional at runtime (astro_engine falls back to Python), but a release should ship it.
-kernel_dll = os.path.join(pkg, 'cpp_engine', 'astro_physics_kernel.dll')
 binaries = []
-if os.path.exists(kernel_dll):
-    binaries.append((kernel_dll, os.path.join('astroflyer', 'cpp_engine')))
-else:
-    print('[!] astro_physics_kernel.dll not found; run astroflyer/cpp_engine/compile_kernel.bat first.')
 
 # pyerfa (leap seconds, EOP interpolation in backend/eop.py) ships a compiled extension
 try:
