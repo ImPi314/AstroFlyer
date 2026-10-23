@@ -1,0 +1,44 @@
+/* AstroFlyer design tokens. Fonts are bundled; nothing here loads from the network. */
+
+@font-face { font-family: "Barlow"; font-weight: 400; font-style: normal; font-display: block; src: url("../fonts/barlow-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow"; font-weight: 500; font-style: normal; font-display: block; src: url("../fonts/barlow-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow"; font-weight: 600; font-style: normal; font-display: block; src: url("../fonts/barlow-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow"; font-weight: 700; font-style: normal; font-display: block; src: url("../fonts/barlow-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow Semi Condensed"; font-weight: 500; font-style: normal; font-display: block; src: url("../fonts/barlow-semi-condensed-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow Semi Condensed"; font-weight: 600; font-style: normal; font-display: block; src: url("../fonts/barlow-semi-condensed-latin-600-normal.woff2") format("woff2"); }
+
+:root {
+    color-scheme: dark;
+
+    --sky: #151A21;
+    --panel: #1B2129;
+    --raised: #232A34;
+    --line: #2E3742;
+    --text: #D5DBE3;
+    --muted: #8B95A3;
+    --amber: #E3A857;
+    --on-amber: #1C1508;
+    --track-low: #A9D1F7;
+    --track-high: #44607F;
+    --eclipse: #9A8BD8;
+    --contact: #62B5A6;
+    --error: #E07070;
+
+    --font: "Barlow", "Segoe UI", system-ui, sans-serif;
+    --font-condensed: "Barlow Semi Condensed", "Barlow", "Segoe UI", system-ui, sans-serif;
+    --fs-small: 12px;
+    --fs-base: 13px;
+    --fs-medium: 15px;
+    --fs-large: 18px;
+
+    --radius: 6px;
+    --gap: 8px;
+    --tree-width: 240px;
+    --inspector-width: 320px;
+    --bar-height: 44px;
+    --open-ms: 120ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :root { --open-ms: 0ms; }
+}

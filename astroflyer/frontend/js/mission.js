@@ -1,0 +1,159 @@
+// Mission objects the user edits, their field definitions, validation,
+// and the request body sent to the local engine's /api/propagate.
+
+export const defaultMission = {
+    spacecraft: {
+        name: 'Molniya-1',
+        orbitInput: 'apsides',
+        hp: 1000,
+        ha: 39350,
+        a: 26554,
+        e: 0.722,
+        inc: 63.4,
+        raan: 45,
+        aop: 270,
+        ta: 0,
+        mass: 1500,
+        cd: 2.2,
+        drag_area: 15,
+        cr: 1.2,
+        srp_area: 15,
+    },
+    propagator: {
+        method: 'Radau',
+        tolerance: 1e-10,
+        model: 'coupled',
+        enable_drag: true,
+        enable_third_body: true,
+        enable_srp: true,
+        num_orbits: 3,
+        points_per_orbit: 400,
+    },
+};
+
+const apsides = (values) => values.orbitInput === 'apsides';
+const keplerian = (values) => values.orbitInput === 'keplerian';
+const fullModel = (values) => values.model === 'coupled';
+
+// Ranges follow what the engine accepts; it clamps anything outside them.
+export const schemas = {
+    spacecraft: {
+        title: 'Spacecraft',
+        groups: [
+            {
+                title: 'Identity',
+                fields: [
+                    { key: 'name', label: 'Name', type: 'text', hint: 'Shown in the mission tree and window title.' },
+                ],
+            },
+            {
+                title: 'Orbit state',
+                fields: [
+                    { key: 'orbitInput', label: 'Enter orbit as', type: 'select', options: [['apsides', 'Perigee and apogee altitude'], ['keplerian', 'Semi-major axis and eccentricity']] },
+                    { key: 'hp', label: 'Perigee altitude', unit: 'km', type: 'number', min: 100, max: 400000, step: 1, when: apsides, hint: 'Height of the lowest point above the Earth’s surface.' },
+                    { key: 'ha', label: 'Apogee altitude', unit: 'km', type: 'number', min: 100, max: 400000, step: 1, when: apsides, hint: 'Height of the highest point. Must be above perigee.' },
+                    { key: 'a', label: 'Semi-major axis', unit: 'km', type: 'number', min: 6500, max: 400000, step: 1, when: keplerian },
+                    { key: 'e', label: 'Eccentricity', type: 'number', min: 0, max: 0.99, step: 0.001, when: keplerian, hint: 'From 0 (circular) to 0.99.' },
+                    { key: 'inc', label: 'Inclination', unit: 'deg', type: 'number', min: 0, max: 180, step: 0.1, hint: '63.4 deg keeps a Molniya apogee from drifting.' },
+                    { key: 'raan', label: 'Right ascension of ascending node', unit: 'deg', type: 'number', min: 0, max: 360, step: 0.1 },
+                    { key: 'aop', label: 'Argument of perigee', unit: 'deg', type: 'number', min: 0, max: 360, step: 0.1, hint: '270 deg puts apogee over the northern hemisphere.' },
+                    { key: 'ta', label: 'True anomaly', unit: 'deg', type: 'number', min: 0, max: 360, step: 0.1, hint: 'Position along the orbit at the start. 0 is perigee.' },
+                ],
+            },
+            {
+                title: 'Physical properties',
+                fields: [
+                    { key: 'mass', label: 'Mass', unit: 'kg', type: 'number', min: 10, max: 100000, step: 1 },
+                    { key: 'cd', label: 'Drag coefficient', type: 'number', min: 0, max: 5, step: 0.1 },
+                    { key: 'drag_area', label: 'Drag area', unit: 'm²', type: 'number', min: 0, max: 1000, step: 0.1 },
+                    { key: 'cr', label: 'Reflectivity coefficient', type: 'number', min: 0, max: 2, step: 0.05 },
+                    { key: 'srp_area', label: 'Solar pressure area', unit: 'm²', type: 'number', min: 0, max: 1000, step: 0.1 },
+                ],
+            },
+        ],
+    },
+    propagator: {
+        title: 'Propagator',
+        groups: [
+            {
+                title: 'Integrator',
+                fields: [
+                    { key: 'method', label: 'Method', type: 'select', options: [['Radau', 'Radau IIA, implicit'], ['DOP853', 'Dormand-Prince 8(5,3)'], ['RK45', 'Runge-Kutta 4(5)']], hint: 'Radau handles the fast perigee pass well. Dormand-Prince is quicker for smooth orbits.' },
+                    { key: 'tolerance', label: 'Tolerance', type: 'number', min: 1e-13, max: 1e-6, step: 'any', hint: 'Relative and absolute error per step, for example 1e-10.' },
+                ],
+            },
+            {
+                title: 'Force model',
+                fields: [
+                    { key: 'model', label: 'Gravity and forces', type: 'select', options: [['two_body', 'Two-body'], ['j2', 'Two-body with J2'], ['j2_j3_j4', 'Zonals J2 to J4'], ['coupled', 'Full model']] },
+                    { key: 'enable_drag', label: 'Atmospheric drag', type: 'checkbox', when: fullModel },
+                    { key: 'enable_third_body', label: 'Sun and Moon gravity', type: 'checkbox', when: fullModel },
+                    { key: 'enable_srp', label: 'Solar radiation pressure', type: 'checkbox', when: fullModel },
+                ],
+            },
+            {
+                title: 'Span',
+                fields: [
+                    { key: 'num_orbits', label: 'Duration', unit: 'orbits', type: 'number', min: 0.5, max: 20, step: 0.5 },
+                    { key: 'points_per_orbit', label: 'Output points', unit: 'per orbit', type: 'number', min: 50, max: 1000, step: 10, hint: 'The engine keeps the total between 200 and 3,600 points.' },
+                ],
+            },
+        ],
+    },
+};
+
+export function visibleFields(kind, values) {
+    return schemas[kind].groups.map((group) => ({
+        ...group,
+        fields: group.fields.filter((field) => !field.when || field.when(values)),
+    }));
+}
+
+// Returns { key: message } for every visible field that is invalid.
+export function validate(kind, values) {
+    const errors = {};
+    for (const group of visibleFields(kind, values)) {
+        for (const field of group.fields) {
+            const value = values[field.key];
+            if (field.type === 'text' && !String(value).trim()) {
+                errors[field.key] = 'Enter a name.';
+            } else if (field.type === 'number') {
+                if (typeof value !== 'number' || !Number.isFinite(value)) {
+                    errors[field.key] = 'Enter a number.';
+                } else if (value < field.min || value > field.max) {
+                    errors[field.key] = `Use a value from ${field.min} to ${field.max}.`;
+                }
+            }
+        }
+    }
+    if (kind === 'spacecraft' && apsides(values) && !errors.hp && !errors.ha && values.ha <= values.hp) {
+        errors.ha = 'Apogee must be higher than perigee.';
+    }
+    return errors;
+}
+
+export function toPropagateRequest(mission) {
+    const { spacecraft: sc, propagator: prop } = mission;
+    const orbit = apsides(sc) ? { hp: sc.hp, ha: sc.ha } : { a: sc.a, e: sc.e };
+    return {
+        ...orbit,
+        inc: sc.inc,
+        raan: sc.raan,
+        aop: sc.aop,
+        ta: sc.ta,
+        mass: sc.mass,
+        cd: sc.cd,
+        drag_area: sc.drag_area,
+        cr: sc.cr,
+        srp_area: sc.srp_area,
+        preset: sc.name,
+        method: prop.method,
+        tolerance: prop.tolerance,
+        model: prop.model,
+        enable_drag: prop.enable_drag,
+        enable_third_body: prop.enable_third_body,
+        enable_srp: prop.enable_srp,
+        num_orbits: prop.num_orbits,
+        points_per_orbit: prop.points_per_orbit,
+    };
+}
