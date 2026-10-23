@@ -4,3 +4,5 @@
 *.ico binary
 *.docx binary
 *.zip binary
+*.bsp binary
+*.npz binary
