@@ -1,9 +1,13 @@
 // Display settings for each view. They change what is drawn, never the mission,
 // so the inspector applies them immediately instead of through Apply.
 
+import { PARAMETERS } from '../parameters.js';
+import { WATCH_ROWS } from './watch.js';
+
 export const VIEWS = [
     { id: 'orbit3d', label: '3D orbit view', icon: 'orbit' },
     { id: 'groundtrack', label: 'Ground track', icon: 'map' },
+    { id: 'plot', label: 'Plot', icon: 'chart-spline' },
     { id: 'watch', label: 'Watch', icon: 'list' },
 ];
 
@@ -23,6 +27,11 @@ export const defaultViewSettings = {
         stations: true,
         footprint: true,
     },
+    plot: {
+        y: 'altitude_km',
+        reveal: false,
+    },
+    watch: Object.fromEntries(WATCH_ROWS.map((row) => [row.key, true])),
 };
 
 export const viewSchemas = {
@@ -59,6 +68,27 @@ export const viewSchemas = {
                     { key: 'stations', label: 'Ground stations', type: 'checkbox' },
                     { key: 'footprint', label: 'Spacecraft footprint', type: 'checkbox' },
                 ],
+            },
+        ],
+    },
+    plot: {
+        title: 'Plot',
+        groups: [
+            {
+                title: 'Data',
+                fields: [
+                    { key: 'y', label: 'Parameter', type: 'select', options: PARAMETERS.map((p) => [p.key, p.unit ? `${p.label} (${p.unit})` : p.label]) },
+                    { key: 'reveal', label: 'Draw only up to the current time', type: 'checkbox' },
+                ],
+            },
+        ],
+    },
+    watch: {
+        title: 'Watch',
+        groups: [
+            {
+                title: 'Rows',
+                fields: WATCH_ROWS.map((row) => ({ key: row.key, label: row.label, type: 'checkbox' })),
             },
         ],
     },

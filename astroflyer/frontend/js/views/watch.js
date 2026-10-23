@@ -1,30 +1,26 @@
 // Watch: the spacecraft's state at the timeline's current time, plus a summary of the run.
+// Values are the engine's output point at or before that time; which rows show is a view setting.
 
 import * as store from '../store.js';
 import { sampleIndex } from '../results.js';
+import { PARAMETERS, formatValue } from '../parameters.js';
 import { elapsed, num, sci } from '../format.js';
 
 const LIGHTING = { SUNLIGHT: 'Sunlight', PENUMBRA: 'Penumbra', UMBRA: 'Umbra' };
 
+// Every row the watch can show: the shared numeric parameters plus two states.
 const ROWS = [
-    // Values are the engine's output point at or before the timeline's time.
-    ['Altitude', 'km', (r, i) => num(r.samples.altitude_km[i], 1)],
-    ['Speed', 'km/s', (r, i) => num(r.samples.speed_kms[i], 3)],
-    ['Semi-major axis', 'km', (r, i) => num(r.samples.sma_km[i], 1)],
-    ['Eccentricity', '', (r, i) => num(r.samples.eccentricity[i], 5)],
-    ['Inclination', 'deg', (r, i) => num(r.samples.inclination_deg[i], 3)],
-    ['RAAN', 'deg', (r, i) => num(r.samples.raan_deg[i], 3)],
-    ['Argument of perigee', 'deg', (r, i) => num(r.samples.aop_deg[i], 3)],
-    ['True anomaly', 'deg', (r, i) => num(r.samples.true_anomaly_deg[i], 2)],
-    ['Latitude', 'deg', (r, i) => num(r.samples.latitude_deg[i], 3)],
-    ['Longitude', 'deg', (r, i) => num(r.samples.longitude_deg[i], 3)],
-    ['Lighting', '', (r, i) => LIGHTING[r.samples.lighting?.[i]] ?? '–'],
-    ['Stations in view', '', (r, i) => stationsInView(r, r.times[i]) || 'None'],
-    ['Energy error', 'relative', (r, i) => sci(r.samples.energy_error[i])],
+    ...PARAMETERS.map((p) => ({ key: p.key, label: p.label, unit: p.unit, value: (r, i) => formatValue(p, r.samples[p.key][i]) })),
+    { key: 'lighting', label: 'Lighting', unit: '', value: (r, i) => LIGHTING[r.samples.lighting?.[i]] ?? '–' },
+    { key: 'stations', label: 'Stations in view', unit: '', value: (r, i) => stationsInView(r, r.times[i]) || 'None' },
 ];
+
+export const WATCH_ROWS = ROWS.map(({ key, label }) => ({ key, label }));
 
 let root;
 let held = false;
+let shown = [];
+let renderedSettings = null;
 
 export function mountWatch(body, tools) {
     root = body;
@@ -34,6 +30,7 @@ export function mountWatch(body, tools) {
         if (!held) renderValues();
     });
     store.on('result', render);
+    store.on('views', (views) => { if (views.watch !== renderedSettings) render(); });
     store.on('time', () => { if (!held) renderValues(); });
     render();
 }
@@ -55,6 +52,9 @@ function render() {
             </div>`;
         return;
     }
+    const settings = store.get('views').watch;
+    renderedSettings = settings;
+    shown = ROWS.filter((row) => settings[row.key]);
     const s = result.summary;
     const facts = [
         ['Perigee altitude', `${num(s.perigee_alt_km)} km`],
@@ -68,7 +68,10 @@ function render() {
         <dl class="summary">${facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>
         <table class="watch-table">
             <thead><tr><th scope="col">Parameter</th><th scope="col" class="num">Value</th><th scope="col">Unit</th></tr></thead>
-            <tbody><tr><th scope="row">Elapsed</th><td class="num" data-elapsed></td><td class="unit"></td></tr>${ROWS.map(([label, unit]) => `<tr><th scope="row">${label}</th><td class="num"></td><td class="unit">${unit}</td></tr>`).join('')}</tbody>
+            <tbody>
+                <tr><th scope="row">Elapsed</th><td class="num" data-elapsed></td><td class="unit"></td></tr>
+                ${shown.map((row) => `<tr><th scope="row">${row.label}</th><td class="num" data-row="${row.key}"></td><td class="unit">${row.unit}</td></tr>`).join('')}
+            </tbody>
         </table>`;
     renderValues();
 }
@@ -78,6 +81,5 @@ function renderValues() {
     if (!result || !root.querySelector('.watch-table')) return;
     const i = sampleIndex(result, store.get('time'));
     root.querySelector('[data-elapsed]').textContent = elapsed(store.get('time') - result.times[0]).slice(3);
-    const cells = root.querySelectorAll('.watch-table td.num:not([data-elapsed])');
-    ROWS.forEach(([, , value], row) => { cells[row].textContent = value(result, i); });
+    for (const row of shown) root.querySelector(`[data-row="${row.key}"]`).textContent = row.value(result, i);
 }

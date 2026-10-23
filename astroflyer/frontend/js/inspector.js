@@ -72,7 +72,7 @@ function render() {
     if (EDITABLE.includes(selection)) root.innerHTML = renderForm(selection, close);
     else if (viewId()) root.innerHTML = renderViewForm(viewId(), close);
     else if (selection.startsWith('station:')) root.innerHTML = renderStation(Number(selection.split(':')[1]), close);
-    else root.innerHTML = renderWatchInfo(close);
+    else root.innerHTML = renderEmpty(close);
 }
 
 function renderForm(kind, close) {
@@ -145,7 +145,7 @@ function renderField(field, value, error) {
 
 function renderStation(index, close) {
     const station = store.get('result')?.stations[index];
-    if (!station) return renderWatchInfo(close);
+    if (!station) return renderEmpty(close);
     const rows = [
         ['Latitude', `${num(station.lat_deg, 3)} deg`],
         ['Longitude', `${num(station.lon_deg, 3)} deg`],
@@ -168,17 +168,14 @@ function renderStation(index, close) {
         </div>`;
 }
 
-function renderWatchInfo(close) {
+function renderEmpty(close) {
     return `
         <header class="inspector-head">
-            <div>
-                <h2 class="inspector-title">Watch</h2>
-                <p class="inspector-kind">Output</p>
-            </div>
+            <div><h2 class="inspector-title">Nothing selected</h2></div>
             ${close}
         </header>
         <div class="inspector-body">
-            <p class="inspector-note">Watch lists the spacecraft's state at the time shown on the timeline. Use Hold values to freeze it while playback continues.</p>
+            <p class="inspector-note">Select an object in the mission tree to see its settings.</p>
         </div>`;
 }
 

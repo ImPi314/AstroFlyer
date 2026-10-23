@@ -213,7 +213,22 @@ button, input, select { font: inherit; color: inherit; }
 
 .view[hidden] { display: none; }
 
-.workspace[data-layout="grid"] .view[data-view="watch"] { grid-column: 1 / -1; }
+.compact-select select {
+    height: 26px;
+    padding: 0 6px;
+    background: var(--raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+
+.view-tools {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.view[data-view="plot"] .view-body { overflow: hidden; }
+.view[data-view="plot"] .u-over { cursor: crosshair; }
 
 .view-head {
     display: flex;
@@ -279,7 +294,7 @@ button, input, select { font: inherit; color: inherit; }
 
 .summary {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(124px, 1fr));
     gap: 12px 24px;
     margin: 0;
     padding: 14px 16px;

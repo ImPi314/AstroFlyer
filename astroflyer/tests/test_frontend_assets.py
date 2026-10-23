@@ -12,8 +12,10 @@ TEXT_EXTENSIONS = (".html", ".css", ".js", ".svg")
 
 # XML namespace identifiers are names, not requests; localhost is the app's own engine.
 ALLOWED_URL = re.compile(r"https?://(localhost|127\.0\.0\.1|www\.w3\.org/)")
+# Project links inside bundled libraries' license banners, never fetched.
+ALLOWED_IN_FILE = {os.path.join("vendor", "uPlot.iife.min.js"): {"https://github.com/leeoniya/uPlot"}}
 ANY_URL = re.compile(r"https?://[^\s\"'`)<>]+")
-EMOJI = re.compile("[\U0001F000-\U0001FAFF☀-➿⬀-⯿️‍]")
+EMOJI = re.compile(r"[\U0001F000-\U0001FAFF☀-➿⬀-⯿️‍]")
 
 
 def frontend_text_files():
@@ -32,7 +34,7 @@ class TestFrontendOffline(unittest.TestCase):
             f"{name}: {url}"
             for name, text in frontend_text_files()
             for url in ANY_URL.findall(text)
-            if not ALLOWED_URL.match(url)
+            if not ALLOWED_URL.match(url) and url not in ALLOWED_IN_FILE.get(name, ())
         ]
         self.assertEqual(remote, [], "Frontend files must not load anything from the network")
 

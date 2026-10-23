@@ -6,9 +6,10 @@ import { openInspector } from './inspector.js';
 import { VIEWS } from './views/settings.js';
 import { mountOrbit3d } from './views/orbit3d.js';
 import { mountGroundtrack } from './views/groundtrack.js';
+import { mountPlot } from './views/plot.js';
 import { mountWatch } from './views/watch.js';
 
-const MOUNT = { orbit3d: mountOrbit3d, groundtrack: mountGroundtrack, watch: mountWatch };
+const MOUNT = { orbit3d: mountOrbit3d, groundtrack: mountGroundtrack, plot: mountPlot, watch: mountWatch };
 const LAYOUTS = [
     ['single', 'rectangle-horizontal', 'One view'],
     ['split', 'columns-2', '3D and ground track side by side'],
@@ -67,7 +68,7 @@ export function mountWorkspace(element, layoutControls) {
         root.dataset.layout = layout;
         for (const panel of root.children) {
             const id = panel.dataset.view;
-            panel.hidden = layout === 'single' ? id !== focus : layout === 'split' ? id === 'watch' : false;
+            panel.hidden = layout === 'single' ? id !== focus : layout === 'split' ? !['orbit3d', 'groundtrack'].includes(id) : false;
         }
         for (const button of layoutControls.querySelectorAll('[data-layout]')) {
             button.setAttribute('aria-pressed', String(button.dataset.layout === layout));
