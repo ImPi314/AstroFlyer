@@ -52,7 +52,11 @@ async function execute(startMessage, body, call) {
             throw new EngineError(`This engine does not support ${ignored.join(' or ')} and would have run a different orbit. Update AstroFlyer, or enter the orbit as elements and the run length in orbits.`);
         }
         store.set({ result, time: result.times[0], run: { status: 'done', error: null, startedAt: null }, playing: true });
-        log('info', `Finished in ${num(result.summary.solve_s, 2)} s with ${num(result.summary.points)} points. Perigee ${num(result.summary.perigee_alt_km)} km, apogee ${num(result.summary.apogee_alt_km)} km.`);
+        const shape = result.summary.closedOrbit
+            ? `Perigee ${num(result.summary.perigee_alt_km)} km, apogee ${num(result.summary.apogee_alt_km)} km.`
+            : `Escape trajectory, e = ${num(result.summary.eccentricity, 4)}, closest approach ${num(result.summary.perigee_alt_km)} km.`;
+        log('info', `Finished in ${num(result.summary.solve_s, 2)} s with ${num(result.summary.points)} points. ${shape}`);
+        for (const note of result.notes) log('info', note);
     } catch (err) {
         if (err.name === 'AbortError') {
             const hasResult = Boolean(store.get('result'));

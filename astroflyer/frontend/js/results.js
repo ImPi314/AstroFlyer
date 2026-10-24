@@ -168,9 +168,17 @@ export function fromPayload(payload) {
             // Reported by engines that take a Cartesian start and duration_s; null from older ones.
             initialState: payload.active_orbit_config.initial_state ?? null,
             durationS: payload.duration_s ?? null,
+            // False for an escape trajectory (e >= 1); engines before PR #13 only ran closed orbits.
+            closedOrbit: payload.closed_orbit ?? true,
         },
+        // The engine's remarks about the run, such as which reports an escape run leaves out.
+        notes: payload.notes ?? [],
     };
 }
+
+// Analysis tools that only mean something for a closed orbit: lifetime decay and
+// the apogee-raise and finite-burn solvers that start from the run's perigee.
+export const closedOrbitTools = new Set(['lifetime', 'targeting']);
 
 // Inputs in the request that the engine's answer shows it did not use, in plain words.
 // An older engine silently runs its default orbit or length instead.

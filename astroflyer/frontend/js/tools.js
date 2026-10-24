@@ -3,7 +3,7 @@
 
 import * as store from './store.js';
 import { solveApogeeRaise, simulateFiniteBurn, runScript, analyzeAccess, EngineError } from './api.js';
-import { sampleIndex } from './results.js';
+import { sampleIndex, closedOrbitTools } from './results.js';
 import { fromScriptRun } from './scriptrun.js';
 import { toAccessRequest, fromAccess } from './access.js';
 import { startScriptRun } from './run.js';
@@ -83,10 +83,14 @@ function render() {
     lifetimeChart = null;
     const result = store.get('result');
     const needsRun = current !== 'script';
-    page.innerHTML = needsRun && !result
-        ? '<div class="empty"><p class="empty-title">No run yet</p><p>Press Run or F5. This tool works from the last run.</p></div>'
-        : PAGES[current](result);
-    if (current === 'lifetime' && result) drawLifetime(result);
+    if (needsRun && !result) {
+        page.innerHTML = '<div class="empty"><p class="empty-title">No run yet</p><p>Press Run or F5. This tool works from the last run.</p></div>';
+    } else if (result && !result.summary.closedOrbit && closedOrbitTools.has(current)) {
+        page.innerHTML = '<div class="empty"><p class="empty-title">Closed orbits only</p><p>The last run is an escape trajectory, so it has no orbital lifetime or apogee to target.</p></div>';
+    } else {
+        page.innerHTML = PAGES[current](result);
+    }
+    if (current === 'lifetime' && result?.summary.closedOrbit) drawLifetime(result);
 }
 
 function seek(t) {
@@ -179,7 +183,7 @@ function access(result) {
                     <td>${escapeHtml(p.station)}${flag(p.partial)}</td><td>${utc(p.aos)}</td><td>${utc(p.tca)}</td><td>${utc(p.los)}</td>
                     <td class="num">${minutes(p.duration_s)}</td><td class="num">${num(p.max_elevation_deg, 1)} deg</td>
                     <td class="num">${num(p.aos_azimuth_deg)} / ${num(p.los_azimuth_deg)} deg</td></tr>`).join('')}</tbody>
-            </table>` : '<p class="tool-lead section-pad">No station sees the spacecraft in this run.</p>'}
+            </table>` : `<p class="tool-lead section-pad">${result.stations.length ? 'No station sees the spacecraft in this run.' : 'The engine listed no ground stations for this run, so no passes were worked out.'}</p>`}
         </section>
         <section class="tool-section">
             <h3 class="section-title">Shadow</h3>
