@@ -49,7 +49,6 @@ from backend.astro_engine import (
     ThirdReviewEngine, keplerian_to_cartesian, cartesian_to_keplerian, compute_acceleration_components,
     MU_EARTH, R_EARTH
 )
-from backend.ecr_mf_controller import ECRMFController
 from backend.event_predictor import EventPredictor
 from backend.benchmark_comparison import HEOBenchmarkSuite
 from backend.trajectory_engine import (
@@ -66,7 +65,7 @@ from backend import access as access_analysis
 from backend import mission as mission_targeting
 from backend.script_runner import run_script
 from backend.radiation_belts import RadiationBeltModel, RadiationParetoOptimizer
-from backend.covariance_engine import CovarianceEngine, CovarianceSteeredAdaptiveStepController
+from backend.covariance_engine import CovarianceEngine
 from backend.differential_corrector import DifferentialCorrector, FiniteBurnEngine, MultiBurnPerigeePumpingPlanner
 from backend.constellation_engine import MolniyaConstellationEngine
 from backend.ccsds_exporter import CCSDSExporter
@@ -467,11 +466,16 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
             self.send_json(pump_sol)
 
         elif path in ("/api/covariance/steered", "/api/covariance/step_factor"):
-            phi_dummy = np.eye(6) * (1.0 + float(np.random.uniform(0.01, 0.05)))
-            p_dummy = np.diag([100.0, 100.0, 100.0, 0.01, 0.01, 0.01])
-            steered_ctrl = CovarianceSteeredAdaptiveStepController()
-            factor_res = steered_ctrl.compute_covariance_steered_step_factor(phi_dummy, p_dummy)
-            self.send_json(factor_res)
+            # One covariance-steered orbit of the given elements (see /api/propagate steering=covariance)
+            sma = _get_float_param(params, 'sma', 26560.0)
+            ecc = _get_float_param(params, 'ecc', 0.72)
+            inc = _get_float_param(params, 'inc', 63.4)
+            r0, v0 = keplerian_to_cartesian(sma * 1000.0, ecc, float(np.radians(inc)), 0.0, float(np.radians(270.0)), 0.0)
+            period_s = float(2.0 * np.pi * np.sqrt((sma * 1000.0) ** 3 / MU_EARTH))
+            steered = ThirdReviewEngine(np.concatenate([r0, v0])).propagate(
+                (0.0, period_s), num_points=50, model='j2', method='RKF78', rtol=1e-10, atol=1e-10,
+                steering='covariance', steering_eta=_get_float_param(params, 'eta', 0.02))
+            self.send_json(_steering_summary(steered['steps']))
 
 
         # =====================================================================
@@ -848,20 +852,32 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
             # 4. Integrate Coupled Equations of Motion in Real-Time
             t_solve_start = time.time()
             engine = ThirdReviewEngine(y0, epoch=initial_epoch)
-            sol: dict[str, Any] = cast(dict[str, Any], engine.propagate(
-                t_span,
-                num_points=num_points,
-                model=model_type,
-                enable_drag=enable_drag,
-                enable_third_body=enable_third_body,
-                enable_srp=enable_srp,
-                method=method_type,
-                rtol=tol,
-                atol=tol,
-                b_star=b_star,
-                cr_area_over_m=cr_area_over_m,
-                fixed_step=_get_float_param(params, 'step_s', 0.0) or None
-            ))
+            # Innovations that change the run itself: covariance-steered steps (RKF78/BS) and ECR-MF tiers
+            steering: Optional[str] = _get_str_param(params, 'steering', '') or None
+            fidelity: str = _get_str_param(params, 'fidelity', 'full')
+            if fidelity not in ('full', 'ecr_mf'):
+                self.send_json({"error": "fidelity must be 'full' or 'ecr_mf'"}, 400)
+                return
+            try:
+                sol: dict[str, Any] = cast(dict[str, Any], engine.propagate(
+                    t_span,
+                    num_points=num_points,
+                    model=model_type,
+                    enable_drag=enable_drag,
+                    enable_third_body=enable_third_body,
+                    enable_srp=enable_srp,
+                    method=method_type,
+                    rtol=tol,
+                    atol=tol,
+                    b_star=b_star,
+                    cr_area_over_m=cr_area_over_m,
+                    fixed_step=_get_float_param(params, 'step_s', 0.0) or None,
+                    steering=steering,
+                    fidelity=fidelity,
+                ))
+            except ValueError as exc:
+                self.send_json({"error": str(exc)}, 400)
+                return
             t_solve_sec = time.time() - t_solve_start
 
             # Predict mission events across the custom arc
@@ -890,26 +906,9 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
                 times_arr, pos_arr, vel_arr, flux_val
             ))
 
-            # ECR-MF Controller verification certificates
-            controller = ECRMFController()
-            n_pts: int = len(times_arr)
-            certificates: list[dict[str, Any]] = []
-            sample_indices = [0, n_pts // 4, n_pts // 2, 3 * n_pts // 4, n_pts - 1]
             alt_km_arr = cast(np.ndarray, sol['altitude_km'])
             vel_kms_arr = cast(np.ndarray, sol['velocity_kms'])
             ta_deg_arr = cast(np.ndarray, sol['true_anomaly_deg'])
-
-            for idx in sample_indices:
-                mode_info: dict[str, Any] = cast(dict[str, Any], controller.evaluate_segment_mode(
-                    float(alt_km_arr[idx]),
-                    float(vel_kms_arr[idx]),
-                    float(ta_deg_arr[idx]),
-                    autonomous_mode=True,
-                    r_vec=pos_arr[idx],
-                    v_vec=vel_arr[idx]
-                ))
-                cert: dict[str, Any] = cast(dict[str, Any], controller.generate_safety_certificate(idx // 150 + 1, sol, mode_info))
-                certificates.append(cert)
 
             gs_summary: dict[str, Any] = {
                 name: {
@@ -990,7 +989,11 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
             rb_data = rb_model.evaluate_trajectory_radiation(times_arr, pos_arr)
 
             cov_engine = CovarianceEngine()
-            cov_data = cov_engine.propagate_stm_and_covariance(times_arr, pos_arr, vel_arr)
+            if sol.get('stm') is not None:
+                # The run's own variational equations, integrated with the orbit
+                cov_data = cov_engine.dispersion_from_stm(pos_arr, vel_arr, cast(np.ndarray, sol['stm']))
+            else:
+                cov_data = cov_engine.propagate_stm_and_covariance(times_arr, pos_arr, vel_arr)
 
             time_engine = TimeStandardEngine(epoch=initial_epoch)
             time_scales_data = time_engine.epoch_seconds_to_all_scales(float(times_arr[-1]))
@@ -1029,11 +1032,6 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
 
             constellation_engine = MolniyaConstellationEngine(semi_major_axis_km=a_km, eccentricity=e, inclination_deg=inc_deg)
             constellation_data = constellation_engine.propagate_constellation(duration_hours=min(24.0, num_orbits * (period / 3600.0)))
-
-            steered_cov_ctrl = CovarianceSteeredAdaptiveStepController(base_tolerance=tol)
-            phi_mat = np.eye(6) * (1.0 + float(np.random.uniform(0.01, 0.04)))
-            p_mat = np.diag([100.0, 100.0, 100.0, 0.01, 0.01, 0.01])
-            cov_steering_data = steered_cov_ctrl.compute_covariance_steered_step_factor(phi_mat, p_mat)
 
             payload: dict[str, Any] = {
                 "status": "ok",
@@ -1096,16 +1094,15 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
                     "finite_burn_execution": finite_burn_sol
                 },
                 "innovations_suite": {
-                    "ecr_mf_certificates": certificates,
+                    "ecr_mf": sol.get('ecr_mf'),
                     "radiation_pareto": pareto_data,
                     "multi_burn_perigee_pumping": pumping_data,
                     "molniya_constellation_handover": constellation_data,
-                    "covariance_steered_stepping": cov_steering_data
+                    "covariance_steered_stepping": _steering_summary(sol.get('steps'))
                 },
                 "fsw_subsystems": fsw_telemetry_payload,
                 "script_workbench": script_workbench_payload,
                 "benchmark_summary": HEOBenchmarkSuite().generate_benchmark_report(),
-                "ecr_mf_certificates": certificates
             }
             # Unit Sun vector in the frame of position_m; absent outside the bundled DE440 years
             if sol.get('sun_direction_eci') is not None:
@@ -1174,6 +1171,24 @@ def _escape_payload(sol: dict[str, Any], duration_s: float, initial_state: str, 
         },
         "notes": ["Escape trajectory (e >= 1): closed-orbit reports (lifetime, apsis targeting, "
                   "mission script, TLE/OPM export) are not produced."],
+    }
+
+
+def _steering_summary(steps: Optional[dict[str, Any]]) -> Optional[dict[str, Any]]:
+    """What covariance steering did to the run's steps, or None when the run was not steered."""
+    if steps is None:
+        return None
+    h = np.asarray(steps['h_s'][1:])
+    sigma = np.asarray(steps['sigma_pos_m'])
+    return {
+        "eta": steps['eta'],
+        "accepted_steps": int(len(h)),
+        "limited_steps": int(sum(steps['limited'][1:])),
+        "min_step_s": float(h.min()) if len(h) else None,
+        "max_step_s": float(h.max()) if len(h) else None,
+        "max_step_sigma_growth": float(np.max(np.abs(np.diff(sigma)) / sigma[:-1])) if len(sigma) > 1 else 0.0,
+        "initial_1sigma_pos_m": float(sigma[0]),
+        "final_1sigma_pos_m": float(sigma[-1]),
     }
 
 

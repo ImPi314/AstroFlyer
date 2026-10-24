@@ -8,49 +8,16 @@ import numpy as np
 import os
 import json
 
-from astroflyer.backend.ecr_mf_controller import ECRMFController
 from astroflyer.backend.radiation_belts import RadiationParetoOptimizer, RadiationBeltModel
 from astroflyer.backend.differential_corrector import MultiBurnPerigeePumpingPlanner, DifferentialCorrector
 from astroflyer.backend.constellation_engine import MolniyaConstellationEngine
-from astroflyer.backend.covariance_engine import CovarianceSteeredAdaptiveStepController, CovarianceEngine
+from astroflyer.backend.covariance_engine import CovarianceEngine
 from astroflyer.backend.astro_engine import ThirdReviewEngine, compute_acceleration_components
 
 
 class TestAstroFlyerInnovations(unittest.TestCase):
     """Verifies all 5 core BE major project academic innovations."""
 
-    def test_innovation_1_ecr_mf_controller(self):
-        controller = ECRMFController()
-        # Perigee state: altitude 600 km, speed 10.2 km/s, true anomaly 0 deg -> Tier 3
-        decision_perigee = controller.evaluate_segment_mode(
-            altitude_km=600.0,
-            velocity_kms=10.2,
-            true_anomaly_deg=0.0,
-            r_vec=np.array([6978.137, 0.0, 0.0]),
-            v_vec=np.array([0.0, 10.2, 0.0])
-        )
-        self.assertEqual(decision_perigee["tier_code"], "TIER_3")
-        self.assertTrue(decision_perigee["certified"])
-
-        # Apogee state: altitude 39,900 km, speed 1.5 km/s, true anomaly 180 deg -> Tier 1
-        decision_apogee = controller.evaluate_segment_mode(
-            altitude_km=39900.0,
-            velocity_kms=1.5,
-            true_anomaly_deg=180.0,
-            r_vec=np.array([-46278.0, 0.0, 0.0]),
-            v_vec=np.array([0.0, -1.5, 0.0])
-        )
-        self.assertEqual(decision_apogee["tier_code"], "TIER_1")
-
-        # Generate formal safety certificate
-        segment_data = {"energy_fractional_error": 1.42e-12}
-        cert = controller.generate_safety_certificate(
-            orbit_index=1,
-            segment_data=segment_data,
-            mode_info=decision_perigee
-        )
-        self.assertEqual(cert["verification_status"], "CERTIFIED_VALID")
-        self.assertTrue(cert["sha256_verification_token"].startswith("0x"))
 
     def test_innovation_2_radiation_pareto(self):
         optimizer = RadiationParetoOptimizer()
@@ -80,20 +47,6 @@ class TestAstroFlyerInnovations(unittest.TestCase):
         self.assertEqual(sim["handover_analysis"]["unbroken_coverage_availability_pct"], 100.0)
         self.assertGreater(sim["handover_analysis"]["total_handovers_in_24h"], 0)
 
-    def test_innovation_5_covariance_steered_step(self):
-        controller = CovarianceSteeredAdaptiveStepController(base_tolerance=1e-11)
-        # Moderate condition number
-        Phi_mild = np.eye(6) * 1.5
-        P_mild = np.eye(6) * 100.0
-        res_mild = controller.compute_covariance_steered_step_factor(Phi_mild, P_mild)
-        self.assertGreaterEqual(res_mild["step_size_damping_multiplier"], 0.8)
-
-        # Extreme condition number (near perigee singularity)
-        Phi_extreme = np.diag([1e5, 1e5, 1e5, 1e-5, 1e-5, 1e-5])
-        P_extreme = np.eye(6) * 10000.0
-        res_extreme = controller.compute_covariance_steered_step_factor(Phi_extreme, P_extreme)
-        self.assertLess(res_extreme["step_size_damping_multiplier"], res_mild["step_size_damping_multiplier"])
-        self.assertEqual(res_extreme["steering_action"], "REDUCING_STEP (High Variational Gradient)")
 
     def test_interactive_what_if_maneuver(self):
         # Test an apogee raise burn at perigee (+350 m/s prograde)
