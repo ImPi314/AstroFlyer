@@ -4,7 +4,7 @@
 #define MyAppName "AstroFlyer HEO"
 #define MyAppVersion "1.0.0"
 #define MyAppPublisher "ACS College of Engineering"
-#define MyAppURL "https://github.com/Harshith-Aerospace/AstroFlyer-HEO"
+#define MyAppURL "https://github.com/ImPi314/AstroFlyer"
 #define MyAppExeName "AstroFlyer.exe"
 
 [Setup]
