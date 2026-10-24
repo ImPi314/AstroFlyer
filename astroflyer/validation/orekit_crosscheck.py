@@ -271,12 +271,21 @@ class OrekitContext:
 # ==============================================================================
 # ASTROFLYER SIDE
 # ==============================================================================
-def astroflyer_run(state, epoch, level, duration_s, n_points):
+# AstroFlyer propagator settings compared against the same Orekit reference
+VARIANTS = {
+    "dop853": dict(method="DOP853"),
+    "ecr_mf": dict(method="DOP853", fidelity="ecr_mf"),
+    "rkf78": dict(method="RKF78"),
+    "rkf78_steered": dict(method="RKF78", steering="covariance"),
+}
+
+
+def astroflyer_run(state, epoch, level, duration_s, n_points, variant="dop853"):
     model = {"L0": "two_body", "L1": "j2", "L2": "j2_j3_j4"}.get(level.name, "coupled")
     eng = ThirdReviewEngine(state, epoch=epoch)
     t0 = time.perf_counter()
     sol = eng.propagate(
-        (0.0, duration_s), num_points=n_points, model=model, method="DOP853", rtol=1e-12, atol=1e-6,
+        (0.0, duration_s), num_points=n_points, model=model, rtol=1e-12, atol=1e-6, **VARIANTS[variant],
         enable_drag=level.drag, enable_third_body=level.third_body, enable_srp=level.srp,
         enable_relativity=level.relativity, enable_albedo=False,
         gravity_degree=level.gravity_degree if model == "coupled" else None,
@@ -295,7 +304,7 @@ def ric(r_ref, v_ref, dr):
     return np.array([dr @ r_hat, dr @ i_hat, dr @ c_hat])
 
 
-def compare_case(ctx, orbit_name, level, days):
+def compare_case(ctx, orbit_name, level, days, variant="dop853"):
     a, e, i, raan, argp, nu = C.ORBITS[orbit_name]
     r0, v0 = keplerian_to_cartesian(a, e, math.radians(i), math.radians(raan), math.radians(argp),
                                     math.radians(nu), mu=forces.MU_EARTH)
@@ -304,7 +313,7 @@ def compare_case(ctx, orbit_name, level, days):
     duration = days * 86400.0
     n_points = int(round(duration / OUTPUT_STEP_S)) + 1
 
-    times, pos, vel, af_runtime = astroflyer_run(state, epoch, level, duration, n_points)
+    times, pos, vel, af_runtime = astroflyer_run(state, epoch, level, duration, n_points, variant)
 
     t0 = time.perf_counter()
     date0 = ctx.date(epoch)
@@ -328,6 +337,7 @@ def compare_case(ctx, orbit_name, level, days):
         "level": level.name,
         "forces": level.description,
         "days": days,
+        "variant": variant,
         "max_pos_err_m": float(d3.max()),
         "final_pos_err_m": float(d3[-1]),
         "max_radial_m": float(np.abs(ric_err[:, 0]).max()),
@@ -341,14 +351,15 @@ def compare_case(ctx, orbit_name, level, days):
     }
 
 
-def write_report(results, out_dir, data_source):
+def write_report(results, out_dir, data_source, variant="dop853"):
     os.makedirs(out_dir, exist_ok=True)
     with open(os.path.join(out_dir, "orekit_crosscheck.json"), "w") as f:
-        json.dump({"data_source": data_source, "results": results}, f, indent=2)
+        json.dump({"data_source": data_source, "variant": variant, "results": results}, f, indent=2)
     lines = [
         "# AstroFlyer vs Orekit cross-check",
         "",
         f"Reference data: {data_source}. Epoch {C.EPOCH_ISO_TT} TT, GCRF, output every {OUTPUT_STEP_S:.0f} s.",
+        f"AstroFlyer propagator: {variant} ({VARIANTS[variant]}).",
         "",
         "| Orbit | Level | Forces | Days | Max 3D (m) | Radial (m) | In-track (m) | Cross-track (m) | Max |dv| (m/s) | Limit (m) | Result | AstroFlyer (s) | Orekit (s) |",
         "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
@@ -378,6 +389,8 @@ def main(argv=None):
                         help="orekit-data folder or zip (needed for L4-L7)")
     parser.add_argument("--download-orekit-data", action="store_true")
     parser.add_argument("--out", default=DEFAULT_OUT)
+    parser.add_argument("--variant", default="dop853", choices=list(VARIANTS),
+                        help="AstroFlyer propagator settings to compare")
     args = parser.parse_args(argv)
 
     if args.download_orekit_data:
@@ -394,7 +407,7 @@ def main(argv=None):
                     print(f"skip {orbit} {name}: needs orekit-data (run with --download-orekit-data)")
                     continue
                 try:
-                    res = compare_case(ctx, orbit, level, args.days)
+                    res = compare_case(ctx, orbit, level, args.days, args.variant)
                 except Exception as exc:  # report and keep going
                     res = {"orbit": orbit, "level": name, "forces": level.description, "days": args.days,
                            "error": f"{type(exc).__name__}: {exc}"}
@@ -407,7 +420,7 @@ def main(argv=None):
                           f"C {res['max_crosstrack_m']:.3f})  {'PASS' if res['passed'] else 'FAIL'}")
     finally:
         ctx.close()
-    path = write_report(results, args.out, ctx.data_source)
+    path = write_report(results, args.out, ctx.data_source, args.variant)
     print(f"Report: {path}")
     return 0 if results and all(r.get("passed") for r in results) else 1
 
