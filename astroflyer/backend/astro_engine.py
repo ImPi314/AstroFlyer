@@ -23,7 +23,7 @@ from scipy.integrate import solve_ivp
 from . import forces
 from .epoch import Epoch
 from .forces import ForceModelConfig, SimpleEarthRotation
-from .frames import EarthOrientation, FastEarthRotation, gcrf_to_geodetic
+from .frames import EarthOrientation, FastEarthRotation, gcrf_to_geodetic, transform_state
 
 # ==============================================================================
 # LAYER 1: MATH CORE
@@ -343,6 +343,74 @@ def full_production_eom(
 
 
 # ==============================================================================
+# ORBIT EVENTS AND SUN DIRECTION FOR THE UI TIMELINE
+# ==============================================================================
+def _radial_rate(t, y):
+    """r . v: negative before perigee and positive after it."""
+    return y[0] * y[3] + y[1] * y[4] + y[2] * y[5]
+
+
+def _z_position(t, y):
+    return y[2]
+
+
+def _make_event(fn, direction):
+    def event(t, y):
+        return fn(t, y)
+    event.direction = direction
+    return event
+
+
+# Located by the integrator itself, so times are exact to its tolerance
+_ORBIT_EVENT_FUNCTIONS = [
+    _make_event(_radial_rate, 1.0),    # perigee
+    _make_event(_radial_rate, -1.0),   # apogee
+    _make_event(_z_position, 1.0),     # ascending node
+    _make_event(_z_position, -1.0),    # descending node
+]
+_ORBIT_EVENT_TYPES = ("perigee", "apogee", "ascending_node", "descending_node")
+
+
+def orbit_events(sol, epoch, apsides=True):
+    """Apsis and node crossings from a solve_ivp run with _ORBIT_EVENT_FUNCTIONS.
+
+    Returns [{"type", "t_s", "utc"}] sorted by time. Apsides are left out for
+    near-circular orbits, where r . v is only numerical noise.
+    """
+    t_events = getattr(sol, "t_events", None) or []
+    events = []
+    # The integrator cannot see a crossing at its first point, so check the initial state
+    t0, y0 = float(sol.t[0]), sol.y[:, 0]
+    r0, v0 = np.linalg.norm(y0[:3]), np.linalg.norm(y0[3:])
+    if apsides and abs(_radial_rate(t0, y0)) < 1e-9 * r0 * v0:
+        r_dot_a = y0[:3] @ (-MU_EARTH * y0[:3] / r0 ** 3) + v0 ** 2   # d(r . v)/dt
+        events.append({"type": "perigee" if r_dot_a > 0 else "apogee", "t_s": t0, "utc": (epoch + t0).iso("UTC")})
+    if abs(y0[2]) < 1e-9 * r0:
+        events.append({"type": "ascending_node" if y0[5] > 0 else "descending_node", "t_s": t0,
+                       "utc": (epoch + t0).iso("UTC")})
+    for kind, times in zip(_ORBIT_EVENT_TYPES, t_events):
+        if kind in ("perigee", "apogee") and not apsides:
+            continue
+        for t in times:
+            if any(ev["type"] == kind and abs(ev["t_s"] - t) < 1e-6 for ev in events):
+                continue
+            events.append({"type": kind, "t_s": float(t), "utc": (epoch + float(t)).iso("UTC")})
+    events.sort(key=lambda ev: ev["t_s"])
+    return events
+
+
+def sun_directions(times, epoch_tt_j2000_s):
+    """Unit geocentric Sun vector (GCRF) at each time, or None outside the bundled DE440."""
+    try:
+        from .ephemeris import get_ephemeris
+        eph = get_ephemeris()
+        sun = np.array([eph.sun_gcrf(epoch_tt_j2000_s + float(t)) for t in times])
+    except (ImportError, OSError, ValueError):
+        return None
+    return sun / np.linalg.norm(sun, axis=1)[:, None]
+
+
+# ==============================================================================
 # THIRD REVIEW UNIFIED PRODUCTION PROPAGATOR
 # ==============================================================================
 class ThirdReviewEngine:
@@ -427,7 +495,8 @@ class ThirdReviewEngine:
         elif solver_method in ('Radau', 'RADAU', 'RadauIIA'):
             solver_method = 'Radau'
 
-        sol = solve_ivp(eom, t_span, self.y0, method=solver_method, t_eval=t_eval, rtol=rtol, atol=atol)
+        sol = solve_ivp(eom, t_span, self.y0, method=solver_method, t_eval=t_eval, rtol=rtol, atol=atol,
+                        events=_ORBIT_EVENT_FUNCTIONS)
 
         times = sol.t
         pos = sol.y[0:3].T
@@ -504,6 +573,8 @@ class ThirdReviewEngine:
             'a_total_ms2': a_tot.tolist()
         }
 
+        r_itrf, v_itrf = transform_state(pos, vel, self.epoch, "GCRF", "ITRF", orientation=orientation)
+
         return {
             'times': times,
             'time_hours': times / 3600.0,
@@ -526,6 +597,11 @@ class ThirdReviewEngine:
             'utc_iso': [(self.epoch + float(t)).iso('UTC') for t in times],
             'frame': 'GCRF',
             'eop_in_range': bool(orientation.eop_in_range),
+            'epoch': {scale.lower(): self.epoch.iso(scale, 6) for scale in ('UTC', 'TAI', 'TT', 'TDB', 'UT1')},
+            'events': orbit_events(sol, self.epoch, apsides=bool(e_arr[0] > 1e-3)),
+            'sun_direction_eci': sun_directions(times, epoch_tt),
+            'position_itrf_m': r_itrf,
+            'velocity_itrf_ms': v_itrf,
             'model': model_clean,
             'method': method,
             'force_diagnostics': force_diag
