@@ -31,12 +31,31 @@ def start_server_thread(port=8003):
     return server_thread, httpd.server_address[1]
 
 
+def warm_up_models():
+    """Compiles the Numba drag model (NRLMSISE-00, ~9 s the first time in a process) on a background
+    thread, so the first propagation with drag doesn't stall. Failures are recorded, never raised."""
+    def run():
+        try:
+            from backend import forces
+            forces.atmospheric_density(0.0, 0.5, 1.0, 400e3, 150.0, 150.0, 15.0)
+            thread.ok = True
+        except Exception as exc:
+            thread.error = repr(exc)
+
+    thread = threading.Thread(target=run, name="model-warm-up", daemon=True)
+    thread.ok = False
+    thread.error = None
+    thread.start()
+    return thread
+
+
 def start_desktop_application(port=8003):
     print("=" * 80)
     print("      ASTROFLYER HEO - PRODUCTION DESKTOP FLIGHT DYNAMICS STUDIO")
     print("      ACS College of Engineering | Aerospace Engineering Major Project")
     print("=" * 80)
     server_thread, port = start_server_thread(port)
+    warm_up_models()
     print(f"[*] Local astrodynamics micro-kernel daemon listening on 127.0.0.1:{port}")
     
     try:
@@ -71,6 +90,7 @@ def main():
         build_pdf()
     elif args.browser:
         server_thread, port = start_server_thread(args.port)
+        warm_up_models()
         webbrowser.open(f"http://127.0.0.1:{port}")
         server_thread.join()
     else:
