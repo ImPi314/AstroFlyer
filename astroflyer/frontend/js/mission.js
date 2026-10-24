@@ -14,6 +14,9 @@ export const defaultMission = {
         raan: 45,
         aop: 270,
         ta: 0,
+        // Roughly the default Molniya at perigee (node line on X), a starting point when switching
+        // to position and velocity.
+        x: 7378, y: 0, z: 0, vx: 0, vy: 4.32, vz: 8.63,
         mass: 1500,
         cd: 2.2,
         drag_area: 15,
@@ -27,14 +30,23 @@ export const defaultMission = {
         enable_drag: true,
         enable_third_body: true,
         enable_srp: true,
+        durationUnit: 'orbits',
         num_orbits: 3,
+        duration: 1,
         points_per_orbit: 400,
     },
 };
 
 const apsides = (values) => values.orbitInput === 'apsides';
 const keplerian = (values) => values.orbitInput === 'keplerian';
+const cartesian = (values) => values.orbitInput === 'cartesian';
+const elements = (values) => !cartesian(values);
 const fullModel = (values) => values.model === 'coupled';
+const spanIn = (unit) => (values) => values.durationUnit === unit;
+
+const R_EARTH_KM = 6378.137;
+const SECONDS = { hours: 3600, days: 86400 };
+const vectorField = (key, label, unit, limit) => ({ key, label, unit, type: 'number', min: -limit, max: limit, step: 'any', when: cartesian });
 
 // Ranges follow what the engine accepts; it clamps anything outside them.
 export const schemas = {
@@ -51,15 +63,21 @@ export const schemas = {
                 title: 'Orbit state',
                 fields: [
                     { key: 'epoch', label: 'Start epoch', unit: 'UTC', type: 'epoch', hint: 'Date and time of the state below, as YYYY-MM-DD HH:MM:SS. The bundled Sun and Moon ephemeris covers 1990 to 2060.' },
-                    { key: 'orbitInput', label: 'Enter orbit as', type: 'select', options: [['apsides', 'Perigee and apogee altitude'], ['keplerian', 'Semi-major axis and eccentricity']] },
+                    { key: 'orbitInput', label: 'Enter orbit as', type: 'select', options: [['apsides', 'Perigee and apogee altitude'], ['keplerian', 'Semi-major axis and eccentricity'], ['cartesian', 'Position and velocity (GCRF)']] },
+                    { ...vectorField('x', 'Position X', 'km', 500000), hint: 'Earth-centred inertial (GCRF) position at the start epoch.' },
+                    vectorField('y', 'Position Y', 'km', 500000),
+                    vectorField('z', 'Position Z', 'km', 500000),
+                    { ...vectorField('vx', 'Velocity X', 'km/s', 20), hint: 'GCRF velocity at the start epoch. The orbit must stay bound to the Earth.' },
+                    vectorField('vy', 'Velocity Y', 'km/s', 20),
+                    vectorField('vz', 'Velocity Z', 'km/s', 20),
                     { key: 'hp', label: 'Perigee altitude', unit: 'km', type: 'number', min: 100, max: 400000, step: 1, when: apsides, hint: 'Height of the lowest point above the Earth’s surface.' },
                     { key: 'ha', label: 'Apogee altitude', unit: 'km', type: 'number', min: 100, max: 400000, step: 1, when: apsides, hint: 'Height of the highest point. Must be above perigee.' },
                     { key: 'a', label: 'Semi-major axis', unit: 'km', type: 'number', min: 6500, max: 400000, step: 1, when: keplerian },
                     { key: 'e', label: 'Eccentricity', type: 'number', min: 0, max: 0.99, step: 0.001, when: keplerian, hint: 'From 0 (circular) to 0.99.' },
-                    { key: 'inc', label: 'Inclination', unit: 'deg', type: 'number', min: 0, max: 180, step: 0.1, hint: '63.4 deg keeps a Molniya apogee from drifting.' },
-                    { key: 'raan', label: 'Right ascension of ascending node', unit: 'deg', type: 'number', min: 0, max: 360, step: 0.1 },
-                    { key: 'aop', label: 'Argument of perigee', unit: 'deg', type: 'number', min: 0, max: 360, step: 0.1, hint: '270 deg puts apogee over the northern hemisphere.' },
-                    { key: 'ta', label: 'True anomaly', unit: 'deg', type: 'number', min: 0, max: 360, step: 0.1, hint: 'Position along the orbit at the start. 0 is perigee.' },
+                    { key: 'inc', label: 'Inclination', unit: 'deg', type: 'number', min: 0, max: 180, step: 0.1, hint: '63.4 deg keeps a Molniya apogee from drifting.', when: elements },
+                    { key: 'raan', label: 'Right ascension of ascending node', unit: 'deg', type: 'number', min: 0, max: 360, step: 0.1 , when: elements },
+                    { key: 'aop', label: 'Argument of perigee', unit: 'deg', type: 'number', min: 0, max: 360, step: 0.1, hint: '270 deg puts apogee over the northern hemisphere.', when: elements },
+                    { key: 'ta', label: 'True anomaly', unit: 'deg', type: 'number', min: 0, max: 360, step: 0.1, hint: 'Position along the orbit at the start. 0 is perigee.', when: elements },
                 ],
             },
             {
@@ -96,7 +114,10 @@ export const schemas = {
             {
                 title: 'Span',
                 fields: [
-                    { key: 'num_orbits', label: 'Duration', unit: 'orbits', type: 'number', min: 0.5, max: 20, step: 0.5 },
+                    { key: 'durationUnit', label: 'Run length in', type: 'select', options: [['orbits', 'Orbits'], ['hours', 'Hours'], ['days', 'Days']] },
+                    { key: 'num_orbits', label: 'Duration', unit: 'orbits', type: 'number', min: 0.5, max: 20, step: 0.5, when: spanIn('orbits') },
+                    { key: 'duration', label: 'Duration', unit: 'h', type: 'number', min: 0.1, max: 720, step: 'any', when: spanIn('hours'), hint: 'Up to 30 days.' },
+                    { key: 'duration', label: 'Duration', unit: 'days', type: 'number', min: 0.01, max: 30, step: 'any', when: spanIn('days'), hint: 'Up to 30 days.' },
                     { key: 'points_per_orbit', label: 'Output points', unit: 'per orbit', type: 'number', min: 50, max: 1000, step: 10, hint: 'The engine keeps the total between 200 and 3,600 points.' },
                 ],
             },
@@ -156,19 +177,26 @@ export function validate(schema, values) {
     if (schema === schemas.spacecraft && apsides(values) && !errors.hp && !errors.ha && values.ha <= values.hp) {
         errors.ha = 'Apogee must be higher than perigee.';
     }
+    if (schema === schemas.spacecraft && cartesian(values) && !errors.x && !errors.y && !errors.z
+        && Math.hypot(values.x, values.y, values.z) <= R_EARTH_KM) {
+        errors.x = 'The position is inside the Earth. Its distance from the centre must exceed 6,378 km.';
+    }
     return errors;
+}
+
+// The orbit part of the request: GCRF vectors, or elements with their angles.
+function orbitRequest(sc) {
+    if (cartesian(sc)) return { position_km: [sc.x, sc.y, sc.z], velocity_kms: [sc.vx, sc.vy, sc.vz] };
+    const shape = apsides(sc) ? { hp: sc.hp, ha: sc.ha } : { a: sc.a, e: sc.e };
+    return { ...shape, inc: sc.inc, raan: sc.raan, aop: sc.aop, ta: sc.ta };
 }
 
 export function toPropagateRequest(mission) {
     const { spacecraft: sc, propagator: prop } = mission;
-    const orbit = apsides(sc) ? { hp: sc.hp, ha: sc.ha } : { a: sc.a, e: sc.e };
+    const span = prop.durationUnit in SECONDS ? { duration_s: prop.duration * SECONDS[prop.durationUnit] } : { num_orbits: prop.num_orbits };
     return {
         epoch: parseEpoch(sc.epoch)?.iso,
-        ...orbit,
-        inc: sc.inc,
-        raan: sc.raan,
-        aop: sc.aop,
-        ta: sc.ta,
+        ...orbitRequest(sc),
         mass: sc.mass,
         cd: sc.cd,
         drag_area: sc.drag_area,
@@ -181,7 +209,7 @@ export function toPropagateRequest(mission) {
         enable_drag: prop.enable_drag,
         enable_third_body: prop.enable_third_body,
         enable_srp: prop.enable_srp,
-        num_orbits: prop.num_orbits,
+        ...span,
         points_per_orbit: prop.points_per_orbit,
     };
 }

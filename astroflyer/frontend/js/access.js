@@ -5,18 +5,20 @@ const REPORT = ['Epoch', 'ElapsedSecs', 'Altitude', 'Latitude', 'Longitude', 'Be
 const STATION_REPORT = ['Elevation', 'Azimuth', 'Range'];
 const BODIES = { EARTH: 'Earth', MOON: 'Moon' };
 
-// Repeats the last run: same epoch, the engine's own semi-major axis and eccentricity, same length,
-// force model and stations. The engine propagates this again for the analysis.
+// Repeats the last run: same epoch, the engine's own elements for the start state (so a run
+// entered as position and velocity repeats too), same length, force model and stations.
+// The engine propagates this again for the analysis.
 export function toAccessRequest(mission, result) {
-    const { spacecraft: sc, propagator: prop } = mission;
+    const { propagator: prop } = mission;
+    const start = result.samples;
     return {
         epoch: result.epoch?.utc ?? null,
         sma_km: result.summary.sma_km,
         ecc: result.summary.eccentricity,
-        inc_deg: sc.inc,
-        raan_deg: sc.raan,
-        aop_deg: sc.aop,
-        ta_deg: sc.ta,
+        inc_deg: start.inclination_deg[0],
+        raan_deg: start.raan_deg[0],
+        aop_deg: start.aop_deg[0],
+        ta_deg: start.true_anomaly_deg[0],
         duration_s: result.duration,
         // About 2,000 samples, but no coarser than a minute so short passes are not missed.
         step_s: Math.min(60, Math.max(10, result.duration / 2000)),

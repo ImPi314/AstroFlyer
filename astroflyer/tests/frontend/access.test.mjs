@@ -14,6 +14,8 @@ const RESULT = {
     duration: 129600,
     epoch: { utc: '2000-01-01T11:58:55.816000Z' },
     summary: { sma_km: 26553.137, eccentricity: 0.722 },
+    // The engine's osculating angles per sample; the first is the start state.
+    samples: { inclination_deg: [63.41, 63.4, 63.4], raan_deg: [45.01, 45, 45], aop_deg: [269.9, 270, 270], true_anomaly_deg: [0.02, 5, 10] },
     stations: [
         { name: 'Svalbard KSAT', lat_deg: 78.23, lon_deg: 15.39, alt_m: 500, min_elevation_deg: 5 },
         { name: 'Madrid DSN', lat_deg: 40.43, lon_deg: -4.25, alt_m: 834, min_elevation_deg: 10 },
@@ -26,7 +28,8 @@ test('the request repeats the last run: its epoch, orbit, length, force model an
     // The engine's own reading of the orbit, not one recomputed here from perigee and apogee.
     assert.equal(body.sma_km, 26553.137);
     assert.equal(body.ecc, 0.722);
-    assert.deepEqual([body.inc_deg, body.raan_deg, body.aop_deg, body.ta_deg], [63.4, 45, 270, 0]);
+    // Angles too come from the engine, so a run started from position and velocity repeats exactly.
+    assert.deepEqual([body.inc_deg, body.raan_deg, body.aop_deg, body.ta_deg], [63.41, 45.01, 269.9, 0.02]);
     assert.equal(body.duration_s, 129600);
     assert.equal(body.model, 'j2');
     assert.equal(body.method, 'DOP853');

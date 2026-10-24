@@ -8,7 +8,7 @@ import { log } from './messages.js';
 import { num } from './format.js';
 
 // Request fields that describe the orbit; a script run takes these from the script instead.
-const ORBIT_FIELDS = ['hp', 'ha', 'a', 'e', 'inc', 'raan', 'aop', 'ta'];
+const ORBIT_FIELDS = ['hp', 'ha', 'a', 'e', 'inc', 'raan', 'aop', 'ta', 'position_km', 'velocity_kms'];
 
 let controller = null;
 
@@ -19,9 +19,15 @@ export function isRunning() {
 export function startRun() {
     const mission = store.get('mission');
     return execute(
-        `Propagating ${mission.spacecraft.name} for ${num(mission.propagator.num_orbits, 1)} orbits.`,
+        `Propagating ${mission.spacecraft.name} for ${spanText(mission.propagator)}.`,
         (signal) => propagate(toPropagateRequest(mission), signal),
     );
+}
+
+function spanText(prop) {
+    if (prop.durationUnit === 'hours') return `${num(prop.duration, 1)} hours`;
+    if (prop.durationUnit === 'days') return `${num(prop.duration, 2)} days`;
+    return `${num(prop.num_orbits, 1)} orbits`;
 }
 
 export function startScriptRun(scriptText) {

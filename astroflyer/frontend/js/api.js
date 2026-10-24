@@ -22,7 +22,9 @@ async function request(path, options) {
         throw new EngineError(`The engine returned an unreadable answer (HTTP ${response.status}).`, response.status);
     }
     if (!response.ok) {
-        throw new EngineError(data.message || `The engine reported an error (HTTP ${response.status}).`, response.status);
+        // Older routes answer { message }, newer ones { error } as text or { message, line }.
+        const reason = data.message || (typeof data.error === 'string' ? data.error : data.error?.message);
+        throw new EngineError(reason || `The engine reported an error (HTTP ${response.status}).`, response.status);
     }
     return data;
 }
