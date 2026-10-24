@@ -2,9 +2,10 @@
 // The mission tree, inspector and timeline stay as they are while a tool is open.
 
 import * as store from './store.js';
-import { solveApogeeRaise, simulateFiniteBurn, runScript, EngineError } from './api.js';
+import { solveApogeeRaise, simulateFiniteBurn, runScript, analyzeAccess, EngineError } from './api.js';
 import { sampleIndex } from './results.js';
 import { fromScriptRun } from './scriptrun.js';
+import { toAccessRequest, fromAccess } from './access.js';
 import { startScriptRun } from './run.js';
 import { log } from './messages.js';
 import { elapsed, escapeHtml, icon, num, saveFile } from './format.js';
@@ -13,6 +14,7 @@ import { token } from './views/colors.js';
 const TOOLS = {
     analysis: [
         ['events', 'Events'],
+        ['access', 'Access'],
         ['targeting', 'Targeting'],
         ['lifetime', 'Lifetime'],
         ['radiation', 'Radiation'],
@@ -23,7 +25,7 @@ const TOOLS = {
         ['export', 'Export'],
     ],
 };
-const PAGES = { events, targeting, lifetime, radiation, covariance, script, export: exportPage };
+const PAGES = { events, access, targeting, lifetime, radiation, covariance, script, export: exportPage };
 
 let root;
 let page;
@@ -32,6 +34,7 @@ let eventFilter = 'all';
 let targetingState = { apogee: null, burn: null, busy: false, inputs: {} };   // inputs survive re-rendering
 let scriptDraft = null;   // the user's edits; null means "show the last run's script"
 let scriptRun = { busy: false, run: null, failure: null };   // last full script run, see scriptrun.js
+let accessState = { busy: false, access: null, failure: null, forResult: null };   // see access.js
 let lifetimeChart = null;
 
 export function mountTools(element) {
@@ -129,6 +132,80 @@ function events(result) {
             <thead><tr><th scope="col">Time</th><th scope="col">Event</th><th scope="col">Detail</th></tr></thead>
             <tbody>${rows.map((row) => `<tr data-t="${row.t}" tabindex="0"><td class="num">${at(result, row.t)}</td><td>${escapeHtml(row.name)}</td><td class="muted">${row.detail}</td></tr>`).join('')}</tbody>
         </table>` : '<p class="tool-lead">No events of this kind in this run.</p>'}`;
+}
+
+// ---------- Access: station passes with masks, Earth and Moon eclipses, beta angle ----------
+
+// "2000-01-01T12:30:00.000000Z" as "2000-01-01 12:30:00".
+const utc = (iso) => (iso ? iso.replace('T', ' ').slice(0, 19) : '–');
+const minutes = (s) => `${num(s / 60, 1)} min`;
+
+function access(result) {
+    const { busy, failure } = accessState;
+    const current = accessState.forResult === result ? accessState.access : null;
+    const stale = accessState.access && !current;
+    const head = `
+        <header class="tool-head">
+            <div>
+                <h2 class="tool-title">Access</h2>
+                <p class="tool-lead">The engine propagates this run's orbit again from the same epoch, with the same force model and stations, and finds each station pass above its elevation limit, shadow from the Earth and the Moon, and the beta angle.</p>
+            </div>
+            <div class="tool-actions">
+                ${current ? `<button class="button" type="button" data-action="access-report">${icon('download')}Save report</button>` : ''}
+                <button class="button button-primary" type="button" data-action="access-run" ${busy ? 'disabled' : ''}>${icon('play')}${current ? 'Analyse again' : 'Analyse'}</button>
+            </div>
+        </header>`;
+    if (busy) return `${head}<p class="tool-lead section-pad">Analysing access.</p>`;
+    if (failure) return `${head}<p class="tool-lead section-pad script-error">${escapeHtml(failure)}</p>`;
+    if (!current) return `${head}<p class="tool-lead section-pad">${stale ? 'The mission was run again since the last analysis. ' : ''}Press Analyse to work out access for this run.</p>`;
+    if (current.error) return `${head}<p class="tool-lead section-pad script-error">${escapeHtml(current.error)}</p>`;
+    const contact = current.passes.reduce((sum, p) => sum + p.duration_s, 0);
+    const shadow = current.eclipses.filter((e) => e.kind === 'umbra').reduce((sum, e) => sum + e.duration_s, 0);
+    const flag = (partial) => (partial ? ' <span class="muted">(cut by the run start or end)</span>' : '');
+    return `
+        ${head}
+        ${facts([
+            ['Station passes', num(current.passes.length)],
+            ['Total contact', minutes(contact)],
+            ['Shadow periods', num(current.eclipses.length)],
+            ['Time in umbra', minutes(shadow)],
+            ['Beta angle', current.beta.min == null ? '–' : `${num(current.beta.min, 1)} to ${num(current.beta.max, 1)} deg`],
+        ])}
+        <section class="tool-section">
+            <h3 class="section-title">Station passes</h3>
+            ${current.passes.length ? `<table class="data-table compact">
+                <thead><tr><th scope="col">Station</th><th scope="col">AOS (UTC)</th><th scope="col">Closest (UTC)</th><th scope="col">LOS (UTC)</th><th scope="col" class="num">Length</th><th scope="col" class="num">Peak elevation</th><th scope="col" class="num">AOS / LOS azimuth</th></tr></thead>
+                <tbody>${current.passes.map((p) => `<tr>
+                    <td>${escapeHtml(p.station)}${flag(p.partial)}</td><td>${utc(p.aos)}</td><td>${utc(p.tca)}</td><td>${utc(p.los)}</td>
+                    <td class="num">${minutes(p.duration_s)}</td><td class="num">${num(p.max_elevation_deg, 1)} deg</td>
+                    <td class="num">${num(p.aos_azimuth_deg)} / ${num(p.los_azimuth_deg)} deg</td></tr>`).join('')}</tbody>
+            </table>` : '<p class="tool-lead section-pad">No station sees the spacecraft in this run.</p>'}
+        </section>
+        <section class="tool-section">
+            <h3 class="section-title">Shadow</h3>
+            ${current.eclipses.length ? `<table class="data-table compact">
+                <thead><tr><th scope="col">Shadow of</th><th scope="col">Kind</th><th scope="col">Start (UTC)</th><th scope="col">End (UTC)</th><th scope="col" class="num">Length</th></tr></thead>
+                <tbody>${current.eclipses.map((e) => `<tr>
+                    <td>${escapeHtml(e.body)}</td><td>${e.kind === 'umbra' ? 'Umbra' : 'Penumbra'}${flag(e.partial)}</td><td>${utc(e.start)}</td><td>${utc(e.end)}</td>
+                    <td class="num">${minutes(e.duration_s)}</td></tr>`).join('')}</tbody>
+            </table>` : '<p class="tool-lead section-pad">The spacecraft stays in sunlight for the whole run.</p>'}
+        </section>`;
+}
+
+async function startAccess(result) {
+    accessState = { busy: true, access: null, failure: null, forResult: null };
+    render();
+    try {
+        const analysed = fromAccess(await analyzeAccess(toAccessRequest(store.get('mission'), result)));
+        accessState = { busy: false, access: analysed, failure: null, forResult: result };
+        if (analysed.error) log('error', `Access analysis failed: ${analysed.error}`);
+        else log('info', `Access analysis found ${analysed.passes.length} station passes and ${analysed.eclipses.length} shadow periods.`);
+    } catch (err) {
+        const message = err instanceof EngineError ? err.message : `Unexpected error: ${err.message}`;
+        accessState = { busy: false, access: null, failure: message, forResult: null };
+        log('error', message);
+    }
+    render();
 }
 
 // ---------- Targeting ----------
@@ -471,6 +548,14 @@ function onPageClick(event) {
             }
             if (event.target.closest('[data-action]').dataset.action === 'script-run') startFullScriptRun(text);
             else startScriptRun(text);
+            break;
+        }
+        case 'access-run':
+            startAccess(result);
+            break;
+        case 'access-report': {
+            const { report } = accessState.access;
+            saveFile(`${name}_access.csv`, reportCsv({ columns: report.columns, rows: report.rows }), 'text/csv');
             break;
         }
         case 'script-line':

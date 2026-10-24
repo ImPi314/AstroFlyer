@@ -64,6 +64,23 @@ export async function runScript(scriptText, signal) {
     }
 }
 
+// Station passes, eclipses, beta angle and a report for one orbit, see access.js for the body.
+export async function analyzeAccess(body, signal) {
+    try {
+        return await request('/api/analysis/access', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+            signal,
+        });
+    } catch (err) {
+        if (err instanceof EngineError && err.status === 404) {
+            throw new EngineError('This engine cannot run access analysis yet. Contact and shadow events from the run are in Events.', 404);
+        }
+        throw err;
+    }
+}
+
 export function solveApogeeRaise({ perigeeRadiusKm, perigeeSpeedKms, targetApogeeKm }) {
     const query = new URLSearchParams({ r0: perigeeRadiusKm, v0: perigeeSpeedKms, target_ra: targetApogeeKm });
     return request(`/api/targeting/differential_corrector?${query}`);
