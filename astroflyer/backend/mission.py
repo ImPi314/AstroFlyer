@@ -153,6 +153,7 @@ class Spacecraft:
     cr: float = 1.3
     srp_area_m2: float = 10.0
     history: list = field(default_factory=list, repr=False)   # (label, epoch, r, v, mass) after each segment
+    ephemeris: list = field(default_factory=list, repr=False)  # (epoch, r, v) samples from step(record_step=...)
 
     def __post_init__(self):
         self.epoch = Epoch.coerce(self.epoch)
@@ -284,12 +285,13 @@ class Propagator:
             cr_area_over_m=sc.cr * sc.srp_area_m2 / sc.mass_kg,
         )
 
-    def step(self, sc, duration=None, until=None, burn=None, max_duration=None, label=None):
+    def step(self, sc, duration=None, until=None, burn=None, max_duration=None, label=None, record_step=None):
         """Advances `sc` in place and returns it.
 
         duration: seconds (may be negative). until: "perigee", "apogee", "ascending_node"
         or "descending_node" (the next one, searched for up to max_duration, default
-        three orbits). burn: a FiniteBurn applied for the whole segment.
+        three orbits). burn: a FiniteBurn applied for the whole segment. record_step:
+        if given (s), states along the segment are appended to sc.ephemeris.
         """
         if duration is None and until is None:
             raise ValueError("step() needs a duration or an event to stop at")
@@ -323,12 +325,23 @@ class Propagator:
             events.append(stop)
 
         y0 = np.concatenate([sc.r, sc.v, [sc.mass_kg]])
-        res = integrate(rhs, (0.0, span), y0, method=self.method, events=events, rtol=self.rtol, atol=self.atol)
+        t_eval = None
+        if record_step:
+            t_eval = np.append(np.arange(0.0, abs(span), abs(float(record_step))), abs(span)) * np.sign(span)
+        res = integrate(rhs, (0.0, span), y0, method=self.method, t_eval=t_eval, events=events,
+                        rtol=self.rtol, atol=self.atol)
         if until is not None and res.message != "terminal event":
             raise RuntimeError(f"No {until} within {span:.0f} s")
 
         y_end = res.y[:, -1]
         elapsed = float(res.t[-1])
+        if record_step:
+            if sc.ephemeris and abs(sc.ephemeris[-1][0] - sc.epoch) < 1e-6:
+                sc.ephemeris.pop()      # same instant (e.g. after an impulsive burn): keep the new state
+            for t_k, y_k in zip(res.t, res.y.T):
+                if sc.ephemeris and abs((sc.epoch + float(t_k)) - sc.ephemeris[-1][0]) < 1e-3:
+                    sc.ephemeris.pop()  # a grid point within 1 ms of the stop event: keep the event state
+                sc.ephemeris.append((sc.epoch + float(t_k), y_k[:3].copy(), y_k[3:6].copy()))
         fuel_used = sc.mass_kg - y_end[6]
         if fuel_used > sc.fuel_mass_kg + 1e-9:
             raise ValueError(f"Finite burn needs {fuel_used:.1f} kg of fuel, {sc.fuel_mass_kg:.1f} kg left")

@@ -69,7 +69,9 @@ class TestEditorScriptsStillRun(unittest.TestCase):
         self.assertIsNone(out["error"], out["error"])
         sat = out["spacecraft"]["AstroFlyer_HEO_SC"]
         start = Epoch.from_iso("2026-09-24T00:00:00Z")
-        self.assertAlmostEqual(Epoch.from_iso(sat["epoch_utc"]) - start, kepler_period(24389.0), delta=0.01)
+        # The editor writes the duration as ElapsedDays rounded to 4 decimals
+        expected = round(kepler_period(24389.0) / 86400.0, 4) * 86400.0
+        self.assertAlmostEqual(Epoch.from_iso(sat["epoch_utc"]) - start, expected, delta=0.01)
         self.assertGreater(len(out["ephemeris"]["AstroFlyer_HEO_SC"]["epochs_utc"]), 100)
         self.assertIn("AstroFlyer HEO Mission Sequence Completed Successfully.", out["log"])
 

@@ -63,6 +63,7 @@ from backend.fsw_subsystems import (
 from backend.time_systems import TimeStandardEngine, CoordinateFrameEngine
 from backend.epoch import Epoch
 from backend import mission as mission_targeting
+from backend.script_runner import run_script
 from backend.radiation_belts import RadiationBeltModel, RadiationParetoOptimizer
 from backend.covariance_engine import CovarianceEngine, CovarianceSteeredAdaptiveStepController
 from backend.differential_corrector import DifferentialCorrector, FiniteBurnEngine, MultiBurnPerigeePumpingPlanner
@@ -285,6 +286,10 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
             dc = DifferentialCorrector()
             res_dc = dc.solve_apogee_raise(r0_km=r0, v0_kms=v0, target_ra_km=target_ra)
             self.send_json(res_dc)
+
+        elif path == "/api/script/run":
+            # Runs a full mission script (Create ... BeginMissionSequence ...) on the AstroFlyer engine
+            self.send_json(run_script(_get_str_param(params, 'script_text', '')))
 
         elif path == "/api/mission/target":
             # General vary/achieve targeter (backend/mission.py) on a propagated trajectory
