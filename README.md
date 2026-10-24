@@ -49,7 +49,7 @@ is downloaded at runtime.
   ε = 10⁻¹⁰ m/s²; the run reports each tier's degree, its certified bound and every switch time.
 * Measured against Orekit in
   [validation/results/innovations](astroflyer/validation/results/innovations/README.md): steering removes
-  most of plain RKF7(8)'s error on many cases at ~3.6× the run time; ECR-MF keeps the full model's accuracy
+  much of plain RKF7(8)'s error on several cases at ~4× the run time; ECR-MF keeps the full model's accuracy
   but gives no speed-up, because gravity is not the costly force.
 
 ### Events and access (`event_predictor.py`, `access.py`, `eclipse.py`)

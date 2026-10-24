@@ -16,8 +16,8 @@
       "max_vel_err_ms": 2.2342910174126036e-06,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 2.4158918999892194,
-      "orekit_runtime_s": 0.28222190000815317
+      "astroflyer_runtime_s": 2.3884753999882378,
+      "orekit_runtime_s": 0.19211429997812957
     },
     {
       "orbit": "molniya",
@@ -33,8 +33,8 @@
       "max_vel_err_ms": 7.771772749453604e-06,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 2.3974307000171393,
-      "orekit_runtime_s": 0.2411660999932792
+      "astroflyer_runtime_s": 2.3621968000079505,
+      "orekit_runtime_s": 0.22156510001514107
     },
     {
       "orbit": "molniya",
@@ -50,8 +50,8 @@
       "max_vel_err_ms": 7.758465819251882e-06,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 1.8596174000122119,
-      "orekit_runtime_s": 0.14007029999629594
+      "astroflyer_runtime_s": 1.7844888000108767,
+      "orekit_runtime_s": 0.12100810001720674
     },
     {
       "orbit": "molniya",
@@ -67,8 +67,8 @@
       "max_vel_err_ms": 7.815842763973224e-06,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 1.8667849999910686,
-      "orekit_runtime_s": 0.16291580002871342
+      "astroflyer_runtime_s": 1.7883682000101544,
+      "orekit_runtime_s": 0.17771009998978116
     },
     {
       "orbit": "molniya",
@@ -84,8 +84,8 @@
       "max_vel_err_ms": 7.848046059940242e-06,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 2.35622830002103,
-      "orekit_runtime_s": 0.2508850999874994
+      "astroflyer_runtime_s": 2.325951900013024,
+      "orekit_runtime_s": 0.2208202000183519
     },
     {
       "orbit": "molniya",
@@ -93,16 +93,16 @@
       "forces": "L4 + SRP, conical shadow",
       "days": 1.0,
       "variant": "rkf78_steered",
-      "max_pos_err_m": 0.9551788813446679,
-      "final_pos_err_m": 0.9551788813446679,
-      "max_radial_m": 0.44019861944125765,
-      "max_intrack_m": 0.9034248560717283,
-      "max_crosstrack_m": 0.00014789309581744042,
-      "max_vel_err_ms": 0.0006563841282581221,
+      "max_pos_err_m": 0.12646542574541927,
+      "final_pos_err_m": 0.12646542574541927,
+      "max_radial_m": 0.05832276164849095,
+      "max_intrack_m": 0.11957912750439062,
+      "max_crosstrack_m": 0.00012893456690084293,
+      "max_vel_err_ms": 8.695157778992185e-05,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 2.619929600012256,
-      "orekit_runtime_s": 0.6436276999884285
+      "astroflyer_runtime_s": 2.958959199982928,
+      "orekit_runtime_s": 0.5975093000160996
     },
     {
       "orbit": "molniya",
@@ -110,16 +110,16 @@
       "forces": "L5 + NRLMSISE-00 drag",
       "days": 1.0,
       "variant": "rkf78_steered",
-      "max_pos_err_m": 0.8751094184097281,
-      "final_pos_err_m": 0.8751094184097281,
-      "max_radial_m": 0.40333964783332776,
-      "max_intrack_m": 0.827708691757016,
-      "max_crosstrack_m": 0.00012664975720405938,
-      "max_vel_err_ms": 0.0006012922136710789,
+      "max_pos_err_m": 0.20654885911880685,
+      "final_pos_err_m": 0.20654885911880685,
+      "max_radial_m": 0.09518657152689737,
+      "max_intrack_m": 0.19531093984233272,
+      "max_crosstrack_m": 0.00015055120792775364,
+      "max_vel_err_ms": 0.00014205910906335854,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 10.621158599999035,
-      "orekit_runtime_s": 1.912772900017444
+      "astroflyer_runtime_s": 10.888080100005027,
+      "orekit_runtime_s": 1.8058113000006415
     },
     {
       "orbit": "molniya",
@@ -127,16 +127,16 @@
       "forces": "L6 + relativity (full model)",
       "days": 1.0,
       "variant": "rkf78_steered",
-      "max_pos_err_m": 0.8400003892390866,
-      "final_pos_err_m": 0.8400003892390866,
-      "max_radial_m": 0.3871076686951666,
-      "max_intrack_m": 0.7945414632898763,
-      "max_crosstrack_m": 0.00012598580431358308,
-      "max_vel_err_ms": 0.000577163668499679,
+      "max_pos_err_m": 0.24216983083285987,
+      "final_pos_err_m": 0.24216983083285987,
+      "max_radial_m": 0.11165555522180215,
+      "max_intrack_m": 0.22896155581468142,
+      "max_crosstrack_m": 0.00015032427306319388,
+      "max_vel_err_ms": 0.0001665377653001441,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 3.0488299000135157,
-      "orekit_runtime_s": 1.6675022999988869
+      "astroflyer_runtime_s": 3.371213499980513,
+      "orekit_runtime_s": 1.6420218999846838
     },
     {
       "orbit": "tundra",
@@ -152,8 +152,8 @@
       "max_vel_err_ms": 4.781611955863224e-09,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 1.04623239999637,
-      "orekit_runtime_s": 0.04132310001295991
+      "astroflyer_runtime_s": 1.0209128999849781,
+      "orekit_runtime_s": 0.036316299985628575
     },
     {
       "orbit": "tundra",
@@ -169,8 +169,8 @@
       "max_vel_err_ms": 1.6587852347441667e-08,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 1.1335621000034735,
-      "orekit_runtime_s": 0.13861110000289045
+      "astroflyer_runtime_s": 1.0973052000044845,
+      "orekit_runtime_s": 0.11315889999968931
     },
     {
       "orbit": "tundra",
@@ -186,8 +186,8 @@
       "max_vel_err_ms": 1.6906998270327124e-08,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 1.1501130999822635,
-      "orekit_runtime_s": 0.15858689998276532
+      "astroflyer_runtime_s": 1.1193598000099882,
+      "orekit_runtime_s": 0.12906710000243038
     },
     {
       "orbit": "tundra",
@@ -203,8 +203,8 @@
       "max_vel_err_ms": 1.687702431306264e-08,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 1.1545638000243343,
-      "orekit_runtime_s": 0.19834289999562316
+      "astroflyer_runtime_s": 1.098998000001302,
+      "orekit_runtime_s": 0.16087190000689588
     },
     {
       "orbit": "tundra",
@@ -220,8 +220,8 @@
       "max_vel_err_ms": 1.7275366952871724e-08,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 1.4844816999975592,
-      "orekit_runtime_s": 0.25476109998999164
+      "astroflyer_runtime_s": 1.4293019000033382,
+      "orekit_runtime_s": 0.194579100003466
     },
     {
       "orbit": "tundra",
@@ -229,16 +229,16 @@
       "forces": "L4 + SRP, conical shadow",
       "days": 1.0,
       "variant": "rkf78_steered",
-      "max_pos_err_m": 0.10909172230915813,
-      "final_pos_err_m": 0.10692295283699746,
-      "max_radial_m": 0.030924692664980068,
-      "max_intrack_m": 0.10900024413200456,
-      "max_crosstrack_m": 0.00019155009244959872,
-      "max_vel_err_ms": 1.0742644983837083e-05,
+      "max_pos_err_m": 0.014262363890145235,
+      "final_pos_err_m": 0.013469003148010835,
+      "max_radial_m": 0.004063008887630043,
+      "max_intrack_m": 0.01423013153935106,
+      "max_crosstrack_m": 4.1088129219638784e-05,
+      "max_vel_err_ms": 1.3688922467262687e-06,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 1.6022728999960236,
-      "orekit_runtime_s": 0.6692967999842949
+      "astroflyer_runtime_s": 1.8723560000071302,
+      "orekit_runtime_s": 0.6509538999816868
     },
     {
       "orbit": "tundra",
@@ -246,16 +246,16 @@
       "forces": "L5 + NRLMSISE-00 drag",
       "days": 1.0,
       "variant": "rkf78_steered",
-      "max_pos_err_m": 0.12161056505227351,
-      "final_pos_err_m": 0.1187663009100786,
-      "max_radial_m": 0.03449252196125996,
-      "max_intrack_m": 0.12147559298465559,
-      "max_crosstrack_m": 0.0002186746765453218,
-      "max_vel_err_ms": 1.1937949239367124e-05,
+      "max_pos_err_m": 0.0016332265322838708,
+      "final_pos_err_m": 0.0016138642912110286,
+      "max_radial_m": 0.0004654561961563124,
+      "max_intrack_m": 0.0016319611108821844,
+      "max_crosstrack_m": 1.4150631993081666e-05,
+      "max_vel_err_ms": 1.689437440693386e-07,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 1.7825162999797612,
-      "orekit_runtime_s": 1.6877536999818403
+      "astroflyer_runtime_s": 2.0334430999937467,
+      "orekit_runtime_s": 1.4443276999809314
     },
     {
       "orbit": "tundra",
@@ -263,16 +263,16 @@
       "forces": "L6 + relativity (full model)",
       "days": 1.0,
       "variant": "rkf78_steered",
-      "max_pos_err_m": 0.12123099298077013,
-      "final_pos_err_m": 0.11838479157069584,
-      "max_radial_m": 0.034385616191335094,
-      "max_intrack_m": 0.121095272232893,
-      "max_crosstrack_m": 0.00021810128918109233,
-      "max_vel_err_ms": 1.1899700779158551e-05,
+      "max_pos_err_m": 0.002016044672900066,
+      "final_pos_err_m": 0.0019960884159272445,
+      "max_radial_m": 0.0005734573530187684,
+      "max_intrack_m": 0.0020141968428927614,
+      "max_crosstrack_m": 1.4741918397397926e-05,
+      "max_vel_err_ms": 2.0730776628663485e-07,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 1.8852649999898858,
-      "orekit_runtime_s": 1.662990400014678
+      "astroflyer_runtime_s": 2.13357229999383,
+      "orekit_runtime_s": 1.4661387999949511
     },
     {
       "orbit": "gto",
@@ -288,8 +288,8 @@
       "max_vel_err_ms": 1.5702466083806413e-06,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 1.720459700009087,
-      "orekit_runtime_s": 0.04131719999713823
+      "astroflyer_runtime_s": 1.6670512999990024,
+      "orekit_runtime_s": 0.038719700009096414
     },
     {
       "orbit": "gto",
@@ -305,8 +305,8 @@
       "max_vel_err_ms": 1.0287446560958657e-05,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 1.9026426000054926,
-      "orekit_runtime_s": 0.15359760000137612
+      "astroflyer_runtime_s": 1.774472799996147,
+      "orekit_runtime_s": 0.13050109997857362
     },
     {
       "orbit": "gto",
@@ -322,8 +322,8 @@
       "max_vel_err_ms": 1.0346881090209123e-05,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 1.8690371999982744,
-      "orekit_runtime_s": 0.1844688999990467
+      "astroflyer_runtime_s": 1.8120283000171185,
+      "orekit_runtime_s": 0.14438760001212358
     },
     {
       "orbit": "gto",
@@ -339,8 +339,8 @@
       "max_vel_err_ms": 1.0551395587691947e-05,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 1.8472481000062544,
-      "orekit_runtime_s": 0.18144529999699444
+      "astroflyer_runtime_s": 1.837713500019163,
+      "orekit_runtime_s": 0.17149229999631643
     },
     {
       "orbit": "gto",
@@ -356,8 +356,8 @@
       "max_vel_err_ms": 1.0563428249414772e-05,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 2.3796122999920044,
-      "orekit_runtime_s": 0.24504389998037368
+      "astroflyer_runtime_s": 2.337081300007412,
+      "orekit_runtime_s": 0.19192159999511205
     },
     {
       "orbit": "gto",
@@ -365,16 +365,16 @@
       "forces": "L4 + SRP, conical shadow",
       "days": 1.0,
       "variant": "rkf78_steered",
-      "max_pos_err_m": 0.36401824558444795,
-      "final_pos_err_m": 0.11987208896064803,
-      "max_radial_m": 0.15404657505943326,
-      "max_intrack_m": 0.3633257731437093,
-      "max_crosstrack_m": 0.0003453442910148069,
-      "max_vel_err_ms": 0.000324206738478625,
+      "max_pos_err_m": 0.37383515315502985,
+      "final_pos_err_m": 0.12152385403578658,
+      "max_radial_m": 0.15824451537478346,
+      "max_intrack_m": 0.3731259228636703,
+      "max_crosstrack_m": 0.00035349766997719995,
+      "max_vel_err_ms": 0.00033281220657902714,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 2.6263060999917798,
-      "orekit_runtime_s": 0.7459717000019737
+      "astroflyer_runtime_s": 3.0579866000043694,
+      "orekit_runtime_s": 0.6921577999892179
     },
     {
       "orbit": "gto",
@@ -382,16 +382,16 @@
       "forces": "L5 + NRLMSISE-00 drag",
       "days": 1.0,
       "variant": "rkf78_steered",
-      "max_pos_err_m": 0.48632276552488707,
-      "final_pos_err_m": 0.15252028886077526,
-      "max_radial_m": 0.2053704086059075,
-      "max_intrack_m": 0.48533404527593277,
-      "max_crosstrack_m": 0.0003091769542209327,
-      "max_vel_err_ms": 0.0004330652007919624,
+      "max_pos_err_m": 0.4960681088006887,
+      "final_pos_err_m": 0.1542151507964231,
+      "max_radial_m": 0.20953783875734805,
+      "max_intrack_m": 0.49506246122829156,
+      "max_crosstrack_m": 0.0003172605277689394,
+      "max_vel_err_ms": 0.0004416071185335605,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 2.9628158999839798,
-      "orekit_runtime_s": 1.833719000016572
+      "astroflyer_runtime_s": 3.3383280000125524,
+      "orekit_runtime_s": 1.6329127000062726
     },
     {
       "orbit": "gto",
@@ -399,16 +399,16 @@
       "forces": "L6 + relativity (full model)",
       "days": 1.0,
       "variant": "rkf78_steered",
-      "max_pos_err_m": 0.6168751363789625,
-      "final_pos_err_m": 0.12822357538363768,
-      "max_radial_m": 0.26103414729287155,
-      "max_intrack_m": 0.6154758070308031,
-      "max_crosstrack_m": 0.0003414952402163874,
-      "max_vel_err_ms": 0.000543061145186685,
+      "max_pos_err_m": 0.6071221661951838,
+      "final_pos_err_m": 0.12644709297000645,
+      "max_radial_m": 0.2569347388305348,
+      "max_intrack_m": 0.6057395386684262,
+      "max_crosstrack_m": 0.00034804533343298083,
+      "max_vel_err_ms": 0.0005345123915253303,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 3.1895895000197925,
-      "orekit_runtime_s": 1.790085899992846
+      "astroflyer_runtime_s": 3.4507741999987047,
+      "orekit_runtime_s": 1.5800986999820452
     },
     {
       "orbit": "heo_stress",
@@ -424,8 +424,8 @@
       "max_vel_err_ms": 8.511684339047865e-09,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 1.0959705000277609,
-      "orekit_runtime_s": 0.006171500019263476
+      "astroflyer_runtime_s": 1.1045332999783568,
+      "orekit_runtime_s": 0.04212399999960326
     },
     {
       "orbit": "heo_stress",
@@ -441,8 +441,8 @@
       "max_vel_err_ms": 1.5677057946022714e-08,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 1.2413403999817092,
-      "orekit_runtime_s": 0.1761848000169266
+      "astroflyer_runtime_s": 1.2205286000098567,
+      "orekit_runtime_s": 0.12665500000002794
     },
     {
       "orbit": "heo_stress",
@@ -458,8 +458,8 @@
       "max_vel_err_ms": 1.5698522088586703e-08,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 1.2327305999933742,
-      "orekit_runtime_s": 0.13805840001441538
+      "astroflyer_runtime_s": 1.2162216999859083,
+      "orekit_runtime_s": 0.13652030000230297
     },
     {
       "orbit": "heo_stress",
@@ -475,8 +475,8 @@
       "max_vel_err_ms": 1.5840685493451817e-08,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 1.2383824000135064,
-      "orekit_runtime_s": 0.19776520002051257
+      "astroflyer_runtime_s": 1.2345072999887634,
+      "orekit_runtime_s": 0.14074520001304336
     },
     {
       "orbit": "heo_stress",
@@ -492,8 +492,8 @@
       "max_vel_err_ms": 1.5826397165692257e-08,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 1.557453399989754,
-      "orekit_runtime_s": 0.24196650000521913
+      "astroflyer_runtime_s": 1.5454682999989018,
+      "orekit_runtime_s": 0.1967970999830868
     },
     {
       "orbit": "heo_stress",
@@ -501,16 +501,16 @@
       "forces": "L4 + SRP, conical shadow",
       "days": 1.0,
       "variant": "rkf78_steered",
-      "max_pos_err_m": 0.03759782710608316,
-      "final_pos_err_m": 0.03759782710608316,
-      "max_radial_m": 0.03237201507460991,
-      "max_intrack_m": 0.01911786261979008,
-      "max_crosstrack_m": 0.0003956917474292384,
-      "max_vel_err_ms": 8.916082348439404e-07,
+      "max_pos_err_m": 0.049481133545230996,
+      "final_pos_err_m": 0.049481133545230996,
+      "max_radial_m": 0.04284457112995602,
+      "max_intrack_m": 0.02474911114004779,
+      "max_crosstrack_m": 0.0004547520078951525,
+      "max_vel_err_ms": 1.178134439153377e-06,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 1.7523833999875933,
-      "orekit_runtime_s": 0.6977029000117909
+      "astroflyer_runtime_s": 1.996537500002887,
+      "orekit_runtime_s": 0.5807798999885563
     },
     {
       "orbit": "heo_stress",
@@ -518,16 +518,16 @@
       "forces": "L5 + NRLMSISE-00 drag",
       "days": 1.0,
       "variant": "rkf78_steered",
-      "max_pos_err_m": 0.024396931114391767,
-      "final_pos_err_m": 0.024396931114391767,
-      "max_radial_m": 0.02142774384166867,
-      "max_intrack_m": 0.011664556784101615,
-      "max_crosstrack_m": 7.538163527267844e-05,
-      "max_vel_err_ms": 5.86390148578967e-07,
+      "max_pos_err_m": 0.036274233795140234,
+      "final_pos_err_m": 0.036274233795140234,
+      "max_radial_m": 0.031888266974755185,
+      "max_intrack_m": 0.01729026639924711,
+      "max_crosstrack_m": 7.179564260955881e-05,
+      "max_vel_err_ms": 8.725923196487172e-07,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 1.9281039999914356,
-      "orekit_runtime_s": 1.6275855000130832
+      "astroflyer_runtime_s": 2.215304700017441,
+      "orekit_runtime_s": 1.3256668999965768
     },
     {
       "orbit": "heo_stress",
@@ -535,16 +535,16 @@
       "forces": "L6 + relativity (full model)",
       "days": 1.0,
       "variant": "rkf78_steered",
-      "max_pos_err_m": 0.014074134440768367,
-      "final_pos_err_m": 0.014074134440768367,
-      "max_radial_m": 0.012589591992180809,
-      "max_intrack_m": 0.006289260481022029,
-      "max_crosstrack_m": 0.00020933944532561667,
-      "max_vel_err_ms": 3.4230877060509454e-07,
+      "max_pos_err_m": 0.025956546816448257,
+      "final_pos_err_m": 0.025956546816448257,
+      "max_radial_m": 0.02305819345020267,
+      "max_intrack_m": 0.011918469981920553,
+      "max_crosstrack_m": 0.00015412211306396013,
+      "max_vel_err_ms": 6.287321766135037e-07,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 2.0276906000217423,
-      "orekit_runtime_s": 1.5599948999879416
+      "astroflyer_runtime_s": 2.2808785999950487,
+      "orekit_runtime_s": 1.3317186000058427
     }
   ]
 }

@@ -90,7 +90,7 @@ Results in `astroflyer/validation/results/`: every case passes; largest differen
 These Orekit numbers are the project's measured accuracy evidence. Do **not** quote the older figures below.
 
 **Innovations re-measured** (`results/innovations/README.md`, `--variant`): covariance steering cuts plain RKF7(8)'s
-error on many cases (HEO stress L7, 7 days: 28.4 → 4.4 m) at ~3.6× the run time, but does not beat the DOP853
+error on several cases (HEO stress L7, 7 days: 26.3 → 6.0 m) at ~4× the run time, but does not beat the DOP853
 baseline overall and made GTO L7 over 7 days worse (RKF7(8) has no shadow/drag restarts). ECR-MF is exact at 8×8
 (nothing to drop); at 70×70 its tiers are 70/58/8, it stays within mm over a day of the full model, and gives
 no speed-up — gravity is not the costly force. Present it as certified fidelity, not acceleration.
