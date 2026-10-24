@@ -44,6 +44,14 @@ export const PARAMETERS = [
 
 export const GROUPS = [...new Set(PARAMETERS.map((p) => p.group))];
 
+// Vertical axis label that fits along a plot `room` px tall: name and unit, then the unit alone,
+// then none (the pane's own selector names the parameter). width(text) measures text in px.
+export function axisLabel(p, room, width) {
+    const full = p.unit ? `${p.label} (${p.unit})` : p.label;
+    if (width(full) <= room) return full;
+    return p.unit && width(p.unit) <= room ? p.unit : '';
+}
+
 export function parameter(key) {
     return PARAMETERS.find((p) => p.key === key);
 }

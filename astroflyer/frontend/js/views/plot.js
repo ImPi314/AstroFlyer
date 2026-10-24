@@ -4,7 +4,7 @@
 
 import * as store from '../store.js';
 import { sampleIndex } from '../results.js';
-import { PARAMETERS, GROUPS, parameter } from '../parameters.js';
+import { PARAMETERS, GROUPS, axisLabel, parameter } from '../parameters.js';
 import { icon, num, sci } from '../format.js';
 import { token } from './colors.js';
 
@@ -32,6 +32,13 @@ export function createPlot(ctx) {
     pngButton.addEventListener('click', savePng);
 
     const size = () => ({ width: Math.max(body.clientWidth, 1), height: Math.max(body.clientHeight, 1) });
+    let builtLabel = null;  // y axis label the chart was built with
+    const measure = document.createElement('canvas').getContext('2d');
+    // Below the plot area sit the 40 px time axis and uPlot's top padding
+    const yLabel = (p) => {
+        measure.font = `12px ${token('--font')}`;
+        return axisLabel(p, size().height - 50, (text) => measure.measureText(text).width);
+    };
 
     function refresh() {
         select.value = ctx.settings().y;
@@ -63,6 +70,7 @@ export function createPlot(ctx) {
             body.innerHTML = `<div class="empty"><p class="empty-title">${p.label} is not in this run</p><p>The engine did not report it. Pick another parameter.</p></div>`;
             return;
         }
+        builtLabel = yLabel(p);
         values = p.log ? raw.map((v) => (v > 0 ? v : null)) : raw;
         const ys = values.filter((v) => v !== null);
         const axis = {
@@ -79,7 +87,7 @@ export function createPlot(ctx) {
             scales: { x: { time: false, range: [hours[0], hours.at(-1)] }, y: p.log ? { distr: 3 } : { range: () => padRange(Math.min(...ys), Math.max(...ys)) } },
             axes: [
                 { ...axis, label: 'Elapsed (h)', size: 40 },
-                { ...axis, label: p.unit ? `${p.label} (${p.unit})` : p.label, size: 72, values: (u, splits) => tickLabels(p, splits) },
+                { ...axis, label: builtLabel, size: 72, values: (u, splits) => tickLabels(p, splits) },
             ],
             series: [{}, { stroke: token('--track-low'), width: 1.5, points: { show: false } }],
             hooks: { draw: [drawCursor] },
@@ -129,7 +137,15 @@ export function createPlot(ctx) {
         link.click();
     }
 
-    const observer = new ResizeObserver(() => chart?.setSize(size()));
+    const observer = new ResizeObserver(() => {
+        if (!chart) return;
+        if (yLabel(parameter(ctx.settings().y)) !== builtLabel) {
+            builtFor = null;   // the label that fits changed: rebuild with it
+            build();
+        } else {
+            chart.setSize(size());
+        }
+    });
     observer.observe(body);
     ctx.on('result', refresh);
     ctx.onSettings(refresh);
