@@ -351,17 +351,20 @@ def compare_case(ctx, orbit_name, level, days, variant="dop853"):
     }
 
 
-def write_report(results, out_dir, data_source, variant="dop853"):
+def write_report(results, out_dir, data_source, variant="dop853", reference="Orekit", stem="orekit_crosscheck"):
+    """Writes <stem>.json and <stem>.md; each result's reference run time is under
+    "<reference lowercased>_runtime_s"."""
     os.makedirs(out_dir, exist_ok=True)
-    with open(os.path.join(out_dir, "orekit_crosscheck.json"), "w") as f:
+    with open(os.path.join(out_dir, f"{stem}.json"), "w") as f:
         json.dump({"data_source": data_source, "variant": variant, "results": results}, f, indent=2)
+    runtime_key = f"{reference.lower()}_runtime_s"
     lines = [
-        "# AstroFlyer vs Orekit cross-check",
+        f"# AstroFlyer vs {reference} cross-check",
         "",
         f"Reference data: {data_source}. Epoch {C.EPOCH_ISO_TT} TT, GCRF, output every {OUTPUT_STEP_S:.0f} s.",
         f"AstroFlyer propagator: {variant} ({VARIANTS[variant]}).",
         "",
-        "| Orbit | Level | Forces | Days | Max 3D (m) | Radial (m) | In-track (m) | Cross-track (m) | Max |dv| (m/s) | Limit (m) | Result | AstroFlyer (s) | Orekit (s) |",
+        f"| Orbit | Level | Forces | Days | Max 3D (m) | Radial (m) | In-track (m) | Cross-track (m) | Max |dv| (m/s) | Limit (m) | Result | AstroFlyer (s) | {reference} (s) |",
         "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for r in results:
@@ -373,8 +376,8 @@ def write_report(results, out_dir, data_source, variant="dop853"):
             f"| {r['orbit']} | {r['level']} | {r['forces']} | {r['days']:g} | {r['max_pos_err_m']:.3g} | "
             f"{r['max_radial_m']:.3g} | {r['max_intrack_m']:.3g} | {r['max_crosstrack_m']:.3g} | "
             f"{r['max_vel_err_ms']:.3g} | {r['threshold_m']:g} | {'PASS' if r['passed'] else 'FAIL'} | "
-            f"{r['astroflyer_runtime_s']:.1f} | {r['orekit_runtime_s']:.1f} |")
-    path = os.path.join(out_dir, "orekit_crosscheck.md")
+            f"{r['astroflyer_runtime_s']:.1f} | {r[runtime_key]:.1f} |")
+    path = os.path.join(out_dir, f"{stem}.md")
     with open(path, "w") as f:
         f.write("\n".join(lines) + "\n")
     return path

@@ -84,12 +84,26 @@ is downloaded at runtime.
 
 ## Validation
 
-The propagator is cross-checked against **Orekit 13.1** with the same EGM2008 coefficients, at
-epoch 2026-01-01 00:00 TT, on four orbits (Molniya, Tundra, GTO, an HEO stress case), building
-the force model up one level at a time (L0 two-body → L7 full model).
+The propagator is checked against two independent tools, from the same starting state at epoch
+2026-01-01 00:00 TT, on four orbits (Molniya, Tundra, GTO, an e = 0.88 stress case), building the
+force model up one level at a time (L0 two-body → L7 full model). Both tools are given AstroFlyer's
+own EGM2008 coefficients, so the comparison is of the propagators, not their input data.
 
-| Run | Largest position difference | Limit |
-| --- | --- | --- |
+| Reference | Run | Largest position difference | Limit | Result |
+| --- | --- | --- | --- | --- |
+| Orekit 13.1 | 1 day, L0–L7 | 0.63 m (GTO, drag on) | 10 m | 32/32 pass |
+| Orekit 13.1 | 7 days, L3–L7 | 6.1 m (GTO, full model) | 100 m | 20/20 pass |
+| NASA GMAT R2026a | 1 day, L0–L7 | 1.06 m (Molniya, SRP on) | 10 m | 32/32 pass |
+| NASA GMAT R2026a | 7 days, L3–L7 | 32.6 m (Molniya, SRP on) | 100 m | 20/20 pass |
+
+Gravity and Sun/Moon agree with both to a few centimetres over a day. The larger GMAT differences
+come from two documented modelling choices, each confirmed by changing AstroFlyer to match and
+watching the difference vanish: GMAT casts the Earth's shadow from a sphere (AstroFlyer and Orekit
+use the WGS-84 ellipsoid), and GMAT's NRLMSISE-00 leaves out anomalous oxygen (AstroFlyer uses the
+model's recommended drag density, which Orekit's results agree with). Tables, method and how to rerun them are in
+[astroflyer/validation/results](astroflyer/validation/results/README.md).
+
+--- | --- | --- |
 | 1 day, L0–L7 | 0.63 m (GTO, drag on) | 10 m |
 | 7 days, L3–L7 | 6.1 m (GTO, full model) | 100 m |
 
