@@ -216,8 +216,8 @@ def third_body_acceleration(r, r_body, mu_body):
     return mu_body * (d / np.linalg.norm(d) ** 3 - r_body / np.linalg.norm(r_body) ** 3)
 
 
-def shadow_function(r, r_sun, r_occ=R_EARTH_EQ):
-    """Fraction of the solar disc visible (1 sunlit, 0 umbra), conical model (M&G 3.4.2)."""
+def _shadow_angles(r, r_sun, r_occ):
+    """Apparent radii of the Sun (a) and occulting body (b), and their separation (c), seen from r."""
     d = r_sun - r
     dist_sun = np.linalg.norm(d)
     dist_occ = np.linalg.norm(r)
@@ -225,6 +225,22 @@ def shadow_function(r, r_sun, r_occ=R_EARTH_EQ):
     b = math.asin(min(1.0, r_occ / dist_occ))
     cos_c = -float(np.dot(r, d)) / (dist_occ * dist_sun)
     c = math.acos(max(-1.0, min(1.0, cos_c)))
+    return a, b, c
+
+
+def shadow_boundaries(r, r_sun, r_occ=R_EARTH_EQ):
+    """
+    Smooth functions that cross zero at the shadow edges (radians):
+    (penumbra: > 0 fully sunlit, umbra: < 0 fully dark). The propagator restarts
+    the integration at their zeros, where the SRP acceleration has a kink.
+    """
+    a, b, c = _shadow_angles(r, r_sun, r_occ)
+    return c - (a + b), c - (b - a)
+
+
+def shadow_function(r, r_sun, r_occ=R_EARTH_EQ):
+    """Fraction of the solar disc visible (1 sunlit, 0 umbra), conical model (M&G 3.4.2)."""
+    a, b, c = _shadow_angles(r, r_sun, r_occ)
     if c >= a + b:
         return 1.0
     if c < b - a:
