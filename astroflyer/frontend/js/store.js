@@ -5,15 +5,19 @@ const listeners = new Map();
 
 const state = {
     mission: null,      // applied mission, see mission.js
+    missionFile: null,  // name of the mission file last opened or saved
     selection: 'spacecraft',
-    run: { status: 'idle', error: null },   // idle | running | done | failed
+    run: { status: 'idle', error: null, startedAt: null },   // idle | running | done | failed
     result: null,       // see results.js
     time: 0,            // seconds since the start of the run
     playing: false,
     speed: 600,         // simulated seconds per real second
-    views: null,        // display settings per view, see views/settings.js
-    layout: 'grid',     // single | split | grid
+    timeScale: 'utc',   // time scale of the epoch readout, when the engine reports an epoch
+    panes: null,        // { id: { type, settings } }, see views/registry.js
+    layout: 'heo',      // heo | quad
+    maximized: null,    // id of the pane filling the workspace, if any
     workspace: 'mission',   // mission | analysis | data
+    home: false,        // home screen open
 };
 
 export function get(key) {
@@ -24,13 +28,16 @@ export function set(patch) {
     const changed = Object.keys(patch).filter((key) => state[key] !== patch[key]);
     Object.assign(state, patch);
     for (const key of changed) {
-        for (const fn of listeners.get(key) ?? []) fn(state[key]);
+        for (const fn of [...(listeners.get(key) ?? [])]) fn(state[key]);
     }
 }
 
+// Returns a function that removes the subscription.
 export function on(keys, fn) {
-    for (const key of [].concat(keys)) {
+    const list = [].concat(keys);
+    for (const key of list) {
         if (!listeners.has(key)) listeners.set(key, new Set());
         listeners.get(key).add(fn);
     }
+    return () => { for (const key of list) listeners.get(key).delete(fn); };
 }

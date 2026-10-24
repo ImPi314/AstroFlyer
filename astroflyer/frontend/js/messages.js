@@ -4,6 +4,15 @@ import { escapeHtml, icon } from './format.js';
 
 const MAX_ENTRIES = 200;
 const entries = [];
+let errorCount = 0;
+const countListeners = new Set();
+
+// Calls fn with the number of errors logged so far, now and after each new one.
+export function onErrorCount(fn) {
+    countListeners.add(fn);
+    fn(errorCount);
+}
+
 let root;
 let open = false;
 
@@ -26,6 +35,10 @@ export function mountMessages(element) {
 
 export function log(level, text) {
     entries.push({ level, text, at: new Date() });
+    if (level === 'error') {
+        errorCount += 1;
+        for (const fn of countListeners) fn(errorCount);
+    }
     if (entries.length > MAX_ENTRIES) entries.shift();
     render();
 }

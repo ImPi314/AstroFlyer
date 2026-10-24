@@ -3,7 +3,8 @@
 import * as store from './store.js';
 import { escapeHtml, icon } from './format.js';
 import { openInspector } from './inspector.js';
-import { VIEWS } from './views/settings.js';
+import { VIEW_TYPES, paneTitle } from './views/registry.js';
+import { visiblePanes } from './workspace.js';
 
 let root;
 const expanded = new Set(['stations', 'outputs']);
@@ -17,7 +18,7 @@ export function mountTree(element) {
         else activate(item);
     });
     root.addEventListener('keydown', onKey);
-    store.on(['mission', 'result', 'selection'], render);
+    store.on(['mission', 'result', 'selection', 'panes', 'layout', 'maximized'], render);
     render();
 }
 
@@ -35,7 +36,7 @@ function items() {
         },
         {
             id: 'outputs', icon: 'file-output', label: 'Outputs', group: true,
-            children: VIEWS.map((view) => ({ id: `view:${view.id}`, icon: view.icon, label: view.label })),
+            children: visiblePanes().map((pane) => ({ id: `pane:${pane.id}`, icon: VIEW_TYPES[pane.type].icon, label: paneTitle(pane) })),
         },
     ];
 }

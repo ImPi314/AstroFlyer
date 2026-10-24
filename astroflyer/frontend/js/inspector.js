@@ -4,7 +4,7 @@
 import * as store from './store.js';
 import { schemas, validate, visibleFields } from './mission.js';
 import { escapeHtml, icon, num } from './format.js';
-import { viewSchemas } from './views/settings.js';
+import { VIEW_TYPES, paneTitle } from './views/registry.js';
 
 const EDITABLE = ['spacecraft', 'propagator'];
 const drafts = {};
@@ -19,20 +19,33 @@ export function mountInspector(element) {
     store.on('selection', render);
     store.on('result', render);
     // Keep the viewpoint fields current while the camera is dragged, but never re-render under the user's cursor.
-    store.on('views', () => {
-        if (viewId() && !root.contains(document.activeElement)) render();
+    store.on('panes', () => {
+        if (paneId() && !root.contains(document.activeElement)) render();
     });
     render();
 }
 
-function viewId() {
-    const id = store.get('selection').replace(/^view:/, '');
-    return viewSchemas[id] ? id : null;
+function paneId() {
+    const selection = store.get('selection');
+    const id = selection.startsWith('pane:') ? selection.slice(5) : null;
+    return id && store.get('panes')[id] ? id : null;
+}
+
+function updatePane(id, patch) {
+    const panes = store.get('panes');
+    store.set({ panes: { ...panes, [id]: { ...panes[id], settings: { ...panes[id].settings, ...patch } } } });
 }
 
 // On narrow windows the inspector slides over the views; selecting an object opens it.
 export function openInspector() {
     root.classList.add('is-open');
+}
+
+// Replaces the whole mission (a file, sample or new mission), discarding unapplied edits.
+export function loadMission(mission) {
+    store.set({ mission });
+    resetDrafts();
+    render();
 }
 
 // Applies every valid draft. Returns false and shows the errors if any draft is invalid.
@@ -70,7 +83,7 @@ function render() {
     const selection = store.get('selection');
     const close = `<button class="icon-button inspector-close" type="button" data-action="close" aria-label="Close inspector">${icon('x')}</button>`;
     if (EDITABLE.includes(selection)) root.innerHTML = renderForm(selection, close);
-    else if (viewId()) root.innerHTML = renderViewForm(viewId(), close);
+    else if (paneId()) root.innerHTML = renderViewForm(paneId(), close);
     else if (selection.startsWith('station:')) root.innerHTML = renderStation(Number(selection.split(':')[1]), close);
     else root.innerHTML = renderEmpty(close);
 }
@@ -105,16 +118,28 @@ function renderGroups(schema, values, errors) {
 }
 
 function renderViewForm(id, close) {
-    const values = store.get('views')[id];
+    const pane = store.get('panes')[id];
+    const values = pane.settings;
+    const viewpoints = pane.type === 'orbit3d' ? `
+        <details class="field-group" open>
+            <summary>${icon('chevron-down')}<span>Saved viewpoints</span></summary>
+            <ul class="viewpoints">${values.viewpoints.map((vp, i) => `
+                <li>
+                    <button class="viewpoint-go" type="button" data-action="viewpoint-go" data-index="${i}">${escapeHtml(vp.name)}</button>
+                    <button class="icon-button" type="button" data-action="viewpoint-delete" data-index="${i}" aria-label="Delete ${escapeHtml(vp.name)}" title="Delete">${icon('x')}</button>
+                </li>`).join('')}
+            </ul>
+            <div class="field"><button class="button" type="button" data-action="viewpoint-save">${icon('plus')}Save current viewpoint</button></div>
+        </details>` : '';
     return `
         <header class="inspector-head">
             <div>
-                <h2 class="inspector-title">${viewSchemas[id].title}</h2>
+                <h2 class="inspector-title">${escapeHtml(paneTitle(pane))}</h2>
                 <p class="inspector-kind">View settings, applied as you change them</p>
             </div>
             ${close}
         </header>
-        <form class="inspector-body" data-view="${id}" novalidate>${renderGroups(viewSchemas[id], values, {})}</form>`;
+        <form class="inspector-body" data-pane="${id}" novalidate>${renderGroups(VIEW_TYPES[pane.type].schema, values, {})}${viewpoints}</form>`;
 }
 
 function renderField(field, value, error) {
@@ -187,19 +212,19 @@ function readValue(input) {
 
 // A valid view setting goes straight to the store; an invalid one only shows its error.
 function setViewValue(id, input) {
-    const views = store.get('views');
-    const values = { ...views[id], [input.dataset.key]: readValue(input) };
-    const errors = validate(viewSchemas[id], values);
+    const pane = store.get('panes')[id];
+    const values = { ...pane.settings, [input.dataset.key]: readValue(input) };
+    const errors = validate(VIEW_TYPES[pane.type].schema, values);
     showErrors(errors);
-    if (!errors[input.dataset.key]) store.set({ views: { ...views, [id]: values } });
+    if (!errors[input.dataset.key]) updatePane(id, { [input.dataset.key]: values[input.dataset.key] });
 }
 
 function onInput(event) {
     const input = event.target;
     const form = input.closest('form');
     if (!form || input.tagName === 'SELECT' || input.type === 'checkbox') return;
-    if (form.dataset.view) {
-        setViewValue(form.dataset.view, input);
+    if (form.dataset.pane) {
+        setViewValue(form.dataset.pane, input);
         return;
     }
     const kind = form.dataset.kind;
@@ -211,8 +236,13 @@ function onChange(event) {
     const input = event.target;
     const form = input.closest('form');
     if (!form) return;
-    if (form.dataset.view) {
-        setViewValue(form.dataset.view, input);
+    if (form.dataset.pane) {
+        if (!input.dataset.key) return;
+        setViewValue(form.dataset.pane, input);
+        if (input.tagName === 'SELECT') {
+            render();   // a choice can show or hide other fields
+            root.querySelector(`[data-key="${input.dataset.key}"]`)?.focus();
+        }
         return;
     }
     const kind = form.dataset.kind;
@@ -254,6 +284,21 @@ function showErrors(errors) {
 function onClick(event) {
     const action = event.target.closest('[data-action]')?.dataset.action;
     if (action === 'close') root.classList.remove('is-open');
+    if (action?.startsWith('viewpoint-')) {
+        const id = paneId();
+        const settings = store.get('panes')[id].settings;
+        const index = Number(event.target.closest('[data-index]')?.dataset.index);
+        if (action === 'viewpoint-go') {
+            const { name, ...view } = settings.viewpoints[index];
+            updatePane(id, view);
+        } else if (action === 'viewpoint-delete') {
+            updatePane(id, { viewpoints: settings.viewpoints.filter((_, i) => i !== index) });
+        } else {
+            const { ra, dec, distance, fov, frame, center } = settings;
+            updatePane(id, { viewpoints: [...settings.viewpoints, { name: `Viewpoint ${settings.viewpoints.length + 1}`, ra, dec, distance, fov, frame, center }] });
+        }
+        render();
+    }
     if (action === 'revert') {
         resetDrafts(store.get('selection'));
         render();

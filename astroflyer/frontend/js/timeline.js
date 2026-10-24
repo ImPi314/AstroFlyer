@@ -1,8 +1,8 @@
-// Timeline: run controls, the elapsed clock, playback, and the event track you can scrub.
+// Timeline: run controls, the clock, playback, and the event track you can scrub.
 
 import * as store from './store.js';
-import { sampleIndex, eventTimes } from './results.js';
-import { elapsed, icon } from './format.js';
+import { sampleIndex, eventTimes, clockText, TIME_SCALES } from './results.js';
+import { elapsed, icon, num } from './format.js';
 import { startRun, stopRun, isRunning } from './run.js';
 import { applyAll } from './inspector.js';
 import { log } from './messages.js';
@@ -21,12 +21,19 @@ export function mountTimeline(element) {
             <button class="button button-primary" type="button" data-action="run" title="Run (F5)">${icon('play')}<span>Run</span></button>
             <button class="icon-button" type="button" data-action="play" title="Play or pause (Space)">${icon('play')}</button>
             <button class="icon-button" type="button" data-action="stop" aria-label="Stop" title="Stop">${icon('square')}</button>
+            <button class="icon-button" type="button" data-action="start" aria-label="Go to start" title="Go to start (Home)">${icon('chevrons-left')}</button>
+            <button class="icon-button" type="button" data-action="back" aria-label="Step back one point" title="Step back one point">${icon('step-back')}</button>
             <button class="icon-button" type="button" data-action="step" aria-label="Step one point" title="Step one point">${icon('step-forward')}</button>
+            <button class="icon-button" type="button" data-action="end" aria-label="Go to end" title="Go to end (End)">${icon('chevrons-right')}</button>
         </div>
         <div class="clock">
             <span class="clock-now" aria-live="off"></span>
             <span class="clock-total"></span>
         </div>
+        <label class="scale" hidden>
+            <span class="visually-hidden">Time scale</span>
+            <select data-action="scale">${TIME_SCALES.map((s) => `<option value="${s}">${s.toUpperCase()}</option>`).join('')}</select>
+        </label>
         <div class="track-wrap">
             <div class="track" role="slider" tabindex="0" aria-label="Time in run">
                 <canvas></canvas>
@@ -34,6 +41,7 @@ export function mountTimeline(element) {
             <ul class="legend">
                 <li><i class="key key-perigee"></i>Perigee</li>
                 <li><i class="key key-apogee"></i>Apogee</li>
+                <li><i class="key key-node"></i>Node</li>
                 <li><i class="key key-shadow"></i>Shadow</li>
                 <li><i class="key key-contact"></i>Station contact</li>
             </ul>
@@ -52,13 +60,14 @@ export function mountTimeline(element) {
 
     root.addEventListener('click', onClick);
     root.querySelector('[data-action="speed"]').addEventListener('change', (e) => store.set({ speed: Number(e.target.value) }));
+    root.querySelector('[data-action="scale"]').addEventListener('change', (e) => store.set({ timeScale: e.target.value }));
     track.addEventListener('pointerdown', onPointer);
     track.addEventListener('keydown', onTrackKey);
     document.addEventListener('keydown', onGlobalKey);
     new ResizeObserver(draw).observe(track);
 
     store.on(['result', 'time'], draw);
-    store.on(['result', 'time', 'run', 'playing'], renderControls);
+    store.on(['result', 'time', 'run', 'playing', 'timeScale'], renderControls);
     store.on('playing', (playing) => {
         if (!playing) return;
         const id = ++loop;
@@ -90,10 +99,13 @@ function renderControls() {
     playBtn.setAttribute('aria-label', playing ? 'Pause' : 'Play');
     playBtn.innerHTML = icon(playing ? 'pause' : 'play');
     root.querySelector('[data-action="stop"]').disabled = !running && !playing && (!result || t === result.times[0]);
-    for (const action of ['step', 'prev', 'next']) root.querySelector(`[data-action="${action}"]`).disabled = !result;
+    for (const action of ['start', 'back', 'step', 'end', 'prev', 'next']) root.querySelector(`[data-action="${action}"]`).disabled = !result;
 
-    root.querySelector('.clock-now').textContent = result ? elapsed(t - result.times[0]) : 'T+ 00:00:00';
-    root.querySelector('.clock-total').textContent = result ? `of ${elapsed(result.duration).slice(3)}` : 'No run yet';
+    root.querySelector('.scale').hidden = !result?.epoch;
+    root.querySelector('.clock-now').textContent = result ? clockText(result, t, store.get('timeScale')) : 'T+ 00:00:00';
+    root.querySelector('.clock-total').textContent = result
+        ? `${result.epoch ? `${elapsed(t - result.times[0])}, ` : ''}point ${num(sampleIndex(result, t) + 1)} of ${num(result.times.length)}`
+        : 'No run yet';
     track.setAttribute('aria-valuemin', '0');
     track.setAttribute('aria-valuemax', String(Math.round(result?.duration ?? 0)));
     track.setAttribute('aria-valuenow', String(Math.round(result ? t - result.times[0] : 0)));
@@ -141,6 +153,9 @@ function onClick(event) {
             store.set({ playing: false, time: result ? result.times[0] : 0 });
             break;
         case 'step': step(1); break;
+        case 'back': step(-1); break;
+        case 'start': store.set({ playing: false, time: result.times[0] }); break;
+        case 'end': store.set({ playing: false, time: result.times.at(-1) }); break;
         case 'prev': jump(-1); break;
         case 'next': jump(1); break;
         default: break;
@@ -235,6 +250,10 @@ function draw() {
         ctx.lineTo(px, a.kind === 'perigee' ? mid + 8 : mid + 5);
         ctx.stroke();
     }
+
+    // Node crossings: a small dot on the line, quieter than the apsides.
+    ctx.fillStyle = color('--muted');
+    for (const n of result.nodes) ctx.fillRect(Math.round(x(n.t)) - 1, mid - 1, 3, 3);
 
     const cx = Math.round(x(store.get('time'))) + 0.5;
     ctx.strokeStyle = color('--amber');

@@ -24,12 +24,20 @@
                 <span class="brand-name">AstroFlyer</span>
             </div>
             <span class="topbar-mission" id="topbar-mission"></span>
+            <div class="topbar-actions">
+                <button class="icon-button" type="button" data-action="home" aria-label="Start: new, open, recent and samples" title="Start"><svg class="icon" aria-hidden="true"><use href="icons/icons.svg#house"></use></svg></button>
+                <button class="icon-button" type="button" data-action="save" aria-label="Save mission file" title="Save mission file (Ctrl+S)"><svg class="icon" aria-hidden="true"><use href="icons/icons.svg#save"></use></svg></button>
+            </div>
             <div class="workspace-switch" id="workspace-switch" role="tablist" aria-label="Workspace">
                 <button type="button" role="tab" data-workspace="mission" aria-selected="true">Mission</button>
                 <button type="button" role="tab" data-workspace="analysis" aria-selected="false">Analysis</button>
                 <button type="button" role="tab" data-workspace="data" aria-selected="false">Data</button>
             </div>
             <div class="layout-controls" id="layout-controls" role="group" aria-label="View layout"></div>
+            <div class="panel-toggles">
+                <button class="icon-button" type="button" data-panel="tree" aria-pressed="true" aria-label="Show mission tree" title="Show mission tree"><svg class="icon" aria-hidden="true"><use href="icons/icons.svg#panel-left"></use></svg></button>
+                <button class="icon-button" type="button" data-panel="inspector" aria-pressed="true" aria-label="Show inspector" title="Show inspector"><svg class="icon" aria-hidden="true"><use href="icons/icons.svg#panel-right"></use></svg></button>
+            </div>
             <a class="topbar-link" href="THIRD_REVIEW_COMPLETE_PROJECT_GUIDE.pdf" target="_blank" rel="noopener">Handbook</a>
         </header>
 
@@ -40,12 +48,16 @@
 
         <main class="workspace" id="workspace" aria-label="Views"></main>
         <main class="tools" id="tools" aria-label="Tools" hidden></main>
+        <section class="home" id="home" aria-label="Start" hidden></section>
 
         <aside class="inspector" id="inspector" aria-label="Inspector"></aside>
 
         <footer class="dock">
             <section class="timeline" id="timeline" aria-label="Timeline"></section>
-            <section class="messages" id="messages" aria-label="Messages"></section>
+            <div class="statusbar">
+                <section class="messages" id="messages" aria-label="Messages"></section>
+                <div class="status" id="status" aria-label="Status"></div>
+            </div>
         </footer>
     </div>
 </body>

@@ -115,8 +115,12 @@ export function validate(schema, values) {
     for (const group of visibleFields(schema, values)) {
         for (const field of group.fields) {
             const value = values[field.key];
-            if (field.type === 'text' && !String(value).trim()) {
+            if (field.type === 'text' && !String(value ?? '').trim()) {
                 errors[field.key] = 'Enter a name.';
+            } else if (field.type === 'select' && !field.options.some(([option]) => option === value)) {
+                errors[field.key] = 'Pick one of the options.';
+            } else if (field.type === 'checkbox' && typeof value !== 'boolean') {
+                errors[field.key] = 'Turn this on or off.';
             } else if (field.type === 'number') {
                 if (typeof value !== 'number' || !Number.isFinite(value)) {
                     errors[field.key] = 'Enter a number.';

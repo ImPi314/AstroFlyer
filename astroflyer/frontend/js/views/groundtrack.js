@@ -1,5 +1,6 @@
 // Ground track on an equirectangular map. Latitude and longitude come from the engine;
 // the night side uses the same Sun direction as the engine's shadow events.
+// One instance per pane; ctx gives this pane's settings and tracks subscriptions.
 
 import * as store from '../store.js';
 import { stateAt } from '../results.js';
@@ -10,39 +11,51 @@ const NIGHT_W = 180;
 const NIGHT_H = 90;
 const COLOR_STEPS = 12;
 
-let canvas;
-let map = null;
-let night;
-let pending = false;
-let seam = 0;   // a segment longer than this crosses the map's edge
+let seam = 0;   // a segment longer than this crosses the map's edge (set before each draw)
 
-export function mountGroundtrack(body) {
-    canvas = document.createElement('canvas');
+export const groundtrackDefaults = () => ({
+    center: 'greenwich',
+    center_lon: 0,
+    night: true,
+    stations: true,
+    masks: false,
+    footprint: true,
+});
+
+export function createGroundtrack(ctx) {
+    const canvas = document.createElement('canvas');
     canvas.className = 'view-canvas';
     canvas.setAttribute('role', 'img');
     canvas.setAttribute('aria-label', 'Ground track of the spacecraft on a world map');
-    body.append(canvas);
+    ctx.body.append(canvas);
 
-    night = document.createElement('canvas');
+    const night = document.createElement('canvas');
     night.width = NIGHT_W;
     night.height = NIGHT_H;
 
+    let map = null;
+    let pending = false;
     const image = new Image();
     image.onload = () => { map = image; requestDraw(); };
     image.src = 'textures/earth.png';
 
-    new ResizeObserver(requestDraw).observe(body);
-    store.on(['result', 'time', 'views'], requestDraw);
+    const requestDraw = () => {
+        if (pending) return;
+        pending = true;
+        requestAnimationFrame(() => {
+            pending = false;
+            draw(canvas, night, map, ctx.settings());
+        });
+    };
+
+    const observer = new ResizeObserver(requestDraw);
+    observer.observe(ctx.body);
+    ctx.on(['result', 'time'], requestDraw);
+    ctx.onSettings(requestDraw);
+    return { destroy: () => observer.disconnect() };
 }
 
-function requestDraw() {
-    if (pending) return;
-    pending = true;
-    requestAnimationFrame(draw);
-}
-
-function draw() {
-    pending = false;
+function draw(canvas, night, map, settings) {
     const body = canvas.parentElement;
     const dpr = window.devicePixelRatio || 1;
     const bw = body.clientWidth;
@@ -61,10 +74,9 @@ function draw() {
     seam = w / 2;
     const oy = (bh - h) / 2;
 
-    const settings = store.get('views').groundtrack;
     const result = store.get('result');
     const now = result ? stateAt(result, store.get('time')) : null;
-    const centerLon = settings.center === 'spacecraft' && now ? now.lonDeg : 0;
+    const centerLon = settings.center === 'spacecraft' && now ? now.lonDeg : settings.center === 'longitude' ? settings.center_lon : 0;
     const x = (lon) => ox + (((lon - centerLon + 540) % 360) / 360) * w;
     const y = (lat) => oy + ((90 - lat) / 180) * h;
 
@@ -82,8 +94,9 @@ function draw() {
     }
 
     drawGrid(ctx, x, y, ox, oy, w, h);
-    if (result && settings.night) drawNight(ctx, result, now, centerLon, ox, oy, w, h);
+    if (result && settings.night) drawNight(ctx, night, now, centerLon, ox, oy, w, h);
     if (result) drawTrack(ctx, result, now, x, y);
+    if (result && settings.masks) drawMasks(ctx, result, now, x, y);
     if (result && settings.footprint) drawFootprint(ctx, result, now, x, y);
     if (result && settings.stations) drawStations(ctx, result, x, y);
     if (now) drawCraft(ctx, x(now.lonDeg), y(now.latDeg));
@@ -110,8 +123,8 @@ function drawGrid(ctx, x, y, ox, oy, w, h) {
 }
 
 // Night side shaded on a coarse grid and scaled up, which softens the terminator.
-function drawNight(ctx, result, now, centerLon, ox, oy, w, h) {
-    const [sx, sy, sz] = result.sunDirection;
+function drawNight(ctx, night, now, centerLon, ox, oy, w, h) {
+    const [sx, sy, sz] = now.sun;
     const c = Math.cos(now.theta);
     const s = Math.sin(now.theta);
     const sun = [c * sx + s * sy, -s * sx + c * sy, sz];   // Sun in the Earth-fixed frame
@@ -159,12 +172,28 @@ function drawTrack(ctx, result, now, x, y) {
     });
 }
 
-// Area that can see the spacecraft above the horizon.
+// Ground that can see the spacecraft above the horizon.
 function drawFootprint(ctx, result, now, x, y) {
     const lambda = Math.acos(Math.min(result.earthRadiusKm / now.radiusKm, 1));
-    const lat0 = now.latDeg * DEG;
-    const lon0 = now.lonDeg * DEG;
     ctx.strokeStyle = css(rgb('--amber'), 0.55);
+    drawCircle(ctx, now.latDeg, now.lonDeg, lambda, x, y);
+}
+
+// Around each station, where the spacecraft (at its current distance) clears the station's
+// minimum elevation: the station mask projected onto the ground.
+function drawMasks(ctx, result, now, x, y) {
+    ctx.strokeStyle = css(rgb('--contact'), 0.5);
+    for (const st of result.stations) {
+        const el = st.min_elevation_deg * DEG;
+        const lambda = Math.acos(Math.min((result.earthRadiusKm / now.radiusKm) * Math.cos(el), 1)) - el;
+        if (lambda > 0) drawCircle(ctx, st.lat_deg, st.lon_deg, lambda, x, y);
+    }
+}
+
+// Small circle of angular radius lambda (rad) around a point, split where it crosses the map edge.
+function drawCircle(ctx, latDeg, lonDeg, lambda, x, y) {
+    const lat0 = latDeg * DEG;
+    const lon0 = lonDeg * DEG;
     ctx.lineWidth = 1;
     ctx.setLineDash([4, 3]);
     ctx.beginPath();

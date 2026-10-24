@@ -1,16 +1,20 @@
 // Turns the engine's /api/propagate payload into the one shape every view reads.
 // This is the only place that knows the payload's field names.
 
+import { elapsed } from './format.js';
+
 const DEG = Math.PI / 180;
 const ZONES = { FREE_SPACE: 'Outside the belts', INNER_PROTON_BELT: 'Inner belt', OUTER_ELECTRON_BELT: 'Outer belt', RADIATION_SLOT_REGION: 'Slot region' };
 
-// The engine rotates the Earth by its own angle and does not report it, so read it back
-// from its outputs: inertial right ascension minus Earth-fixed longitude, unwrapped.
-function earthRotation(positions, longitudesDeg) {
+// The engine does not report its Earth rotation angle, so read it back from its outputs:
+// inertial right ascension minus Earth-fixed longitude (from its ITRF position when it
+// sends one, otherwise from its longitudes), unwrapped.
+function earthRotation(positions, fixedPositions, longitudesDeg) {
     const theta = new Float64Array(positions.length);
     let previous = 0;
     positions.forEach(([x, y], i) => {
-        let angle = Math.atan2(y, x) - longitudesDeg[i] * DEG;
+        const lon = fixedPositions ? Math.atan2(fixedPositions[i][1], fixedPositions[i][0]) : longitudesDeg[i] * DEG;
+        let angle = Math.atan2(y, x) - lon;
         if (i > 0) angle -= 2 * Math.PI * Math.round((angle - previous) / (2 * Math.PI));
         theta[i] = previous = angle;
     });
@@ -19,7 +23,8 @@ function earthRotation(positions, longitudesDeg) {
 
 export function fromPayload(payload) {
     const times = payload.times_sec;
-    const theta = earthRotation(payload.position_m, payload.longitude_deg);
+    const itrf = payload.position_itrf_m ?? null;
+    const theta = earthRotation(payload.position_m, itrf, payload.longitude_deg);
     const inertialKm = new Float32Array(times.length * 3);
     const fixedKm = new Float32Array(times.length * 3);
     const velocityKms = new Float64Array(times.length * 3);
@@ -28,8 +33,9 @@ export function fromPayload(payload) {
         const c = Math.cos(theta[i]);
         const s = Math.sin(theta[i]);
         inertialKm.set([x / 1000, y / 1000, z / 1000], i * 3);
-        fixedKm.set([(c * x + s * y) / 1000, (-s * x + c * y) / 1000, z / 1000], i * 3);
+        fixedKm.set(itrf ? itrf[i].map((v) => v / 1000) : [(c * x + s * y) / 1000, (-s * x + c * y) / 1000, z / 1000], i * 3);
     });
+    const listed = payload.events ?? null;   // newer engines list apsides and nodes together
     const events = payload.events_suite ?? {};
     const eclipses = events.solar_eclipses ?? {};
     const stations = Object.values(events.ground_stations ?? {});
@@ -84,14 +90,22 @@ export function fromPayload(payload) {
         inertialKm,
         fixedKm,
         velocityKms,
-        // Sun direction in the inertial frame. The engine's shadow model uses a fixed Sun on +X
-        // until it reports one, so the night side drawn here matches its shadow events.
-        sunDirection: payload.sun_direction_eci ?? [1, 0, 0],
-        apsides: (events.exact_apsidal_events ?? []).map((ev) => ({
-            kind: ev.event_type === 'APOAPSIS_PASSAGE' ? 'apogee' : 'perigee',
-            t: ev.epoch_s,
-            altitude_km: ev.altitude_km,
-        })),
+        // Sun direction in the inertial frame, per sample or for the whole run. Older engines use
+        // a fixed Sun on +X, so the night side drawn here matches their shadow events.
+        sun: sunDirections(payload.sun_direction_eci, times.length),
+        // Start epoch in each time scale as ISO strings, when the engine reports one.
+        epoch: payload.epoch ?? null,
+        apsides: listed
+            ? listed.filter((ev) => ev.type === 'perigee' || ev.type === 'apogee').map((ev) => ({
+                kind: ev.type,
+                t: ev.t_s,
+                altitude_km: payload.altitude_km[nearest(times, ev.t_s)],
+            }))
+            : (events.exact_apsidal_events ?? []).map((ev) => ({
+                kind: ev.event_type === 'APOAPSIS_PASSAGE' ? 'apogee' : 'perigee',
+                t: ev.epoch_s,
+                altitude_km: ev.altitude_km,
+            })),
         // The engine lists each shadow twice (umbra and penumbra) with the same bounds; keep umbra.
         shadows: (eclipses.events ?? [])
             .filter((ev) => ev.event_type.startsWith('UMBRA'))
@@ -106,11 +120,17 @@ export function fromPayload(payload) {
             contact_min: st.total_contact_min,
             passes: st.passes.map((p) => ({ t0: p.aos_epoch_s, t1: p.los_epoch_s, max_elevation_deg: p.max_elevation_deg })),
         })),
-        nodes: (events.exact_nodal_events ?? []).map((ev) => ({
-            kind: ev.event_type === 'ASCENDING_NODE' ? 'ascending' : 'descending',
-            t: ev.epoch_s,
-            longitude_deg: ev.longitude_deg,
-        })),
+        nodes: listed
+            ? listed.filter((ev) => ev.type.endsWith('_node')).map((ev) => ({
+                kind: ev.type === 'ascending_node' ? 'ascending' : 'descending',
+                t: ev.t_s,
+                longitude_deg: payload.longitude_deg[nearest(times, ev.t_s)],
+            }))
+            : (events.exact_nodal_events ?? []).map((ev) => ({
+                kind: ev.event_type === 'ASCENDING_NODE' ? 'ascending' : 'descending',
+                t: ev.epoch_s,
+                longitude_deg: ev.longitude_deg,
+            })),
         radiation: {
             totalDoseRad: Number(radiation.summary?.total_ionizing_dose_rad ?? NaN),
             crossings: (radiation.crossing_events ?? []).map((ev) => ({
@@ -149,6 +169,32 @@ export function fromPayload(payload) {
     };
 }
 
+function sunDirections(reported, count) {
+    if (Array.isArray(reported?.[0]) && reported.length === count) return reported;
+    const one = Array.isArray(reported) && reported.length === 3 ? reported : [1, 0, 0];
+    return Array.from({ length: count }, () => one);
+}
+
+function nearest(times, t) {
+    let best = 0;
+    for (let i = 1; i < times.length; i++) if (Math.abs(times[i] - t) < Math.abs(times[best] - t)) best = i;
+    return best;
+}
+
+export const TIME_SCALES = ['utc', 'tai', 'tt', 'tdb', 'ut1'];
+
+// The clock at time t: a calendar epoch in the chosen scale when the engine reports one,
+// otherwise elapsed time since the start of the run.
+export function clockText(result, t, scale = 'utc') {
+    // The engine writes "2000-01-01T11:59:27.816000 TAI" (or "...Z" for UTC). Read the calendar part
+    // as the scale's own clock, not local time; Date keeps milliseconds only.
+    const match = /^(\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d)(\.\d{1,3})?/.exec(result.epoch?.[scale] ?? '');
+    const ms = match ? Date.parse(`${match[1]}${match[2] ?? ''}Z`) : NaN;
+    if (Number.isNaN(ms)) return elapsed(t - result.times[0]);
+    const iso = new Date(ms + (t - result.times[0]) * 1000).toISOString();
+    return `${iso.slice(0, 10)} ${iso.slice(11, 19)} ${scale.toUpperCase()}`;
+}
+
 // Index of the last sample at or before t.
 export function sampleIndex(result, t) {
     const { times } = result;
@@ -167,6 +213,7 @@ export function sampleIndex(result, t) {
 export function eventTimes(result) {
     const points = [
         ...result.apsides.map((a) => a.t),
+        ...result.nodes.map((n) => n.t),
         ...result.shadows.flatMap((s) => [s.t0, s.t1]),
         ...result.stations.flatMap((st) => st.passes.flatMap((p) => [p.t0, p.t1])),
     ];
@@ -184,7 +231,9 @@ export function stateAt(result, t) {
     dLon -= 360 * Math.round(dLon / 360);
     const lonDeg = lon[i] + f * dLon;
     const fixed = mix(result.fixedKm);
+    const sun = [0, 1, 2].map((k) => result.sun[i][k] + f * (result.sun[j][k] - result.sun[i][k]));
     return {
+        sun,
         index: i,
         inertial: mix(result.inertialKm),
         fixed,
