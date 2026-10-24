@@ -21,6 +21,7 @@ import numpy as np
 from scipy.integrate import solve_ivp
 
 from . import forces
+from .eclipse import shadow_boundary_events, solve_ivp_segmented
 from .epoch import Epoch
 from .forces import ForceModelConfig, SimpleEarthRotation
 from .frames import EarthOrientation, FastEarthRotation, gcrf_to_geodetic
@@ -427,7 +428,12 @@ class ThirdReviewEngine:
         elif solver_method in ('Radau', 'RADAU', 'RadauIIA'):
             solver_method = 'Radau'
 
-        sol = solve_ivp(eom, t_span, self.y0, method=solver_method, t_eval=t_eval, rtol=rtol, atol=atol)
+        if cfg.srp or cfg.albedo:
+            # Restart at each shadow edge, where SRP has a kink (see backend/eclipse.py)
+            sol = solve_ivp_segmented(eom, t_span, self.y0, shadow_boundary_events(epoch_tt),
+                                      method=solver_method, t_eval=t_eval, rtol=rtol, atol=atol)
+        else:
+            sol = solve_ivp(eom, t_span, self.y0, method=solver_method, t_eval=t_eval, rtol=rtol, atol=atol)
 
         times = sol.t
         pos = sol.y[0:3].T
