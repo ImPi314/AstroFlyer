@@ -4,6 +4,7 @@
 import * as store from './store.js';
 import { escapeHtml, icon } from './format.js';
 import { openInspector } from './inspector.js';
+import { log } from './messages.js';
 import { VIEW_TYPES, LAYOUTS, defaultPanes, paneTitle } from './views/registry.js';
 
 const SAVED_KEY = 'astroflyer.workspace.v1';
@@ -114,8 +115,36 @@ function sync() {
         const tools = panel.querySelector('.view-tools');
         body.innerHTML = '';
         tools.innerHTML = '';
-        const ctx = paneContext(id, body, tools);
-        mounted.set(id, { type: pane.type, ctx, view: VIEW_TYPES[pane.type].create(ctx) });
+        mounted.set(id, mountView(id, pane, body, tools));
+    }
+}
+
+// A view that fails to start (the 3D view can't get a WebGL context right after the window
+// opens, now and then) shows why in its own pane, with Retry, and the rest of the app still starts.
+function mountView(id, pane, body, tools) {
+    const ctx = paneContext(id, body, tools);
+    try {
+        return { type: pane.type, ctx, view: VIEW_TYPES[pane.type].create(ctx) };
+    } catch (error) {
+        ctx.dispose();
+        body.innerHTML = '';
+        tools.innerHTML = '';
+        const name = paneTitle(pane);
+        const why = /webgl/i.test(String(error?.message))
+            ? 'The window gave it no WebGL graphics context.'
+            : `It stopped with: ${escapeHtml(String(error?.message || error))}`;
+        body.innerHTML = `
+            <div class="empty">
+                <p class="empty-title">${escapeHtml(name)} didn't start</p>
+                <p>${why} Retry, or pick another view for this pane.</p>
+                <p><button class="button" type="button" data-retry>Retry</button></p>
+            </div>`;
+        body.querySelector('[data-retry]').addEventListener('click', () => {
+            mounted.delete(id);
+            sync();
+        });
+        log('error', `${name} didn't start: ${String(error?.message || error)}`);
+        return { type: pane.type, ctx: { dispose() {} }, view: { destroy() {} } };
     }
 }
 
