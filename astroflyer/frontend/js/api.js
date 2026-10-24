@@ -1,6 +1,11 @@
 // Client for the local engine served by backend/app_server.py on the same origin.
 
-export class EngineError extends Error {}
+export class EngineError extends Error {
+    constructor(message, status = null) {
+        super(message);
+        this.status = status;   // HTTP status when the engine answered, otherwise null
+    }
+}
 
 async function request(path, options) {
     let response;
@@ -14,10 +19,10 @@ async function request(path, options) {
     try {
         data = await response.json();
     } catch {
-        throw new EngineError(`The engine returned an unreadable answer (HTTP ${response.status}).`);
+        throw new EngineError(`The engine returned an unreadable answer (HTTP ${response.status}).`, response.status);
     }
     if (!response.ok) {
-        throw new EngineError(data.message || `The engine reported an error (HTTP ${response.status}).`);
+        throw new EngineError(data.message || `The engine reported an error (HTTP ${response.status}).`, response.status);
     }
     return data;
 }
@@ -40,6 +45,23 @@ export function propagate(body, signal) {
 // The engine reads the six orbit elements from the script; everything else comes from body.
 export function propagateScript(scriptText, body, signal) {
     return propagateAt('/api/script/propagate', { ...body, script_text: scriptText }, signal);
+}
+
+// Runs the whole mission script (objects, Propagate, Maneuver, Target, Report) on the engine.
+export async function runScript(scriptText, signal) {
+    try {
+        return await request('/api/script/run', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ script_text: scriptText }),
+            signal,
+        });
+    } catch (err) {
+        if (err instanceof EngineError && err.status === 404) {
+            throw new EngineError('This engine cannot run full mission scripts yet. Use Show orbit in views to propagate the orbit in the script.', 404);
+        }
+        throw err;
+    }
 }
 
 export function solveApogeeRaise({ perigeeRadiusKm, perigeeSpeedKms, targetApogeeKm }) {

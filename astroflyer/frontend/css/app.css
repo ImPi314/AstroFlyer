@@ -552,6 +552,9 @@ button, input, select { font: inherit; color: inherit; }
 .tool-form .field { width: 200px; padding: 6px 8px; }
 .tool-form .button { margin: 0 8px 6px; }
 
+.section-pad { padding: 8px 20px 12px; }
+.script-error { color: var(--error); }
+
 .facts {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));

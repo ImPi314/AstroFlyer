@@ -2,8 +2,9 @@
 // The mission tree, inspector and timeline stay as they are while a tool is open.
 
 import * as store from './store.js';
-import { solveApogeeRaise, simulateFiniteBurn, EngineError } from './api.js';
+import { solveApogeeRaise, simulateFiniteBurn, runScript, EngineError } from './api.js';
 import { sampleIndex } from './results.js';
+import { fromScriptRun } from './scriptrun.js';
 import { startScriptRun } from './run.js';
 import { log } from './messages.js';
 import { elapsed, escapeHtml, icon, num, saveFile } from './format.js';
@@ -30,6 +31,7 @@ const openTool = { analysis: 'events', data: 'script' };
 let eventFilter = 'all';
 let targetingState = { apogee: null, burn: null, busy: false, inputs: {} };   // inputs survive re-rendering
 let scriptDraft = null;   // the user's edits; null means "show the last run's script"
+let scriptRun = { busy: false, run: null, failure: null };   // last full script run, see scriptrun.js
 let lifetimeChart = null;
 
 export function mountTools(element) {
@@ -62,7 +64,7 @@ export function mountTools(element) {
     });
     store.on(['workspace', 'result'], render);
     store.on('run', (run) => {
-        const button = page.querySelector('[data-action="script-run"]');
+        const button = page.querySelector('[data-action="script-views"]');
         if (button) button.disabled = run.status === 'running';
     });
     render();
@@ -317,16 +319,101 @@ function script(result) {
         <header class="tool-head">
             <div>
                 <h2 class="tool-title">Mission script</h2>
-                <p class="tool-lead">The engine reads the six orbit elements (SMA, ECC, INC, RAAN, AOP, TA) from the script. Propagator and spacecraft properties come from the inspector.</p>
+                <p class="tool-lead">Run script carries out the whole mission sequence and lists its reports, targets and final states below. Show orbit in views propagates only the orbit in the script, with the inspector's propagator settings, and opens it in the Mission views.</p>
             </div>
             <div class="tool-actions">
                 <button class="button" type="button" data-action="script-reset" ${result ? '' : 'disabled'}>${icon('rotate-ccw')}Use last run's script</button>
                 <button class="button" type="button" data-action="script-save" ${text ? '' : 'disabled'}>${icon('download')}Save</button>
-                <button class="button button-primary" type="button" data-action="script-run" ${running ? 'disabled' : ''}>${icon('play')}Run script</button>
+                <button class="button" type="button" data-action="script-views" ${running ? 'disabled' : ''}>${icon('play')}Show orbit in views</button>
+                <button class="button button-primary" type="button" data-action="script-run" ${scriptRun.busy ? 'disabled' : ''}>${icon('play')}Run script</button>
             </div>
         </header>
         <label class="visually-hidden" for="script-text">Mission script</label>
-        <textarea class="code-editor" id="script-text" name="script" spellcheck="false" placeholder="Run the mission once to start from its script, or paste a script here.">${escapeHtml(text)}</textarea>`;
+        <textarea class="code-editor" id="script-text" name="script" spellcheck="false" placeholder="Run the mission once to start from its script, or paste a script here.">${escapeHtml(text)}</textarea>
+        ${scriptOutput()}`;
+}
+
+function scriptOutput() {
+    const { busy, run, failure } = scriptRun;
+    if (busy) return '<section class="tool-section"><p class="tool-lead section-pad">Running the script.</p></section>';
+    if (failure) return `<section class="tool-section"><p class="tool-lead section-pad script-error">${escapeHtml(failure)}</p></section>`;
+    if (!run) return '';
+    const table = (head, rows) => `
+        <table class="data-table compact">
+            <thead><tr>${head.map(([label, cls]) => `<th scope="col" class="${cls ?? ''}">${escapeHtml(label)}</th>`).join('')}</tr></thead>
+            <tbody>${rows.join('')}</tbody>
+        </table>`;
+    const value = (v) => (typeof v === 'number' ? num(v, Math.abs(v) >= 1000 ? 1 : 6) : escapeHtml(v ?? '–'));
+    return `
+        ${run.error ? `
+            <section class="tool-section">
+                <h3 class="section-title">Script stopped</h3>
+                <p class="tool-lead section-pad script-error">${run.error.line != null ? `Line ${run.error.line}: ` : ''}${escapeHtml(run.error.message)}</p>
+                ${run.error.line != null ? `<div class="section-pad"><button class="button" type="button" data-action="script-line" data-line="${run.error.line}">Go to line ${run.error.line}</button></div>` : ''}
+            </section>` : ''}
+        ${run.targets.length ? `
+            <section class="tool-section">
+                <h3 class="section-title">Targets</h3>
+                ${table([['Target'], ['Result'], ['Iterations', 'num'], ['Variables'], ['Goals']], run.targets.map((t) => `<tr>
+                    <td>${escapeHtml(t.name)} <span class="muted">line ${t.line}</span></td>
+                    <td>${t.converged ? 'Converged' : `<span class="script-error">${escapeHtml(t.message || 'Did not converge')}</span>`}</td>
+                    <td class="num">${num(t.iterations)}</td>
+                    <td>${t.variables.map(([k, v]) => `${escapeHtml(k)} = ${value(v)}`).join('<br>')}</td>
+                    <td>${t.goals.map((g) => `${escapeHtml(g.param)}: ${value(g.achieved)} for ${value(g.target)} (tolerance ${value(g.tolerance)})`).join('<br>')}</td>
+                </tr>`))}
+            </section>` : ''}
+        ${run.spacecraft.length ? `
+            <section class="tool-section">
+                <h3 class="section-title">Final states</h3>
+                ${table([['Spacecraft'], ['Epoch (UTC)'], ['SMA (km)', 'num'], ['ECC', 'num'], ['INC (deg)', 'num'], ['Altitude (km)', 'num'], ['Mass (kg)', 'num'], ['Fuel (kg)', 'num'], ['Points', 'num']],
+                    run.spacecraft.map((s) => `<tr><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.epoch_utc ?? '–')}</td><td class="num">${num(s.sma_km, 1)}</td><td class="num">${num(s.ecc, 6)}</td><td class="num">${num(s.inc_deg, 3)}</td><td class="num">${num(s.altitude_km, 1)}</td><td class="num">${num(s.mass_kg, 2)}</td><td class="num">${num(s.fuel_mass_kg, 2)}</td><td class="num">${num(s.points)}</td></tr>`))}
+            </section>` : ''}
+        ${run.reports.map((r, i) => `
+            <section class="tool-section">
+                <header class="section-head">
+                    <div><h3 class="section-title">Report ${escapeHtml(r.name)}</h3><p class="tool-lead">${num(r.rows.length)} rows</p></div>
+                    <button class="button" type="button" data-action="script-report" data-index="${i}">${icon('download')}Save</button>
+                </header>
+                ${table(r.columns.map((c) => [c, 'num']), r.rows.slice(0, 200).map((row) => `<tr>${row.map((v) => `<td class="num">${value(v)}</td>`).join('')}</tr>`))}
+                ${r.rows.length > 200 ? `<p class="tool-lead section-pad">Showing the first 200 rows. Save the report for all ${num(r.rows.length)}.</p>` : ''}
+            </section>`).join('')}
+        <section class="tool-section">
+            <h3 class="section-title">Log</h3>
+            ${run.log.length ? `<pre class="code-block">${escapeHtml(run.log.join('\n'))}</pre>` : '<p class="tool-lead section-pad">The script wrote nothing to the log.</p>'}
+        </section>`;
+}
+
+async function startFullScriptRun(text) {
+    scriptRun = { busy: true, run: null, failure: null };
+    render();
+    log('info', 'Running the mission script.');
+    try {
+        const run = fromScriptRun(await runScript(text));
+        scriptRun = { busy: false, run, failure: null };
+        if (run.error) log('error', `The script stopped${run.error.line != null ? ` at line ${run.error.line}` : ''}: ${run.error.message}`);
+        else log('info', `Script finished: ${run.spacecraft.length} spacecraft, ${run.reports.length} reports, ${run.targets.length} targets.`);
+    } catch (err) {
+        const message = err instanceof EngineError ? err.message : `Unexpected error: ${err.message}`;
+        scriptRun = { busy: false, run: null, failure: message };
+        log('error', message);
+    }
+    render();
+}
+
+function reportCsv(report) {
+    const cell = (v) => (/[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v));
+    return `${[report.columns, ...report.rows].map((row) => row.map(cell).join(',')).join('\n')}\n`;
+}
+
+// Selects line n (counted from 1) of the script editor.
+function selectLine(n) {
+    const editor = page.querySelector('#script-text');
+    const lines = editor.value.split('\n');
+    const start = lines.slice(0, n - 1).reduce((sum, line) => sum + line.length + 1, 0);
+    editor.focus();
+    editor.setSelectionRange(start, start + (lines[n - 1]?.length ?? 0));
+    const lineHeight = editor.scrollHeight / Math.max(lines.length, 1);
+    editor.scrollTop = Math.max(0, (n - 3) * lineHeight);
 }
 
 function exportPage(result) {
@@ -375,13 +462,23 @@ function onPageClick(event) {
     const result = store.get('result');
     const name = store.get('mission').spacecraft.name.replace(/[^\w.-]+/g, '_');
     switch (event.target.closest('[data-action]')?.dataset.action) {
-        case 'script-run': {
+        case 'script-run':
+        case 'script-views': {
             const text = page.querySelector('#script-text').value;
             if (!text.trim()) {
                 log('error', 'The script is empty.');
                 return;
             }
-            startScriptRun(text);
+            if (event.target.closest('[data-action]').dataset.action === 'script-run') startFullScriptRun(text);
+            else startScriptRun(text);
+            break;
+        }
+        case 'script-line':
+            selectLine(Number(event.target.closest('[data-line]').dataset.line));
+            break;
+        case 'script-report': {
+            const report = scriptRun.run.reports[Number(event.target.closest('[data-index]').dataset.index)];
+            saveFile(`${report.name.replace(/[^\w.-]+/g, '_')}.csv`, reportCsv(report), 'text/csv');
             break;
         }
         case 'script-reset':
