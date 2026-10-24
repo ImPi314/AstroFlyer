@@ -10,6 +10,13 @@ import threading
 import argparse
 import webbrowser
 
+# A windowed PyInstaller exe has no console, so sys.stdout/sys.stderr are None and any write
+# (http.server logs every request to stderr) raises and drops the connection.
+if sys.stdout is None:
+    sys.stdout = open(os.devnull, "w")
+if sys.stderr is None:
+    sys.stderr = open(os.devnull, "w")
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
