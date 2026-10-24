@@ -7,13 +7,21 @@ epoch 2026-01-01 00:00 TT, GCRF, both sides using the same EGM2008 coefficients.
 | --- | --- | --- |
 | [1 day](1day/orekit_crosscheck.md) | L0–L3, all four orbits | 2.9 cm (GTO) |
 | [7 days](7day/orekit_crosscheck.md) | L0 and L3, all four orbits | 1.68 m (GTO) |
+| [Full model, 1 day](full_1day/orekit_crosscheck.md) | L0–L7, all four orbits | 1.01 m (Molniya, L5) |
+| [Full model, 7 days](full_7day/orekit_crosscheck.md) | L3–L7, all four orbits | 31.7 m (Molniya, L5) |
+
+All runs pass their limits (10 m at 1 day, 100 m at 7 days).
 
 The 7-day differences are the same size at L0 (two-body) as at L3 (8×8 gravity), so they
 come from integration error, not from the force model. Against the exact Kepler solution,
 AstroFlyer's DOP853 at rtol 1e-12 is off by 0.91 m (Molniya) and 1.70 m (GTO) after
 7 days, which accounts for nearly all of it. Tightening AstroFlyer's tolerance shrinks it.
 
+In the full-model runs the differences jump at L5, when solar radiation pressure switches
+on, and stay that size through drag (L6) and relativity (L7). So the largest remaining
+difference is in the SRP/shadow modelling, not in gravity, third bodies or drag.
+
 L4–L7 (DE440 Sun/Moon, SRP, NRLMSISE-00 drag, relativity) need Orekit's own ephemeris
-data. Run them on a machine with internet:
+data, downloaded once with internet:
 
     python -m astroflyer.validation.orekit_crosscheck --download-orekit-data --days 7
