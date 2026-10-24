@@ -62,6 +62,7 @@ from backend.fsw_subsystems import (
 )
 from backend.time_systems import TimeStandardEngine, CoordinateFrameEngine
 from backend.epoch import Epoch
+from backend import mission as mission_targeting
 from backend.radiation_belts import RadiationBeltModel, RadiationParetoOptimizer
 from backend.covariance_engine import CovarianceEngine, CovarianceSteeredAdaptiveStepController
 from backend.differential_corrector import DifferentialCorrector, FiniteBurnEngine, MultiBurnPerigeePumpingPlanner
@@ -284,6 +285,43 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
             dc = DifferentialCorrector()
             res_dc = dc.solve_apogee_raise(r0_km=r0, v0_kms=v0, target_ra_km=target_ra)
             self.send_json(res_dc)
+
+        elif path == "/api/mission/target":
+            # General vary/achieve targeter (backend/mission.py) on a propagated trajectory
+            scenario = _get_str_param(params, 'scenario', 'gto_to_geo')
+            try:
+                epoch = Epoch.coerce(_get_str_param(params, 'epoch', '') or None)
+                if scenario == 'gto_to_geo':
+                    res_t = mission_targeting.target_gto_to_geo(
+                        epoch,
+                        perigee_alt_km=_get_float_param(params, 'hp_km', 250.0),
+                        apogee_alt_km=_get_float_param(params, 'ha_km', 35786.0),
+                        inc_deg=_get_float_param(params, 'inc_deg', 28.5),
+                        raan_deg=_get_float_param(params, 'raan_deg', 0.0),
+                        dry_mass_kg=_get_float_param(params, 'dry_mass_kg', 1500.0),
+                        fuel_mass_kg=_get_float_param(params, 'fuel_mass_kg', 2000.0),
+                        isp_s=_get_float_param(params, 'isp_s', 320.0),
+                        model=_get_str_param(params, 'model', 'j2'))
+                elif scenario == 'perigee_raise':
+                    res_t = mission_targeting.target_perigee_raise(
+                        epoch,
+                        sma_km=_get_float_param(params, 'sma_km', 26560.0),
+                        perigee_alt_km=_get_float_param(params, 'hp_km', 450.0),
+                        inc_deg=_get_float_param(params, 'inc_deg', 63.4),
+                        raan_deg=_get_float_param(params, 'raan_deg', 30.0),
+                        argp_deg=_get_float_param(params, 'aop_deg', 270.0),
+                        target_perigee_alt_km=_get_float_param(params, 'target_hp_km', 600.0),
+                        dry_mass_kg=_get_float_param(params, 'dry_mass_kg', 1000.0),
+                        fuel_mass_kg=_get_float_param(params, 'fuel_mass_kg', 200.0),
+                        isp_s=_get_float_param(params, 'isp_s', 300.0),
+                        model=_get_str_param(params, 'model', 'j2_j3_j4'))
+                else:
+                    self.send_json({"error": f"Unknown scenario {scenario!r}; use gto_to_geo or perigee_raise"}, 400)
+                    return
+            except (ValueError, RuntimeError) as exc:
+                self.send_json({"error": str(exc)}, 400)
+                return
+            self.send_json(res_t)
 
         elif path == "/api/targeting/finite_burn":
             dv_req = _get_float_param(params, 'deltav', 1478.0)

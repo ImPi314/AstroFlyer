@@ -161,8 +161,10 @@ def integrate(fun, t_span, y0, method="RKF78", t_eval=None, events=None,
               rtol=1e-11, atol=1e-11, first_step=None, fixed_step=None, max_step=np.inf):
     """Integrates dy/dt = fun(t, y) from t_span[0] to t_span[1].
 
-    Events follow solve_ivp conventions: callables g(t, y) with an optional
-    `direction` attribute (+1 rising, -1 falling, 0 both). RK4 needs fixed_step (s).
+    Events follow solve_ivp conventions: callables g(t, y) with optional
+    `direction` (+1 rising, -1 falling, 0 both) and `terminal` attributes; a
+    terminal event ends the run there, with the event state as the last output.
+    RK4 needs fixed_step (s).
     """
     method = method.upper()
     if method not in METHODS:
@@ -179,6 +181,7 @@ def integrate(fun, t_span, y0, method="RKF78", t_eval=None, events=None,
     stepper = _Stepper(fun, method, rtol, atol)
     events = list(events or [])
     ev_dir = [float(getattr(ev, "direction", 0.0)) for ev in events]
+    ev_terminal = [bool(getattr(ev, "terminal", False)) for ev in events]
     t_events = [[] for _ in events]
     y_events = [[] for _ in events]
 
@@ -215,6 +218,7 @@ def integrate(fun, t_span, y0, method="RKF78", t_eval=None, events=None,
         t_new = t + h
 
         # Events: sign change across the step, refined by re-stepping from (t, y)
+        stop = None
         for i, ev in enumerate(events):
             g_new = ev(t_new, y_new)
             g0 = g_prev[i]
@@ -227,7 +231,24 @@ def integrate(fun, t_span, y0, method="RKF78", t_eval=None, events=None,
                         lambda s: g_of(-s), 0.0, -h, xtol=1e-9, rtol=1e-14)
                     t_events[i].append(t + dt_root)
                     y_events[i].append(stepper.exact(t, y, dt_root))
+                    if ev_terminal[i] and (stop is None or abs(dt_root) < abs(stop[0])):
+                        stop = (dt_root, y_events[i][-1])
             g_prev[i] = g_new
+
+        if stop is not None:
+            # Keep only events up to the terminal one, then end the run at it
+            t_stop = t + stop[0]
+            for i in range(len(events)):
+                keep = [k for k, te in enumerate(t_events[i]) if (te - t_stop) * direction <= 0]
+                t_events[i] = [t_events[i][k] for k in keep]
+                y_events[i] = [y_events[i][k] for k in keep]
+            while k_out < len(outputs) and (outputs[k_out] - t_stop) * direction < 0:
+                out_t.append(outputs[k_out])
+                out_y.append(stepper.exact(t, y, outputs[k_out] - t))
+                k_out += 1
+            out_t.append(t_stop)
+            out_y.append(stop[1])
+            return IntegrationResult(out_t, out_y, t_events, y_events, stepper.nfev, "terminal event")
 
         # Outputs inside (t, t_new]: re-step from the step start to land on them exactly
         while k_out < len(outputs) and (outputs[k_out] - t_new) * direction <= 0:
