@@ -5,15 +5,15 @@ epoch 2026-01-01 00:00 TT, GCRF. Both sides start from the same Cartesian state 
 same EGM2008 coefficients, spacecraft (Cr·A/m 0.02, Cd·A/m 0.01 m²/kg) and constant space
 weather (F10.7 = F10.7a = 150, Ap = 15). Orekit uses its own DE440 Sun/Moon and NRLMSISE-00.
 
-## Full force-model ladder (commit 890c148, all 52 cases pass)
+## Full force-model ladder (laptop run after the WGS-84 shadow fix, all 52 cases pass)
 
 | Run | Levels | Limit | Largest difference |
 | --- | --- | --- | --- |
-| [1 day](full_1day/orekit_crosscheck.md) | L0–L7, all four orbits | 10 m | 1.01 m (Molniya L5) |
-| [7 days](full_7day/orekit_crosscheck.md) | L3–L7, all four orbits | 100 m | 31.7 m (Molniya L5) |
+| [1 day](full_1day/orekit_crosscheck.md) | L0–L7, all four orbits | 10 m | 0.63 m (GTO L6) |
+| [7 days](full_7day/orekit_crosscheck.md) | L3–L7, all four orbits | 100 m | 6.1 m (GTO L7) |
 
-Selected 7-day differences: GTO full model (L7) 5.6 m, GTO with drag (L6) 3.1 m,
-Tundra L7 2.3 m, stress orbit L7 2.9 m.
+Selected 7-day differences: Molniya L5 (SRP) 1.7 m, Molniya L7 5.2 m, GTO L6 (drag) 2.9 m,
+Tundra L7 2.1 cm, stress orbit L7 4.5 m.
 
 How we got here (each fix written test-first):
 
@@ -31,13 +31,10 @@ How we got here (each fix written test-first):
 
 - **Earth's shape in the shadow.** Orekit casts the shadow with the WGS-84 ellipsoid; AstroFlyer
   used a sphere of equatorial radius. Seen from a Molniya or Tundra apogee the limb toward the
-  Sun can lie near a pole, 21 km lower, so our penumbra was too dark (the 7-day tables above
-  show Molniya L5 at 31.7 m). AstroFlyer now finds the ellipsoid limb in the same plane as
+  Sun can lie near a pole, 21 km lower, so our penumbra was too dark. AstroFlyer now finds the ellipsoid limb in the same plane as
   Orekit (`forces.occulting_radius`); the penumbra fraction agrees with Orekit to 1e-10.
-  Cloud rerun over 7 days, before → after: Molniya L5 32.6 m → 0.87 m, Tundra L5
-  2.3 m → 1.1 cm. GTO and the stress orbit move by under 2 m either way (their remaining few
-  metres are not the shadow). The tables above are from before this fix; the laptop rerun
-  will replace them.
+  Over 7 days Molniya L5 went from 31.7 m to 1.7 m and Tundra L5 from 2.3 m to 2.9 cm.
+  (A cloud run had shown 0.87 m for Molniya L5; the tables here are the laptop run.)
 
 ## Gravity only (earlier run)
 
@@ -45,17 +42,11 @@ How we got here (each fix written test-first):
 | --- | --- | --- |
 | [1 day](1day/orekit_crosscheck.md) | L0–L3, all four orbits | 2.9 cm (GTO) |
 | [7 days](7day/orekit_crosscheck.md) | L0 and L3, all four orbits | 1.68 m (GTO) |
-| [Full model, 1 day](full_1day/orekit_crosscheck.md) | L0–L7, all four orbits | 1.01 m (Molniya, L5) |
-| [Full model, 7 days](full_7day/orekit_crosscheck.md) | L3–L7, all four orbits | 31.7 m (Molniya, L5) |
 
 All runs pass their limits (10 m at 1 day, 100 m at 7 days).
 
 The 7-day gravity-only differences are the same size at L0 (two-body) as at L3, so they are
 AstroFlyer's integration error at rtol 1e-12, not a force-model difference.
-
-In the full-model runs the differences jump at L5, when solar radiation pressure switches
-on, and stay that size through drag (L6) and relativity (L7). So the largest remaining
-difference is in the SRP/shadow modelling, not in gravity, third bodies or drag.
 
 L4–L7 (DE440 Sun/Moon, SRP, NRLMSISE-00 drag, relativity) need Orekit's own ephemeris
 data, downloaded once with internet:

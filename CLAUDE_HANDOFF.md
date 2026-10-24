@@ -84,8 +84,8 @@ listed in `ThirdReviewAppHandler.handle_api`.
 
 `python -m astroflyer.validation.orekit_crosscheck` compares against Orekit 13.1 (orekit-jpype) with identical
 EGM2008 coefficients, on Molniya, Tundra, GTO and an HEO stress case, levels L0 (two-body) to L7 (full model).
-Results in `astroflyer/validation/results/`: every case passes; largest differences 1.01 m over 1 day and
-31.7 m over 7 days, both Molniya with SRP on. Gravity/third-body/drag agree to centimetres per day.
+Results in `astroflyer/validation/results/`: every case passes; largest differences 0.63 m over 1 day and
+6.1 m over 7 days, both GTO with drag on (after the WGS-84 shadow fix; Molniya SRP is now 1.7 m over 7 days).
 
 These Orekit numbers are the project's measured accuracy evidence. Do **not** quote the older figures below.
 

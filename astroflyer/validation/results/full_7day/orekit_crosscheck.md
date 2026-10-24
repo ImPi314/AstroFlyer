@@ -1,26 +1,27 @@
 # AstroFlyer vs Orekit cross-check
 
-Reference data: orekit-data at C:\Users\Harshith\OneDrive\Desktop\major_project_py-validation\astroflyer\validation\orekit-data. Epoch 2026-01-01T00:00:00 TT, GCRF, output every 600 s.
+Reference data: orekit-data at C:\Users\Harshith\OneDrive\Desktop\major_project_py\astroflyer\validation\orekit-data. Epoch 2026-01-01T00:00:00 TT, GCRF, output every 600 s.
+AstroFlyer propagator: dop853 ({'method': 'DOP853'}).
 
 | Orbit | Level | Forces | Days | Max 3D (m) | Radial (m) | In-track (m) | Cross-track (m) | Max |dv| (m/s) | Limit (m) | Result | AstroFlyer (s) | Orekit (s) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| molniya | L3 | gravity 8x8 | 7 | 0.74 | 0.319 | 0.729 | 0.000615 | 0.000588 | 100 | PASS | 1.9 | 1.7 |
-| molniya | L4 | 8x8 + Sun/Moon (DE440) | 7 | 0.79 | 0.341 | 0.779 | 0.00062 | 0.000632 | 100 | PASS | 1.5 | 1.6 |
-| molniya | L5 | L4 + SRP, conical shadow | 7 | 31.7 | 13.7 | 31.3 | 0.00442 | 0.0254 | 100 | PASS | 2.1 | 5.4 |
-| molniya | L6 | L5 + NRLMSISE-00 drag | 7 | 27.7 | 12 | 27.4 | 0.00418 | 0.0222 | 100 | PASS | 11.2 | 16.2 |
-| molniya | L7 | L6 + relativity (full model) | 7 | 28.3 | 12.3 | 28 | 0.00445 | 0.0226 | 100 | PASS | 3.1 | 15.0 |
-| tundra | L3 | gravity 8x8 | 7 | 0.00253 | 0.000789 | 0.00253 | 2.64e-05 | 1.23e-07 | 100 | PASS | 0.4 | 1.3 |
-| tundra | L4 | 8x8 + Sun/Moon (DE440) | 7 | 0.00267 | 0.000796 | 0.00267 | 2.9e-05 | 1.34e-07 | 100 | PASS | 0.5 | 2.0 |
-| tundra | L5 | L4 + SRP, conical shadow | 7 | 2.29 | 0.531 | 2.29 | 0.00431 | 0.000235 | 100 | PASS | 0.9 | 6.7 |
-| tundra | L6 | L5 + NRLMSISE-00 drag | 7 | 2.32 | 0.537 | 2.32 | 0.0044 | 0.000237 | 100 | PASS | 1.1 | 13.5 |
-| tundra | L7 | L6 + relativity (full model) | 7 | 2.34 | 0.542 | 2.34 | 0.00445 | 0.00024 | 100 | PASS | 1.2 | 13.6 |
-| gto | L3 | gravity 8x8 | 7 | 1.77 | 0.755 | 1.75 | 0.000348 | 0.00152 | 100 | PASS | 1.0 | 1.8 |
-| gto | L4 | 8x8 + Sun/Moon (DE440) | 7 | 1.72 | 0.73 | 1.7 | 0.000351 | 0.00148 | 100 | PASS | 1.3 | 2.0 |
-| gto | L5 | L4 + SRP, conical shadow | 7 | 4.94 | 2.11 | 4.89 | 0.000733 | 0.00424 | 100 | PASS | 2.2 | 7.0 |
-| gto | L6 | L5 + NRLMSISE-00 drag | 7 | 3.11 | 1.3 | 3.11 | 0.000756 | 0.00277 | 100 | PASS | 4.7 | 13.5 |
-| gto | L7 | L6 + relativity (full model) | 7 | 5.59 | 2.41 | 5.51 | 0.000832 | 0.00473 | 100 | PASS | 4.9 | 14.0 |
-| heo_stress | L3 | gravity 8x8 | 7 | 0.0526 | 0.0247 | 0.0518 | 0.000376 | 3.79e-05 | 100 | PASS | 0.5 | 1.2 |
-| heo_stress | L4 | 8x8 + Sun/Moon (DE440) | 7 | 0.0562 | 0.027 | 0.0555 | 0.000379 | 4.15e-05 | 100 | PASS | 0.6 | 2.0 |
-| heo_stress | L5 | L4 + SRP, conical shadow | 7 | 1.21 | 0.573 | 1.2 | 0.000711 | 0.000891 | 100 | PASS | 0.9 | 6.0 |
-| heo_stress | L6 | L5 + NRLMSISE-00 drag | 7 | 3.64 | 1.72 | 3.61 | 0.000826 | 0.00271 | 100 | PASS | 1.2 | 13.5 |
-| heo_stress | L7 | L6 + relativity (full model) | 7 | 2.87 | 1.36 | 2.84 | 0.000561 | 0.00214 | 100 | PASS | 1.3 | 13.3 |
+| molniya | L3 | gravity 8x8 | 7 | 0.74 | 0.319 | 0.729 | 0.000615 | 0.000588 | 100 | PASS | 2.2 | 1.4 |
+| molniya | L4 | 8x8 + Sun/Moon (DE440) | 7 | 0.79 | 0.341 | 0.779 | 0.00062 | 0.000632 | 100 | PASS | 1.3 | 1.2 |
+| molniya | L5 | L4 + SRP, conical shadow | 7 | 1.71 | 0.758 | 1.69 | 0.00199 | 0.00136 | 100 | PASS | 2.6 | 3.2 |
+| molniya | L6 | L5 + NRLMSISE-00 drag | 7 | 5.74 | 2.48 | 5.67 | 0.00219 | 0.00459 | 100 | PASS | 11.1 | 10.8 |
+| molniya | L7 | L6 + relativity (full model) | 7 | 5.15 | 2.23 | 5.09 | 0.00193 | 0.00412 | 100 | PASS | 3.8 | 11.0 |
+| tundra | L3 | gravity 8x8 | 7 | 0.00253 | 0.000789 | 0.00253 | 2.64e-05 | 1.23e-07 | 100 | PASS | 0.5 | 1.0 |
+| tundra | L4 | 8x8 + Sun/Moon (DE440) | 7 | 0.00267 | 0.000796 | 0.00267 | 2.9e-05 | 1.34e-07 | 100 | PASS | 0.6 | 1.6 |
+| tundra | L5 | L4 + SRP, conical shadow | 7 | 0.0285 | 0.00728 | 0.0285 | 4.91e-05 | 2.84e-06 | 100 | PASS | 1.2 | 4.3 |
+| tundra | L6 | L5 + NRLMSISE-00 drag | 7 | 0.00525 | 0.00176 | 0.00525 | 6.62e-05 | 4.88e-07 | 100 | PASS | 1.5 | 9.7 |
+| tundra | L7 | L6 + relativity (full model) | 7 | 0.0205 | 0.00508 | 0.0205 | 0.000124 | 2.14e-06 | 100 | PASS | 1.6 | 10.4 |
+| gto | L3 | gravity 8x8 | 7 | 1.77 | 0.755 | 1.75 | 0.000348 | 0.00152 | 100 | PASS | 1.1 | 1.0 |
+| gto | L4 | 8x8 + Sun/Moon (DE440) | 7 | 1.72 | 0.73 | 1.7 | 0.000351 | 0.00148 | 100 | PASS | 1.6 | 1.4 |
+| gto | L5 | L4 + SRP, conical shadow | 7 | 5.47 | 2.33 | 5.42 | 0.000702 | 0.00471 | 100 | PASS | 3.0 | 4.7 |
+| gto | L6 | L5 + NRLMSISE-00 drag | 7 | 2.85 | 1.19 | 2.85 | 0.000696 | 0.00254 | 100 | PASS | 6.3 | 12.0 |
+| gto | L7 | L6 + relativity (full model) | 7 | 6.12 | 2.63 | 6.03 | 0.00078 | 0.00517 | 100 | PASS | 6.5 | 12.5 |
+| heo_stress | L3 | gravity 8x8 | 7 | 0.0526 | 0.0247 | 0.0518 | 0.000376 | 3.79e-05 | 100 | PASS | 0.5 | 1.0 |
+| heo_stress | L4 | 8x8 + Sun/Moon (DE440) | 7 | 0.0562 | 0.027 | 0.0555 | 0.000379 | 4.15e-05 | 100 | PASS | 0.7 | 1.5 |
+| heo_stress | L5 | L4 + SRP, conical shadow | 7 | 2.8 | 1.32 | 2.77 | 0.000948 | 0.00209 | 100 | PASS | 1.3 | 4.1 |
+| heo_stress | L6 | L5 + NRLMSISE-00 drag | 7 | 5.3 | 2.5 | 5.24 | 0.00106 | 0.00394 | 100 | PASS | 1.7 | 9.8 |
+| heo_stress | L7 | L6 + relativity (full model) | 7 | 4.51 | 2.13 | 4.46 | 0.000766 | 0.00336 | 100 | PASS | 1.8 | 9.9 |

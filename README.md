@@ -90,11 +90,11 @@ the force model up one level at a time (L0 two-body → L7 full model).
 
 | Run | Largest position difference | Limit |
 | --- | --- | --- |
-| 1 day, L0–L7 | 1.01 m (Molniya, SRP on) | 10 m |
-| 7 days, L3–L7 | 31.7 m (Molniya, SRP on) | 100 m |
+| 1 day, L0–L7 | 0.63 m (GTO, drag on) | 10 m |
+| 7 days, L3–L7 | 6.1 m (GTO, full model) | 100 m |
 
-Every case passes. Gravity, Sun/Moon and drag agree to centimetres over a day; the larger
-differences appear when solar radiation pressure switches on. Details and the gravity-only runs
+Every case passes. Gravity and Sun/Moon agree to centimetres over a day; SRP and drag add a few
+metres over a week. Details and the gravity-only runs
 are in [astroflyer/validation/results](astroflyer/validation/results/README.md).
 
 ---
