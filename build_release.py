@@ -3,7 +3,7 @@ AstroFlyer HEO - Release Build & Installer Packaging Pipeline
 Department of Aerospace Engineering, ACS College of Engineering
 
 Orchestrates:
-0. Preflight: C++ kernel DLL built, offline data present (astroflyer/resources/manifest.json)
+0. Preflight: offline data present (astroflyer/resources/manifest.json)
 1. PyInstaller standalone onedir compilation -> dist/AstroFlyer_HEO/AstroFlyer.exe
 2. Inno Setup installer compilation -> dist_installer/AstroFlyer_HEO_v1.0_Setup.exe
 3. Integrity and checksum verification
@@ -32,14 +32,16 @@ def compute_sha256(filepath):
     return h.hexdigest()
 
 
+def python_supported(version_info):
+    """The app needs 3.12+ (typing.override); 3.14 is verified on Windows with every dependency."""
+    return tuple(version_info[:2]) >= (3, 12)
+
+
 def preflight():
     """Stops the build when a required runtime file is missing; warns about optional ones."""
     ok = True
-    if sys.version_info >= (3, 14):
-        print("[!] Python 3.14+: check that pythonnet (pywebview's WebView2 backend) installs; 3.12/3.13 are safest.")
-    dll = os.path.join(PROJECT_ROOT, "astroflyer", "cpp_engine", "astro_physics_kernel.dll")
-    if not os.path.exists(dll):
-        print("[ERROR] astro_physics_kernel.dll missing. Run astroflyer\\cpp_engine\\compile_kernel.bat first.")
+    if not python_supported(sys.version_info):
+        print(f"[ERROR] Python {sys.version_info.major}.{sys.version_info.minor} is too old; build with Python 3.12 or newer.")
         ok = False
     sys.path.insert(0, os.path.join(PROJECT_ROOT, "astroflyer"))
     import offline_data

@@ -71,5 +71,50 @@ class LocalServerTest(unittest.TestCase):
                 self.assertEqual(resp.status, 200)
 
 
+class NoConsoleTest(unittest.TestCase):
+    """A windowed PyInstaller exe (and pythonw) has sys.stdout/sys.stderr set to None."""
+
+    def test_server_answers_without_std_streams(self):
+        import subprocess
+        astroflyer_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        script = (
+            "import sys, urllib.request\n"
+            "sys.stdout = None\n"
+            "sys.stderr = None\n"
+            "import importlib.util, os\n"
+            "spec = importlib.util.spec_from_file_location('launcher', os.path.join(sys.argv[1], 'main.py'))\n"
+            "launcher = importlib.util.module_from_spec(spec)\n"
+            "spec.loader.exec_module(launcher)\n"
+            "_, port = launcher.start_server_thread(0)\n"
+            "try:\n"
+            "    code = urllib.request.urlopen(f'http://127.0.0.1:{port}/', timeout=10).status\n"
+            "except Exception as exc:\n"
+            "    code = repr(exc)\n"
+            "open(sys.argv[2], 'w').write(str(code))\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            result_file = os.path.join(tmp, "result.txt")
+            subprocess.run([sys.executable, "-c", script, astroflyer_dir, result_file],
+                           cwd=astroflyer_dir, timeout=120, check=True)
+            with open(result_file) as f:
+                self.assertEqual(f.read(), "200")
+
+
+class BuildPreflightTest(unittest.TestCase):
+    def _build_release(self):
+        import importlib.util
+        root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        spec = importlib.util.spec_from_file_location("build_release", os.path.join(root, "build_release.py"))
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def test_python_version_gate(self):
+        build_release = self._build_release()
+        self.assertFalse(build_release.python_supported((3, 11, 9)))  # typing.override needs 3.12
+        self.assertTrue(build_release.python_supported((3, 12, 0)))
+        self.assertTrue(build_release.python_supported((3, 14, 4)))  # verified Windows build, 2026-10-24
+
+
 if __name__ == "__main__":
     unittest.main()
