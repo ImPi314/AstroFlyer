@@ -59,7 +59,9 @@ def warm_up_models():
 def configure_offline_webview():
     """Stops WebView2's own background traffic to Microsoft (SmartScreen checks, component updates,
     telemetry), so the window talks only to the local server. WebView2 reads this variable when it
-    starts; Chromium honours a single --disable-features list, so pywebview's ElasticOverscroll is kept in it."""
+    starts; Chromium honours a single --disable-features list, so pywebview's ElasticOverscroll is kept in it.
+    Edge services the flags don't reach still need a host name, and the UI (served from 127.0.0.1) needs
+    none, so every name lookup is refused except localhost and 127.0.0.1 (MAP * also matches IP literals)."""
     os.environ["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = " ".join([
         "--disable-background-networking",
         "--disable-component-update",
@@ -68,6 +70,7 @@ def configure_offline_webview():
         "--no-pings",
         "--disable-features=ElasticOverscroll,msSmartScreenProtection,OptimizationHints,Translate,"
         "AutofillServerCommunication,MediaRouter",
+        '--host-resolver-rules="MAP * ~NOTFOUND , EXCLUDE localhost , EXCLUDE 127.0.0.1"',
     ])
 
 

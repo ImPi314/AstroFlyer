@@ -2,6 +2,7 @@
 
 import datetime
 import os
+import shlex
 import shutil
 import sys
 import tempfile
@@ -165,7 +166,7 @@ class QuietWebViewTest(unittest.TestCase):
         saved = os.environ.pop("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", None)
         try:
             launcher.configure_offline_webview()
-            args = os.environ["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"].split()
+            args = shlex.split(os.environ["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"])
         finally:
             os.environ.pop("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", None)
             if saved is not None:
@@ -179,6 +180,21 @@ class QuietWebViewTest(unittest.TestCase):
         disabled = features[0].split("=", 1)[1].split(",")
         for feature in ("ElasticOverscroll", "msSmartScreenProtection"):
             self.assertIn(feature, disabled)
+
+    def test_window_resolves_no_host_but_localhost(self):
+        # Edge services the flags above don't cover (seen: the Office 365 range ~30 s after start) need a
+        # host name; the UI is served from 127.0.0.1 and needs none, so name lookups are refused.
+        launcher = _load_launcher()
+        saved = os.environ.pop("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", None)
+        try:
+            launcher.configure_offline_webview()
+            args = shlex.split(os.environ["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"])
+        finally:
+            os.environ.pop("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", None)
+            if saved is not None:
+                os.environ["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = saved
+        # The UI's own address must stay reachable: MAP * also matches the IP literal 127.0.0.1
+        self.assertIn("--host-resolver-rules=MAP * ~NOTFOUND , EXCLUDE localhost , EXCLUDE 127.0.0.1", args)
 
 
 class ManifestTest(unittest.TestCase):
