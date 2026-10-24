@@ -116,5 +116,46 @@ class BuildPreflightTest(unittest.TestCase):
         self.assertTrue(build_release.python_supported((3, 14, 4)))  # verified Windows build, 2026-10-24
 
 
+def _load_launcher():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "astroflyer_launcher_warmup", os.path.join(os.path.dirname(offline_data.__file__), "main.py"))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+class ModelWarmUpTest(unittest.TestCase):
+    """The Numba-compiled drag model costs ~9 s on first use; the launcher compiles it in the background."""
+
+    def test_warm_up_runs_in_background_and_completes(self):
+        import time
+        launcher = _load_launcher()
+        started = time.perf_counter()
+        thread = launcher.warm_up_models()
+        self.assertLess(time.perf_counter() - started, 1.0)  # never blocks the window
+        self.assertTrue(thread.daemon)
+        thread.join(timeout=300)
+        self.assertFalse(thread.is_alive())
+        self.assertTrue(thread.ok, getattr(thread, "error", None))
+
+
+class RuntimeDependenciesTest(unittest.TestCase):
+    """pymsis is only a test reference now (drag uses backend/nrlmsise00.py), so the app doesn't ship it."""
+    ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+    def _requirements(self, name):
+        with open(os.path.join(self.ROOT, name)) as f:
+            return [line.split("#")[0].strip() for line in f if line.split("#")[0].strip()]
+
+    def test_pymsis_is_dev_only(self):
+        self.assertFalse(any(r.startswith("pymsis") for r in self._requirements("requirements.txt")))
+        self.assertTrue(any(r.startswith("pymsis") for r in self._requirements("requirements-dev.txt")))
+
+    def test_spec_does_not_bundle_pymsis(self):
+        with open(os.path.join(self.ROOT, "AstroFlyer.spec")) as f:
+            self.assertNotIn("collect_all('pymsis')", f.read())
+
+
 if __name__ == "__main__":
     unittest.main()

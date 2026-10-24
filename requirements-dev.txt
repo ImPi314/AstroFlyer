@@ -6,3 +6,4 @@ matplotlib>=3.8
 reportlab>=4.0
 pandas>=2.1
 lxml>=5.0
+pymsis>=0.10       # single-precision NRLMSISE-00, reference for tests only (app uses backend/nrlmsise00.py)

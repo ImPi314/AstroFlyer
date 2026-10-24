@@ -9,7 +9,7 @@ Dev-only libraries (PDF/report generation, plotting) are excluded; see requireme
 """
 
 import os
-from PyInstaller.utils.hooks import collect_all, collect_data_files, collect_dynamic_libs, collect_submodules
+from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs, collect_submodules
 
 project_root = os.path.abspath(os.getcwd())
 pkg = os.path.join(project_root, 'astroflyer')
@@ -32,15 +32,6 @@ try:
     erfa_imports = collect_submodules('erfa')
 except Exception:
     erfa_imports = []
-
-# pymsis (NRLMSIS drag density) ships a compiled Fortran extension plus .parm data files
-try:
-    msis_datas, msis_binaries, msis_imports = collect_all('pymsis')
-    datas += msis_datas
-    binaries += msis_binaries
-    erfa_imports += msis_imports
-except Exception:
-    print('[!] pymsis not installed; drag will use the fallback atmosphere.')
 
 # Backend modules are imported both as 'backend.*' (astroflyer/ on sys.path) and 'astroflyer.backend.*'
 backend_modules = sorted(
