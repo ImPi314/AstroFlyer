@@ -1,12 +1,16 @@
 """
-Integration across Earth-shadow boundaries.
+Integration across force-model boundaries.
 
 The SRP acceleration has a kink wherever the satellite enters or leaves the
-penumbra or umbra. An adaptive integrator that steps across a kink loses
-several orders of accuracy there (metres per day on Molniya). Like Orekit's
-eclipse detectors, we stop the integration at each boundary and restart from
-the exact crossing, so no step ever straddles one.
+penumbra or umbra, and NRLMSISE-00 density jumps at fixed altitudes and at
+UTC midnight (its day of year is an integer). An adaptive integrator that
+steps across a kink or jump loses several orders of accuracy there (metres per
+day on Molniya and GTO). Like Orekit's eclipse detectors, we stop the
+integration at each boundary and restart from the exact crossing, so no step
+ever straddles one.
 """
+
+import math
 
 import numpy as np
 from scipy.integrate import solve_ivp
@@ -32,6 +36,35 @@ def shadow_boundary_events(epoch_tt_j2000_s, ephemeris=None):
         return boundary
 
     return [make(0), make(1)]
+
+
+def drag_boundary_events(epoch_tt_j2000_s, rotation_at):
+    """
+    Altitude switches of NRLMSISE-00 and the drag cutoff (geodetic altitude minus
+    each threshold), plus UTC midnight. rotation_at(t) is the GCRF -> ITRF matrix.
+    """
+    from .nrlmsise00 import DISCONTINUITY_ALTITUDES_KM
+    last = {"key": None, "h": 0.0}
+
+    def altitude(t, y):
+        key = (t, y[0], y[1], y[2])
+        if key != last["key"]:
+            last["key"] = key
+            last["h"] = forces.itrf_to_geodetic(rotation_at(t) @ np.asarray(y[:3]))[2]
+        return last["h"]
+
+    def make(h_m):
+        return lambda t, y: altitude(t, y) - h_m
+
+    events = [make(h_km * 1e3) for h_km in DISCONTINUITY_ALTITUDES_KM]
+    events.append(make(forces.DRAG_CUTOFF_ALT_M))
+
+    def utc_midnight(t, y):
+        utc_s = epoch_tt_j2000_s + t - forces._UTC_MIDNIGHT_2000_IN_TT_J2000
+        return math.sin(math.pi * utc_s / 86400.0)
+
+    events.append(utc_midnight)
+    return events
 
 
 def _boundary_event(g, start, sign_after):

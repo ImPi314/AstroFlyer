@@ -7,7 +7,7 @@ All perturbing accelerations used by the propagator, computed in GCRF (m/s^2):
     (Montenbruck & Gill V/W recursion, evaluated in ITRF and rotated to GCRF)
   - Sun and Moon point-mass third-body gravity from the bundled JPL DE440
   - Solar radiation pressure, cannonball, with a conical (umbra/penumbra) Earth shadow
-  - Atmospheric drag with NRLMSISE-00 density (pymsis) and a co-rotating atmosphere
+  - Atmospheric drag with NRLMSISE-00 density (double-precision port) and a co-rotating atmosphere
   - Schwarzschild general-relativity correction (IERS 2010)
   - Optional simplified Earth albedo + infrared pressure (radial, off by default)
 
@@ -18,9 +18,11 @@ without one, a z-axis GMST rotation is used, which is adequate only for tests.
 
 import math
 from dataclasses import dataclass
+from datetime import date as _date
 
 import numpy as np
 
+from . import nrlmsise00
 from .ephemeris import _resource_path, get_ephemeris, njit
 
 # Physical constants
@@ -284,21 +286,30 @@ def albedo_ir_acceleration(r, r_sun, cr_area_over_m, nu):
     return (ir + albedo) * cr_area_over_m * r_hat
 
 
-_msis = None
+# UTC = TT - 69.184 s since 2017 (fixed leap-second count; density is insensitive to it)
+_UTC_MIDNIGHT_2000_IN_TT_J2000 = -43200.0 + 69.184
+_DAYS_TO_2000 = 730119      # days from 0001-01-01 to 2000-01-01 (proleptic Gregorian)
+
+
+def _utc_day_of_year_and_seconds(tt_seconds_j2000):
+    """UTC day of year (1-366) and seconds of the UTC day, as NRLMSISE-00 takes them."""
+    s = tt_seconds_j2000 - _UTC_MIDNIGHT_2000_IN_TT_J2000
+    days = math.floor(s / 86400.0)
+    sec = s - days * 86400.0
+    date = _date.fromordinal(_DAYS_TO_2000 + 1 + int(days))
+    return date.timetuple().tm_yday, sec
 
 
 def atmospheric_density(tt_seconds_j2000, lat_rad, lon_rad, alt_m, f107, f107a, ap):
-    """NRLMSISE-00 total mass density (kg/m^3) via pymsis, with fixed space weather."""
-    global _msis
-    if _msis is None:
-        import pymsis
-        _msis = pymsis
-    # UTC = TT - 69.184 s since 2017; density is insensitive to this offset
-    utc = np.datetime64("2000-01-01T11:58:55.816", "ms") + \
-        np.timedelta64(int(round(tt_seconds_j2000 * 1000.0)), "ms")
-    out = _msis.calculate(utc, math.degrees(lon_rad), math.degrees(lat_rad), alt_m / 1000.0,
-                          f107s=f107, f107as=f107a, aps=[[ap] * 7], version=0)
-    return float(np.asarray(out).reshape(-1)[0])
+    """
+    NRLMSISE-00 total mass density (kg/m^3) with fixed space weather, from the
+    double-precision port in nrlmsise00.py (gtd7d, daily Ap, local solar time
+    UT + lon/15). pymsis gives the same model in single precision, whose ~1e-6
+    jitter makes drag integration irreproducible.
+    """
+    doy, sec = _utc_day_of_year_and_seconds(tt_seconds_j2000)
+    return float(nrlmsise00.mass_density(float(doy), sec, alt_m / 1000.0, math.degrees(lat_rad),
+                                         math.degrees(lon_rad), f107a, f107, ap))
 
 
 def drag_acceleration(r, v, rot_gcrf2itrf, omega, tt_seconds_j2000, cfg):
