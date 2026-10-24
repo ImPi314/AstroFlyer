@@ -789,9 +789,12 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
             pts_val = _get_int_param(params, 'num_points', _get_int_param(params, 'points', 0))
             if pts_val <= 0:
                 pts_per_orb = _get_int_param(params, 'points_per_orbit', 400)
-                approx_period = 2.0 * np.pi * np.sqrt((a_km * 1000.0) ** 3 / MU_EARTH)
-                orbits_run = num_orbits if duration_s is None else duration_s / approx_period
-                pts_val = int(pts_per_orb * orbits_run)
+                if duration_s is None:
+                    pts_val = int(pts_per_orb * num_orbits)
+                elif r_cart is not None:
+                    pts_val = int(duration_s / 60.0)      # one point a minute; the state may not be a closed orbit
+                else:
+                    pts_val = int(pts_per_orb * duration_s / (2.0 * np.pi * np.sqrt((a_km * 1000.0) ** 3 / MU_EARTH)))
             num_points: int = max(200, min(3600, pts_val))
             tol: float = _get_float_param(params, 'tolerance', _get_float_param(params, 'tol', 1e-10))
 
@@ -833,12 +836,12 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
                 )
             y0 = np.concatenate([r0, v0])
 
-            if not (a_m > 0 and e < 1.0):
-                # The events, lifetime and targeting reports here all assume a closed orbit
-                self.send_json({"error": "The initial state is an escape trajectory (e >= 1); "
-                                         "only closed Earth orbits are supported for now"}, 400)
+            closed_orbit = bool(a_m > 0 and e < 1.0)
+            if not closed_orbit and duration_s is None:
+                self.send_json({"error": "The initial state is an escape trajectory (e >= 1), which has no "
+                                         "period, so give the run length as duration_s"}, 400)
                 return
-            period: float = float(2.0 * np.pi * np.sqrt(a_m**3 / MU_EARTH))
+            period: float = float(2.0 * np.pi * np.sqrt(a_m**3 / MU_EARTH)) if closed_orbit else float('inf')
             run_duration_s: float = duration_s if duration_s is not None else num_orbits * period
             t_span = (0.0, run_duration_s)
 
@@ -865,6 +868,14 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
             times_arr = cast(np.ndarray, sol['times'])
             pos_arr = cast(np.ndarray, sol['position_m'])
             vel_arr = cast(np.ndarray, sol['velocity_ms'])
+
+            if not closed_orbit:
+                # Escape trajectory: the trajectory and its own fields only. The lifetime, apsis,
+                # targeting, script and mission-plan reports below all assume a closed orbit.
+                self.send_json(_escape_payload(sol, run_duration_s, initial_state_kind, model_type, method_type,
+                                               num_points, t_solve_sec,
+                                               _get_str_param(params, 'preset', 'Custom trajectory')))
+                return
 
             eclipses: dict[str, Any] = cast(dict[str, Any], predictor.predict_solar_eclipses(times_arr, pos_arr, sol.get('sun_direction_eci')))
             gs_passes: dict[str, Any] = cast(dict[str, Any], predictor.predict_ground_station_passes(times_arr, pos_arr))
@@ -1026,6 +1037,7 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
 
             payload: dict[str, Any] = {
                 "status": "ok",
+                "closed_orbit": True,
                 "duration_s": float(run_duration_s),
                 "total_points": len(times_arr),
                 "times": times_arr.tolist(),
@@ -1114,6 +1126,55 @@ class LocalAppServer(ThreadingHTTPServer):
         if sys.platform == "win32" and hasattr(socket, "SO_EXCLUSIVEADDRUSE"):
             self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
         super().server_bind()
+
+
+def _escape_payload(sol: dict[str, Any], duration_s: float, initial_state: str, model: str, method: str,
+                    num_points: int, solve_time_s: float, preset: str) -> dict[str, Any]:
+    """/api/propagate response for an escape (e >= 1) trajectory: the propagated arc and its own fields."""
+    def arr(key: str) -> list[Any]:
+        return cast(np.ndarray, sol[key]).tolist()
+    times = cast(np.ndarray, sol['times'])
+    pos = cast(np.ndarray, sol['position_m'])
+    vel = cast(np.ndarray, sol['velocity_ms'])
+    kep0 = mission_targeting.keplerian_from_state(pos[0], vel[0], MU_EARTH)
+    r_earth_km = R_EARTH / 1000.0
+    sun = sol.get('sun_direction_eci')
+    return {
+        "status": "ok",
+        "closed_orbit": False,
+        "duration_s": float(duration_s),
+        "total_points": len(times),
+        "times": times.tolist(), "times_sec": times.tolist(), "time_hours": (times / 3600.0).tolist(),
+        "position_m": pos.tolist(), "positions_m": pos.tolist(),
+        "velocity_ms": vel.tolist(), "velocities_ms": vel.tolist(),
+        "altitude_km": arr('altitude_km'), "velocity_kms": arr('velocity_kms'),
+        "semi_major_axis_km": arr('semi_major_axis_km'), "eccentricity": arr('eccentricity'),
+        "inclination_deg": arr('inclination_deg'), "raan_deg": arr('raan_deg'),
+        "arg_perigee_deg": arr('arg_perigee_deg'), "true_anomaly_deg": arr('true_anomaly_deg'),
+        "latitude_deg": arr('latitude_deg'), "longitude_deg": arr('longitude_deg'),
+        "position_itrf_m": arr('position_itrf_m'), "velocity_itrf_ms": arr('velocity_itrf_ms'),
+        "energy_error": arr('energy_fractional_error'),
+        "epoch_utc": sol['epoch_utc'], "utc_iso": sol['utc_iso'], "frame": sol['frame'],
+        "eop_in_range": sol['eop_in_range'], "epoch": sol['epoch'], "events": sol['events'],
+        "sun_direction_eci": None if sun is None else np.asarray(sun).tolist(),
+        "orbital_period_hours": None,
+        "active_orbit_config": {
+            "preset_name": preset,
+            "semi_major_axis_km": round(float(kep0['a']) / 1000.0, 3),
+            "eccentricity": round(float(kep0['e']), 6),
+            "inclination_deg": round(float(np.degrees(kep0['inc'])), 3),
+            "raan_deg": round(float(np.degrees(kep0['raan'])), 3),
+            "arg_perigee_deg": round(float(np.degrees(kep0['argp'])), 3),
+            "true_anomaly_deg": round(float(np.degrees(kep0['ta'])), 3),
+            "perigee_alt_km": round(float(kep0['rp']) / 1000.0 - r_earth_km, 2),
+            "apogee_alt_km": None, "orbital_period_hours": None, "num_orbits": None,
+            "duration_s": float(duration_s), "initial_state": initial_state,
+            "model": model, "integrator": method, "num_points": num_points,
+            "solve_time_sec": round(float(solve_time_s), 3),
+        },
+        "notes": ["Escape trajectory (e >= 1): closed-orbit reports (lifetime, apsis targeting, "
+                  "mission script, TLE/OPM export) are not produced."],
+    }
 
 
 def _analysis_access(body: dict[str, Any]) -> dict[str, Any]:

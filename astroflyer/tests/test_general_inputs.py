@@ -101,7 +101,7 @@ class TestGeneralMissionInputs(unittest.TestCase):
         energy = 0.5 * np.sum(v * v, axis=1) - MU_EARTH / np.linalg.norm(r, axis=1)
         self.assertGreater(energy[0], 0.0)
         np.testing.assert_allclose(energy, energy[0], rtol=1e-8)          # two-body: energy is conserved
-        self.assertGreater(np.linalg.norm(r[-1]), 300000e3)                # well on its way out
+        self.assertGreater(np.linalg.norm(r[-1]), 150000e3)                # v_inf ~5.5 km/s: ~200,000 km out after 10 h
         cfg = out["active_orbit_config"]
         self.assertFalse(out["closed_orbit"])
         self.assertGreater(cfg["eccentricity"], 1.0)
