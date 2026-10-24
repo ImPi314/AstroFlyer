@@ -47,7 +47,7 @@ def resolve_app_path(*subpaths: str) -> str:
 
 from backend.astro_engine import (
     ThirdReviewEngine, keplerian_to_cartesian, cartesian_to_keplerian, compute_acceleration_components,
-    MU_EARTH, R_EARTH
+    MU_EARTH, R_EARTH, R_EARTH_EQ
 )
 from backend.event_predictor import EventPredictor
 from backend.benchmark_comparison import HEOBenchmarkSuite
@@ -470,11 +470,18 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
             sma = _get_float_param(params, 'sma', 26560.0)
             ecc = _get_float_param(params, 'ecc', 0.72)
             inc = _get_float_param(params, 'inc', 63.4)
+            eta = _get_float_param(params, 'eta', 0.02)
+            # A closed orbit clear of the Earth, at most ~1e6 km, so the run has a finite period
+            if not (0.0 <= ecc < 1.0 and sma * (1.0 - ecc) > R_EARTH_EQ / 1000.0 and sma <= 1.0e6
+                    and 1e-4 <= eta <= 1.0):
+                self.send_json({"error": "Need 0 <= ecc < 1, perigee above the Earth's surface, "
+                                         "sma <= 1e6 km and 1e-4 <= eta <= 1"}, 400)
+                return
             r0, v0 = keplerian_to_cartesian(sma * 1000.0, ecc, float(np.radians(inc)), 0.0, float(np.radians(270.0)), 0.0)
             period_s = float(2.0 * np.pi * np.sqrt((sma * 1000.0) ** 3 / MU_EARTH))
             steered = ThirdReviewEngine(np.concatenate([r0, v0])).propagate(
                 (0.0, period_s), num_points=50, model='j2', method='RKF78', rtol=1e-10, atol=1e-10,
-                steering='covariance', steering_eta=_get_float_param(params, 'eta', 0.02))
+                steering='covariance', steering_eta=eta)
             self.send_json(_steering_summary(steered['steps']))
 
 

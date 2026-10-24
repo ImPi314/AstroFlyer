@@ -179,6 +179,8 @@ class CovarianceSteering:
     def __init__(self, P0=None, eta=0.02, sigma_pos_m=10.0, sigma_vel_ms=0.01):
         self.P0 = np.diag([sigma_pos_m**2] * 3 + [sigma_vel_ms**2] * 3) if P0 is None else np.asarray(P0, float)
         self.eta = float(eta)
+        if not self.eta > 0.0:          # also rejects NaN; eta <= 0 would cap every step at zero
+            raise ValueError(f"steering_eta must be positive, got {eta!r}")
         self._gradient = CovarianceEngine().compute_gravity_gradient
         self._limited = False
         self.t, self.h, self.sigma, self.limited = [], [], [], []

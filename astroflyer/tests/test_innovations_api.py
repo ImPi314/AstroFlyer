@@ -8,6 +8,7 @@ reports must match what the engine itself returns for the same run.
 import json
 import threading
 import unittest
+import urllib.error
 import urllib.request
 
 import numpy as np
@@ -53,6 +54,15 @@ class TestInnovationsAPI(unittest.TestCase):
         self.assertEqual(steering["accepted_steps"], len(own["steps"]["t_s"]) - 1)
         self.assertEqual(steering["limited_steps"], sum(own["steps"]["limited"]))
         self.assertEqual(len(suite_a["ecr_mf"]["switches"]), len(own["ecr_mf"]["switches"]))
+
+    def test_steered_endpoint_rejects_parameters_that_cannot_finish(self):
+        """eta <= 0 would cap every step at zero (a request that never returns); orbits that
+        hit the Earth or are not closed have no period to propagate over."""
+        for query in ("eta=0", "eta=-1", "eta=nan", "ecc=1.2", "sma=3000", "sma=26560&ecc=0.9"):
+            with self.subTest(query=query):
+                with self.assertRaises(urllib.error.HTTPError) as ctx:
+                    urllib.request.urlopen(f"{self.base}/api/covariance/steered?{query}", timeout=30)
+                self.assertEqual(ctx.exception.code, 400)
 
     def test_plain_runs_claim_no_steering(self):
         plain = self.post({k: v for k, v in BODY.items() if k not in ("steering", "fidelity")})

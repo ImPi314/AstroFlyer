@@ -216,6 +216,8 @@ def integrate(fun, t_span, y0, method="RKF78", t_eval=None, events=None,
         h = direction * min(abs(h), abs(tf - t), max_step)
         if steering is not None and not fixed_step:
             h = direction * steering.limit(t, y, abs(h))
+            if not abs(h) >= 1e-12 * max(1.0, abs(t)):
+                raise RuntimeError(f"Steered step size underflow at t = {t}")
         if fixed_step:
             y_new, err, h_next = stepper.attempt(t, y, h)
         else:

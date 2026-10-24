@@ -66,6 +66,12 @@ class TestCovarianceSteering(unittest.TestCase):
         self.assertLess(steered.max(), 1.1 * eta)
         self.assertGreater(n_steered, n_free)
 
+    def test_eta_must_be_positive(self):
+        for eta in (0.0, -0.1, float("nan")):
+            with self.subTest(eta=eta), self.assertRaises(ValueError):
+                ThirdReviewEngine(molniya_state(), epoch=EPOCH).propagate(
+                    (0.0, 600.0), num_points=2, model="j2", method="RKF78", steering="covariance", steering_eta=eta)
+
 
 if __name__ == "__main__":
     unittest.main()
