@@ -65,6 +65,53 @@ class TestOrekitCrossCheck(unittest.TestCase):
         res = self.X.compare_case(self.ctx, "gto", level, 0.25)
         self.assertLess(res["max_pos_err_m"], 0.5, res)
 
+    def test_lighting_ratio_matches_orekit(self):
+        """Penumbra fraction vs Orekit's SolarRadiationPressure (WGS-84 occulting ellipsoid)."""
+        import math
+        import numpy as np
+        from jpype import JImplements, JOverride
+        from org.hipparchus.geometry.euclidean.threed import Vector3D
+        from org.orekit.forces.radiation import SolarRadiationPressure, IsotropicRadiationSingleCoefficient
+        from org.orekit.orbits import CartesianOrbit
+        from org.orekit.propagation import SpacecraftState
+        from org.orekit.time import AbsoluteDate
+        from org.orekit.utils import PVCoordinates
+        from astroflyer.backend import forces
+        from astroflyer.backend.epoch import Epoch
+        epoch = Epoch.from_iso("2026-01-01T00:00:00", scale="TT")
+        date = self.ctx.date(epoch)
+        # Sun 23 deg below the equator (January), fixed for the test
+        d = math.radians(-23.0)
+        r_sun = forces.AU_METERS * np.array([math.cos(d), 0.0, math.sin(d)])
+        gcrf = self.ctx.gcrf
+        sun_vec = Vector3D(*map(float, r_sun))
+
+        @JImplements("org.orekit.utils.ExtendedPositionProvider")
+        class FixedSun:
+            @JOverride
+            def getPosition(self, when, frame):
+                if not isinstance(when, AbsoluteDate):
+                    raise NotImplementedError
+                return gcrf.getStaticTransformTo(frame, when).transformPosition(sun_vec)
+
+        srp = SolarRadiationPressure(FixedSun(), self.ctx.earth, IsotropicRadiationSingleCoefficient(0.02, 1.0))
+        rot = self.ctx.itrf.getStaticTransformTo(gcrf, date).getRotation()
+        pole = rot.applyTo(Vector3D(0.0, 0.0, 1.0))
+        pole = np.array([pole.getX(), pole.getY(), pole.getZ()])
+        worst, n_pen = 0.0, 0
+        for dist in (8.0e6, 2.0e7, 4.6e7):
+            for dz in np.linspace(-9.0e6, 9.0e6, 241):
+                r = -dist * r_sun / np.linalg.norm(r_sun) + np.array([0.0, 0.0, dz])
+                st = SpacecraftState(CartesianOrbit(PVCoordinates(Vector3D(*map(float, r)), Vector3D(0.0, 3000.0, 0.0)),
+                                                    gcrf, date, self.ctx.mu), 1.0)
+                nu_ok = srp.getLightingRatio(st)
+                nu_af = forces.shadow_function(r, r_sun, pole=pole)
+                if 0.0 < nu_ok < 1.0:
+                    n_pen += 1
+                worst = max(worst, abs(nu_ok - nu_af))
+        self.assertGreater(n_pen, 20)
+        self.assertLess(worst, 1e-8, worst)
+
 
 if __name__ == "__main__":
     unittest.main()

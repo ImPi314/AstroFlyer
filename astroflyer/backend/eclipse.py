@@ -25,14 +25,19 @@ _GUARD_S = 1e-6
 _MAX_SEGMENTS = 100000
 
 
-def shadow_boundary_events(epoch_tt_j2000_s, ephemeris=None):
-    """Penumbra and umbra boundary functions g(t, y), with t in seconds after the epoch."""
+def shadow_boundary_events(epoch_tt_j2000_s, ephemeris=None, rotation_at=None):
+    """
+    Penumbra and umbra boundary functions g(t, y), with t in seconds after the epoch.
+    rotation_at(t) is the GCRF -> ITRF matrix, which gives the spin axis of the
+    occulting ellipsoid (the GCRF z axis when omitted), as in the force model.
+    """
     eph = ephemeris or get_ephemeris()
 
     def make(index):
         def boundary(t, y):
             r_sun = eph.sun_gcrf(epoch_tt_j2000_s + t)
-            return forces.shadow_boundaries(np.asarray(y[:3]), r_sun)[index]
+            pole = rotation_at(t)[2, :] if rotation_at is not None else forces._Z_AXIS
+            return forces.shadow_boundaries(np.asarray(y[:3]), r_sun, pole=pole)[index]
         return boundary
 
     return [make(0), make(1)]
