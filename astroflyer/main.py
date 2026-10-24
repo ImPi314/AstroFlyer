@@ -49,6 +49,7 @@ def start_desktop_application(port=8003):
     try:
         import webview
         print("[*] Launching native Windows desktop application window (WebView2 engine)...")
+        webview.settings['ALLOW_DOWNLOADS'] = True   # plots save as PNG through the window's download dialog
         window = webview.create_window(
             title="AstroFlyer HEO - Flight Dynamics & Trajectory Operations Studio",
             url=f"http://127.0.0.1:{port}",

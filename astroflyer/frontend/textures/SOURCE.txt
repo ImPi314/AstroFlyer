@@ -1,0 +1,3 @@
+earth.png: equirectangular Earth map, longitude -180 at the left edge.
+Derived from the project's earlier world_map_dark.png (described in CLAUDE_HANDOFF.md as NASA Blue Marble imagery)
+with its drawn equator and tropic lines removed. Confirm the source before redistribution.
