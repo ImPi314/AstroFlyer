@@ -42,8 +42,6 @@ export function fromPayload(payload) {
     const forces = payload.force_diagnostics ?? {};
     const radiation = payload.radiation_belts ?? {};
     const covariance = payload.covariance_dispersion ?? {};
-    const subsystems = payload.fsw_subsystems ?? {};
-    const lifetime = events.multi_decadal_lifetime ?? {};
 
     return {
         times,
@@ -72,17 +70,10 @@ export function fromPayload(payload) {
             a_srp: forces.a_srp_ms2,
             l_shell: radiation.l_shell_series,
             b_field_ut: radiation.b_field_series_ut,
-            dose_rate: radiation.dose_rate_rad_hr,
-            dose_total: radiation.cumulative_dose_rad,
             radiation_zone: radiation.regimes_series?.map((z) => ZONES[z] ?? z) ?? null,
             sigma_radial_m: covariance.sigma_radial_m,
             sigma_intrack_m: covariance.sigma_intrack_m,
             sigma_crosstrack_m: covariance.sigma_crosstrack_m,
-            solar_power_w: subsystems.solar_power_w,
-            battery_soc_pct: subsystems.battery_soc_pct,
-            temperature_c: subsystems.temperature_c,
-            wheel1_rpm: subsystems.rw1_rpm,
-            wheel2_rpm: subsystems.rw2_rpm,
         },
         theta,
         // The radius the engine measures altitude from, so the drawn Earth matches its altitudes.
@@ -132,7 +123,6 @@ export function fromPayload(payload) {
                 longitude_deg: ev.longitude_deg,
             })),
         radiation: {
-            totalDoseRad: Number(radiation.summary?.total_ionizing_dose_rad ?? NaN),
             crossings: (radiation.crossing_events ?? []).map((ev) => ({
                 belt: ev.belt?.startsWith('INNER') ? 'Inner' : 'Outer',
                 t0: ev.ingress_s,
@@ -147,11 +137,6 @@ export function fromPayload(payload) {
             finalCrosstrackM: Number(covariance.summary?.final_crosstrack_dispersion_m ?? NaN),
             stmDeterminant: Number(covariance.summary?.stm_determinant ?? NaN),
         },
-        lifetime: {
-            years: lifetime.lifetime_assessment?.orbital_lifetime_years ?? null,
-            meetsIadc: lifetime.lifetime_assessment?.iadc_25_year_rule_compliant ?? null,
-            series: lifetime.trajectory_decay_timeseries ?? null,
-        },
         script: payload.script_workbench?.script_content ?? '',
         tle: payload.ccsds_interoperability?.tle_string ?? '',
         opm: payload.ccsds_interoperability?.opm_string ?? '',
@@ -164,6 +149,7 @@ export function fromPayload(payload) {
             solve_s: payload.active_orbit_config.solve_time_sec,
             points: payload.total_points,
             max_energy_error: Math.max(...payload.energy_error.map(Math.abs)),
+            model: payload.active_orbit_config.model ?? null,
             shadow_pct: eclipses.mission_eclipse_fraction_pct ?? null,
             // Reported by engines that take a Cartesian start and duration_s; null from older ones.
             initialState: payload.active_orbit_config.initial_state ?? null,
@@ -176,9 +162,15 @@ export function fromPayload(payload) {
     };
 }
 
-// Analysis tools that only mean something for a closed orbit: lifetime decay and
-// the apogee-raise and finite-burn solvers that start from the run's perigee.
-export const closedOrbitTools = new Set(['lifetime', 'targeting']);
+// The engine reports the relative change in two-body orbital energy since the start. Only a two-body
+// run should keep it constant, so only there is it an integration error; other forces really change it.
+export function energySummary(summary) {
+    return [summary.model === 'two_body' ? 'Largest energy error' : 'Largest energy change', summary.max_energy_error];
+}
+
+// Analysis tools that only mean something for a closed orbit: the apogee-raise and
+// finite-burn solvers that start from the run's perigee.
+export const closedOrbitTools = new Set(['targeting']);
 
 // Inputs in the request that the engine's answer shows it did not use, in plain words.
 // An older engine silently runs its default orbit or length instead.

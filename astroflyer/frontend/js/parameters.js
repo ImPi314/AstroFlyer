@@ -14,7 +14,7 @@ export const PARAMETERS = [
     { group: 'Orbit', key: 'true_anomaly_deg', label: 'True anomaly', unit: 'deg', digits: 2 },
     { group: 'Orbit', key: 'latitude_deg', label: 'Latitude', unit: 'deg', digits: 3 },
     { group: 'Orbit', key: 'longitude_deg', label: 'Longitude', unit: 'deg', digits: 3 },
-    { group: 'Orbit', key: 'energy_error', label: 'Energy error', unit: 'relative', scientific: true },
+    { group: 'Orbit', key: 'energy_error', label: 'Energy change', unit: 'relative', scientific: true },
 
     { group: 'Forces', key: 'a_central', label: 'Central gravity', unit: 'm/s²', scientific: true, log: true },
     { group: 'Forces', key: 'a_j2', label: 'J2', unit: 'm/s²', scientific: true, log: true },
@@ -28,18 +28,10 @@ export const PARAMETERS = [
 
     { group: 'Radiation', key: 'l_shell', label: 'L-shell', unit: 'Earth radii', digits: 3 },
     { group: 'Radiation', key: 'b_field_ut', label: 'Magnetic field', unit: 'µT', digits: 2 },
-    { group: 'Radiation', key: 'dose_rate', label: 'Dose rate', unit: 'rad/h', digits: 3 },
-    { group: 'Radiation', key: 'dose_total', label: 'Total dose', unit: 'rad(Si)', digits: 3 },
 
     { group: 'Covariance', key: 'sigma_radial_m', label: 'Radial 1-sigma', unit: 'm', digits: 1 },
     { group: 'Covariance', key: 'sigma_intrack_m', label: 'In-track 1-sigma', unit: 'm', digits: 1 },
     { group: 'Covariance', key: 'sigma_crosstrack_m', label: 'Cross-track 1-sigma', unit: 'm', digits: 1 },
-
-    { group: 'Subsystems', key: 'solar_power_w', label: 'Solar power', unit: 'W', digits: 0 },
-    { group: 'Subsystems', key: 'battery_soc_pct', label: 'Battery charge', unit: '%', digits: 1 },
-    { group: 'Subsystems', key: 'temperature_c', label: 'Temperature', unit: '°C', digits: 1 },
-    { group: 'Subsystems', key: 'wheel1_rpm', label: 'Reaction wheel 1', unit: 'rpm', digits: 0 },
-    { group: 'Subsystems', key: 'wheel2_rpm', label: 'Reaction wheel 2', unit: 'rpm', digits: 0 },
 ];
 
 export const GROUPS = [...new Set(PARAMETERS.map((p) => p.group))];

@@ -3,8 +3,7 @@
 PyInstaller spec for the AstroFlyer HEO offline desktop app (the only spec; build with build_release.py).
 
 Onedir build -> dist/AstroFlyer_HEO/AstroFlyer.exe with runtime files under _internal/astroflyer/.
-Ships only what the running app needs: frontend, offline data and the icon. The C++ kernel is retired
-(cpp_engine/ sources stay in the repo for reference) and is not bundled.
+Ships only what the running app needs: frontend, offline data and the icon.
 Dev-only libraries (PDF/report generation, plotting) are excluded; see requirements-dev.txt.
 """
 
@@ -17,7 +16,6 @@ pkg = os.path.join(project_root, 'astroflyer')
 datas = [
     (os.path.join(pkg, 'frontend'), os.path.join('astroflyer', 'frontend')),
     (os.path.join(pkg, 'resources'), os.path.join('astroflyer', 'resources')),
-    (os.path.join(pkg, 'data', 'AstroFlyer_HEO_Mission_Plan.MissionPlan'), os.path.join('astroflyer', 'data')),
     (os.path.join(pkg, 'icon.ico'), 'astroflyer'),
 ]
 datas = [d for d in datas if os.path.exists(d[0])]

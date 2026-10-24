@@ -45,31 +45,17 @@ def resolve_app_path(*subpaths: str) -> str:
     return os.path.join(parent_dir, *subpaths)
 
 
-from backend.astro_engine import (
-    ThirdReviewEngine, keplerian_to_cartesian, cartesian_to_keplerian, compute_acceleration_components,
-    MU_EARTH, R_EARTH, R_EARTH_EQ
-)
+from backend.astro_engine import ThirdReviewEngine, keplerian_to_cartesian, MU_EARTH, R_EARTH, R_EARTH_EQ
 from backend.event_predictor import EventPredictor
-from backend.benchmark_comparison import HEOBenchmarkSuite
-from backend.trajectory_engine import (
-    SpacecraftForceModel, NumericalPropagator, MissionScriptWorkbench, ManeuverTargeter,
-    GMATForceModel, GMATPropagator, GMATScriptWorkbench, GMATTargeter
-)
-from backend.fsw_subsystems import (
-    FlightSoftwareSubsystems, FlightAttitudeGuidance, SpacecraftMissionSimulator,
-    BasiliskSubsystems, BasiliskAttitudeGuidance, BasiliskMissionSimulator
-)
-from backend.time_systems import TimeStandardEngine, CoordinateFrameEngine
+from backend.trajectory_engine import MissionScriptWorkbench
 from backend.epoch import Epoch
 from backend import access as access_analysis
 from backend import mission as mission_targeting
 from backend.script_runner import run_script
-from backend.radiation_belts import RadiationBeltModel, RadiationParetoOptimizer
+from backend.radiation_belts import RadiationBeltModel
 from backend.covariance_engine import CovarianceEngine
-from backend.differential_corrector import DifferentialCorrector, FiniteBurnEngine, MultiBurnPerigeePumpingPlanner
-from backend.constellation_engine import MolniyaConstellationEngine
+from backend.differential_corrector import DifferentialCorrector, FiniteBurnEngine
 from backend.ccsds_exporter import CCSDSExporter
-from backend.mission_plan_io import export_to_mission_plan, import_from_mission_plan, validate_mission_plan
 
 
 def app_manifest() -> dict[str, Any]:
@@ -223,14 +209,6 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
         if path == "/api/manifest":
             self.send_json(app_manifest())
 
-        elif path == "/api/benchmark/summary":
-            bench = HEOBenchmarkSuite()
-            report: dict[str, Any] = cast(dict[str, Any], bench.generate_benchmark_report())
-            self.send_json(report)
-
-        # =====================================================================
-        # MISSION SCRIPT & TARGETING REST ENDPOINTS
-        # =====================================================================
         elif path in ("/api/script/generate", "/api/mission/script"):
             sma = _get_float_param(params, 'sma', 24389.0)
             ecc = _get_float_param(params, 'ecc', 0.728525)
@@ -249,57 +227,6 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
                 "script_content": script_text,
                 "script_filename": "AstroFlyer_HEO_Mission.script"
             })
-
-        elif path in ("/api/mission_plan/export", "/api/mission/plan/export"):
-            sma = _get_float_param(params, 'sma', 24389.0)
-            ecc = _get_float_param(params, 'ecc', 0.728525)
-            inc = _get_float_param(params, 'inc', 28.5)
-            raan = _get_float_param(params, 'raan', 45.0)
-            aop = _get_float_param(params, 'aop', 30.0)
-            ta = _get_float_param(params, 'ta', 0.0)
-            dur = _get_float_param(params, 'duration_hours', 24.0)
-            title = _get_str_param(params, 'title', "AstroFlyer HEO Mission Plan (FreeFlyer XML)")
-
-            out_file = resolve_app_path("data", "AstroFlyer_HEO_Mission_Plan.MissionPlan")
-            res_mp = export_to_mission_plan(
-                {'sma_km': sma, 'ecc': ecc, 'inc_deg': inc, 'raan_deg': raan, 'aop_deg': aop, 'ta_deg': ta},
-                output_path=out_file,
-                duration_hours=dur,
-                mission_title=title,
-                validate_xsd=True
-            )
-            try:
-                with open(out_file, "r", encoding="utf-8") as f:
-                    res_mp["xml_content"] = f.read()
-            except Exception:
-                res_mp["xml_content"] = ""
-            res_mp["filename"] = "AstroFlyer_HEO_Mission_Plan.MissionPlan"
-            self.send_json(res_mp)
-
-        elif path in ("/api/mission_plan/validate",):
-            xml_text = _get_str_param(params, 'xml_text', '')
-            if not xml_text:
-                test_file = resolve_app_path("data", "AstroFlyer_HEO_Mission_Plan.MissionPlan")
-                is_valid, errs = validate_mission_plan(test_file) if os.path.exists(test_file) else (False, ["No XML file provided"])
-            else:
-                is_valid, errs = validate_mission_plan(xml_text)
-            self.send_json({
-                "status": "SUCCESS",
-                "is_schema_valid": is_valid,
-                "validation_errors": errs
-            })
-
-        elif path in ("/api/targeting/bplane_analytic",):
-            v_inf = _get_float_param(params, 'v_inf', 1.2)
-            rp = _get_float_param(params, 'rp', 1838.0)
-            sol: dict[str, Any] = cast(dict[str, Any], ManeuverTargeter.solve_bplane(v_inf_kms=v_inf, r_periapsis_km=rp))
-            self.send_json(sol)
-
-        elif path in ("/api/targeting/hohmann",):
-            r1 = _get_float_param(params, 'r1', 6628.0)
-            r2 = _get_float_param(params, 'r2', 42164.0)
-            sol_h: dict[str, Any] = cast(dict[str, Any], ManeuverTargeter.solve_hohmann_transfer(r1_km=r1, r2_km=r2))
-            self.send_json(sol_h)
 
         elif path == "/api/targeting/differential_corrector":
             r0 = _get_float_param(params, 'r0', 6628.0)
@@ -410,19 +337,6 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
                 "filename": "AstroFlyer_HEO.oem"
             })
 
-        elif path == "/api/radiation/belts":
-            f107 = _get_float_param(params, 'f107', 150.0)
-            ap = _get_float_param(params, 'ap', 15.0)
-            sma = _get_float_param(params, 'sma', 24389.0)
-            ecc = _get_float_param(params, 'ecc', 0.728525)
-            inc = _get_float_param(params, 'inc', 28.5)
-            r0, v0 = keplerian_to_cartesian(sma * 1000.0, ecc, float(np.radians(inc)), float(np.radians(45.0)), float(np.radians(30.0)), 0.0)
-            eng = ThirdReviewEngine(np.concatenate([r0, v0]))
-            sol_quick = cast(dict[str, Any], eng.propagate((0.0, 37905.5), num_points=300))
-            rb_model = RadiationBeltModel(f107_flux=f107, ap_index=ap)
-            rb_data = rb_model.evaluate_trajectory_radiation(sol_quick['times'], sol_quick['position_m'])
-            self.send_json(rb_data)
-
         elif path == "/api/covariance/propagate":
             sigma_pos = _get_float_param(params, 'sigma_pos', 10.0)
             sigma_vel = _get_float_param(params, 'sigma_vel', 0.01)
@@ -439,36 +353,6 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
         # =====================================================================
         # INNOVATION 1-5 ADVANCED ASTRODYNAMICS REST ENDPOINTS
         # =====================================================================
-        elif path in ("/api/constellation/molniya", "/api/constellation/propagate"):
-            dur_hr = _get_float_param(params, 'duration_hours', 24.0)
-            sma = _get_float_param(params, 'sma', 26560.0)
-            ecc = _get_float_param(params, 'ecc', 0.72)
-            inc = _get_float_param(params, 'inc', 63.4349)
-            const_eng = MolniyaConstellationEngine(semi_major_axis_km=sma, eccentricity=ecc, inclination_deg=inc)
-            sol_const = const_eng.propagate_constellation(duration_hours=dur_hr)
-            self.send_json(sol_const)
-
-        elif path in ("/api/radiation/pareto", "/api/radiation/trade_study"):
-            hp_base = _get_float_param(params, 'hp', 250.0)
-            ha_target = _get_float_param(params, 'ha', 35786.0)
-            lifetime = _get_float_param(params, 'lifetime_years', 5.0)
-            opt = RadiationParetoOptimizer(mission_lifetime_years=lifetime)
-            pareto_res = opt.evaluate_pareto_frontier(initial_perigee_km=hp_base, apogee_km=ha_target)
-            self.send_json(pareto_res)
-
-        elif path in ("/api/targeting/perigee_pumping", "/api/maneuvers/pumping"):
-            rp_km = _get_float_param(params, 'rp', 6628.0)
-            ra_start = _get_float_param(params, 'ra_start', 35786.0)
-            ra_target = _get_float_param(params, 'ra_target', 384400.0)
-            wet_m = _get_float_param(params, 'mass', 1500.0)
-            n_burns = int(_get_float_param(params, 'num_burns', 5.0))
-            planner = MultiBurnPerigeePumpingPlanner()
-            pump_sol = planner.plan_perigee_pumping(
-                r_perigee_km=rp_km, initial_apogee_km=ra_start, target_apogee_km=ra_target,
-                wet_mass_kg=wet_m, num_burns=n_burns
-            )
-            self.send_json(pump_sol)
-
         elif path in ("/api/covariance/steered", "/api/covariance/step_factor"):
             # One covariance-steered orbit of the given elements (see /api/propagate steering=covariance)
             sma = _get_float_param(params, 'sma', 26560.0)
@@ -491,47 +375,6 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
 
         # =====================================================================
         # FLIGHT SOFTWARE (FSW) REST ENDPOINTS
-        # =====================================================================
-        elif path == "/api/fsw/telemetry":
-            mode = _get_str_param(params, 'mode', 'NADIR_POINTING')
-            dt = _get_float_param(params, 'dt', 10.0)
-            sub = FlightSoftwareSubsystems()
-            r_sample = np.array([24389000.0, 0.0, 0.0], dtype=np.float64)
-            v_sample = np.array([0.0, 1600.0, 0.0], dtype=np.float64)
-            s_sample = np.array([149597870700.0, 0.0, 0.0], dtype=np.float64)
-            telemetry: dict[str, Any] = cast(dict[str, Any], sub.step(dt, r_sample, v_sample, s_sample, 1.0, guidance_mode=mode))
-            self.send_json({
-                "status": "SUCCESS",
-                "framework": "AstroFlyer Flight Software Subsystems",
-                "subsystems": telemetry
-            })
-
-        elif path in ("/api/astroflyer/theme", "/api/freeflyer/theme"):
-            self.send_json({
-                "theme_name": "AstroFlyer HEO Dark Operations Theme",
-                "colors": {
-                    "bg_canvas": "#1e1e1e",
-                    "bg_sidebar": "#161616",
-                    "bg_header": "#252526",
-                    "card_bg": "#262626",
-                    "card_border": "#3f3f46",
-                    "accent_primary": "#00e5ff",
-                    "accent_cyan": "#00e5ff",
-                    "regime_perigee": "#4ade80",
-                    "regime_apogee": "#f87171",
-                    "regime_umbra": "#a855f7",
-                    "regime_penumbra": "#fbbf24"
-                },
-                "layout": {
-                    "sidebar_width_px": 48,
-                    "header_height_px": 40,
-                    "footer_height_px": 32,
-                    "drawer_width_px": 320
-                }
-            })
-
-        # =====================================================================
-        # MISSION EVENTS ENDPOINTS
         # =====================================================================
         elif path == "/api/events/eclipses":
             a_km = _get_float_param(params, 'a', 24389.0)
@@ -566,184 +409,6 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
                 for name, d in gs_passes.items()
             }
             self.send_json(summary)
-
-        elif path == "/api/maneuver/what_if":
-            hp_km = _get_float_param(params, 'hp', 250.0)
-            ha_km = _get_float_param(params, 'ha', 35786.0)
-            r_earth_km = R_EARTH / 1000.0
-            rp = r_earth_km + hp_km
-            ra = r_earth_km + ha_km
-            a_km = (rp + ra) / 2.0
-            e = (ra - rp) / (ra + rp)
-
-            inc_deg = _get_float_param(params, 'inc', 28.5)
-            raan_deg = _get_float_param(params, 'raan', 45.0)
-            aop_deg = _get_float_param(params, 'aop', 30.0)
-
-            loc = _get_str_param(params, 'burn_location', 'perigee')
-            loc_val = _get_float_param(params, 'burn_location_value', 0.0)
-            dv_prograde = _get_float_param(params, 'dv_prograde', 0.0)
-            dv_normal = _get_float_param(params, 'dv_normal', 0.0)
-            dv_radial = _get_float_param(params, 'dv_radial', 0.0)
-            mass_kg = _get_float_param(params, 'mass', 1500.0)
-            isp_s = _get_float_param(params, 'isp', 315.0)
-
-            if loc == 'perigee':
-                nu_burn = 0.0
-            elif loc == 'apogee':
-                nu_burn = 180.0
-            elif loc == 'true_anomaly':
-                nu_burn = loc_val
-            elif loc == 'node':
-                nu_burn = (360.0 - aop_deg) % 360.0
-            else:
-                nu_burn = 0.0
-
-            a_m = a_km * 1000.0
-            r_burn, v_burn = keplerian_to_cartesian(
-                a_m, e,
-                math.radians(inc_deg),
-                math.radians(raan_deg),
-                math.radians(aop_deg),
-                math.radians(nu_burn)
-            )
-
-            v_mag = float(np.linalg.norm(v_burn))
-            r_mag = float(np.linalg.norm(r_burn))
-            v_hat = v_burn / max(1e-6, v_mag)
-
-            h_vec = np.cross(r_burn, v_burn)
-            h_mag = float(np.linalg.norm(h_vec))
-            n_hat = h_vec / max(1e-6, h_mag)
-            r_hat = np.cross(v_hat, n_hat)
-
-            dv_total_ms = math.sqrt(dv_prograde**2 + dv_normal**2 + dv_radial**2)
-            dv_inertial = dv_prograde * v_hat + dv_normal * n_hat + dv_radial * r_hat
-
-            v_post = v_burn + dv_inertial
-            post_elem = cartesian_to_keplerian(r_burn, v_post, mu=MU_EARTH)
-            a_post_km = post_elem['a'] / 1000.0
-            e_post = post_elem['e']
-            inc_post_deg = math.degrees(post_elem['inc'])
-            raan_post_deg = math.degrees(post_elem['Omega'])
-            aop_post_deg = math.degrees(post_elem['omega'])
-
-            rp_post_km = a_post_km * (1.0 - e_post) if e_post < 1.0 else (r_mag / 1000.0)
-            hp_post_km = rp_post_km - r_earth_km
-            if e_post < 1.0:
-                ra_post_km = a_post_km * (1.0 + e_post)
-                ha_post_km = ra_post_km - r_earth_km
-                period_post_s = 2.0 * math.pi * math.sqrt((a_post_km * 1000.0)**3 / MU_EARTH)
-                period_post_hr = period_post_s / 3600.0
-            else:
-                ha_post_km = float('inf')
-                period_post_hr = float('inf')
-
-            period_init_hr = (2.0 * math.pi * math.sqrt((a_km * 1000.0)**3 / MU_EARTH)) / 3600.0
-
-            g0 = 9.80665
-            if dv_total_ms > 0:
-                mass_ratio = math.exp(dv_total_ms / (isp_s * g0))
-                propellant_burnt_kg = mass_kg * (1.0 - 1.0 / mass_ratio)
-            else:
-                propellant_burnt_kg = 0.0
-            final_mass_kg = mass_kg - propellant_burnt_kg
-
-            method_type = _get_str_param(params, 'method', 'Radau')
-            tol_val = _get_float_param(params, 'tolerance', 1e-10)
-            engine_post = ThirdReviewEngine(np.hstack([r_burn, v_post]))
-            t_span_post = (0.0, min(86400.0 * 2.0, max(7200.0, (period_post_hr if period_post_hr != float('inf') else 12.0) * 3600.0 * 2.0)))
-            sol_post = engine_post.propagate(t_span_post, num_points=600, method=method_type, rtol=tol_val, atol=tol_val)
-
-            lat_post, lon_post, alt_post = [], [], []
-            omega_e = 7.2921159e-5
-            for i in range(len(sol_post['times'])):
-                t_i = sol_post['times'][i]
-                r_i = sol_post['position_m'][i]
-                theta = omega_e * t_i
-                x_ecef = math.cos(theta) * r_i[0] + math.sin(theta) * r_i[1]
-                y_ecef = -math.sin(theta) * r_i[0] + math.cos(theta) * r_i[1]
-                z_ecef = r_i[2]
-                r_norm = math.sqrt(x_ecef**2 + y_ecef**2 + z_ecef**2)
-                lat = math.degrees(math.asin(z_ecef / max(1.0, r_norm)))
-                lon = math.degrees(math.atan2(y_ecef, x_ecef))
-                lat_post.append(lat)
-                lon_post.append(lon)
-                alt_post.append((r_norm - R_EARTH) / 1000.0)
-
-            response = {
-                "status": "ok",
-                "maneuver_summary": {
-                    "burn_location": loc,
-                    "burn_true_anomaly_deg": round(nu_burn, 2),
-                    "burn_radius_km": round(r_mag / 1000.0, 2),
-                    "burn_velocity_pre_kms": round(v_mag / 1000.0, 3),
-                    "delta_v_total_ms": round(dv_total_ms, 2),
-                    "delta_v_components_ms": {
-                        "prograde_in_track": round(dv_prograde, 2),
-                        "normal_out_of_plane": round(dv_normal, 2),
-                        "radial_altitude": round(dv_radial, 2)
-                    },
-                    "propellant_consumed_kg": round(propellant_burnt_kg, 2),
-                    "initial_mass_kg": round(mass_kg, 2),
-                    "final_mass_kg": round(final_mass_kg, 2),
-                    "propulsion_isp_s": isp_s
-                },
-                "orbit_delta": {
-                    "baseline": {
-                        "perigee_altitude_km": round(hp_km, 2),
-                        "apogee_altitude_km": round(ha_km, 2),
-                        "semi_major_axis_km": round(a_km, 2),
-                        "eccentricity": round(e, 5),
-                        "inclination_deg": round(inc_deg, 2),
-                        "period_hours": round(period_init_hr, 2)
-                    },
-                    "post_burn": {
-                        "perigee_altitude_km": round(hp_post_km, 2),
-                        "apogee_altitude_km": round(ha_post_km, 2) if ha_post_km != float('inf') else "ESCAPE",
-                        "semi_major_axis_km": round(a_post_km, 2),
-                        "eccentricity": round(e_post, 5),
-                        "inclination_deg": round(inc_post_deg, 2),
-                        "period_hours": round(period_post_hr, 2) if period_post_hr != float('inf') else "HYPERBOLIC"
-                    },
-                    "net_change": {
-                        "delta_hp_km": round(hp_post_km - hp_km, 2),
-                        "delta_ha_km": round(ha_post_km - ha_km, 2) if ha_post_km != float('inf') else "N/A",
-                        "delta_inc_deg": round(inc_post_deg - inc_deg, 2),
-                        "delta_period_hours": round(period_post_hr - period_init_hr, 2) if period_post_hr != float('inf') else "N/A"
-                    }
-                },
-                "post_burn_trajectory": {
-                    "times": sol_post['times'].tolist(),
-                    "position_km": (sol_post['position_m'] / 1000.0).tolist(),
-                    "velocity_kms": (sol_post['velocity_ms'] / 1000.0).tolist(),
-                    "ground_track": {
-                        "latitudes": lat_post,
-                        "longitudes": lon_post,
-                        "altitudes": alt_post
-                    }
-                }
-            }
-            self.send_json(response)
-
-        elif path == "/api/targeting/maneuver":
-            a_km = _get_float_param(params, 'a', 24389.0)
-            e = _get_float_param(params, 'e', 0.728525)
-            inc_deg = _get_float_param(params, 'inc', 28.5)
-            maneuver: dict[str, Any] = cast(dict[str, Any], predictor.calculate_apogee_boost_deltav(
-                a_initial_km=a_km, e_initial=e, inc_initial_deg=inc_deg
-            ))
-            self.send_json(maneuver)
-
-        elif path == "/api/targeting/bplane":
-            bplane: dict[str, Any] = cast(dict[str, Any], predictor.calculate_b_plane_targeting())
-            self.send_json(bplane)
-
-        elif path == "/api/lifetime/predict":
-            a_km = _get_float_param(params, 'a', 24389.0)
-            e = _get_float_param(params, 'e', 0.728525)
-            lifetime: dict[str, Any] = cast(dict[str, Any], predictor.predict_orbital_lifetime(a_initial_km=a_km, e_initial=e))
-            self.send_json(lifetime)
 
         elif path in ("/api/telemetry", "/api/propagate", "/api/script/propagate"):
             if path == "/api/script/propagate":
@@ -907,16 +572,6 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
 
             eclipses: dict[str, Any] = cast(dict[str, Any], predictor.predict_solar_eclipses(times_arr, pos_arr, sol.get('sun_direction_eci')))
             gs_passes: dict[str, Any] = cast(dict[str, Any], predictor.predict_ground_station_passes(times_arr, pos_arr))
-            delta_v_data: dict[str, Any] = cast(dict[str, Any], predictor.calculate_apogee_boost_deltav(a_km, e, inc_initial_deg=inc_deg))
-            bplane_data: dict[str, Any] = cast(dict[str, Any], predictor.calculate_b_plane_targeting())
-            lifetime_data: dict[str, Any] = cast(dict[str, Any], predictor.predict_orbital_lifetime(a_initial_km=a_km, e_initial=e))
-
-            # Simulate Flight Software Subsystems along the custom arc
-            sim = SpacecraftMissionSimulator()
-            flux_val: np.ndarray = cast(np.ndarray, eclipses.get('flux_fraction', np.ones(len(times_arr), dtype=np.float64)))
-            bsk_sim: dict[str, Any] = cast(dict[str, Any], sim.simulate_telemetry_arc(
-                times_arr, pos_arr, vel_arr, flux_val
-            ))
 
             alt_km_arr = cast(np.ndarray, sol['altitude_km'])
             vel_kms_arr = cast(np.ndarray, sol['velocity_kms'])
@@ -949,24 +604,7 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
                 num_orbits=int(num_orbits)
             ))
 
-            fsw_telemetry_payload = {
-                "solar_power_w": cast(np.ndarray, bsk_sim['solar_power_w']).tolist(),
-                "battery_soc_pct": cast(np.ndarray, bsk_sim['battery_soc_pct']).tolist(),
-                "temperature_c": cast(np.ndarray, bsk_sim['temperature_c']).tolist(),
-                "rw1_rpm": cast(np.ndarray, bsk_sim['rw1_rpm']).tolist(),
-                "rw2_rpm": cast(np.ndarray, bsk_sim['rw2_rpm']).tolist(),
-                "mrp_norm": cast(np.ndarray, bsk_sim['mrp_magnitude']).tolist(),
-                "min_soc_pct": bsk_sim['min_soc_pct'],
-                "min_temp_c": bsk_sim['min_temp_c'],
-                "max_temp_c": bsk_sim['max_temp_c'],
-                "max_power_w": bsk_sim['max_power_w']
-            }
-
-            script_workbench_payload = {
-                "script_content": mission_script_str,
-                "bplane_solution": ManeuverTargeter.solve_bplane(),
-                "hohmann_solution": ManeuverTargeter.solve_hohmann_transfer(6628.0, 42164.0)
-            }
+            script_workbench_payload = {"script_content": mission_script_str}
 
             active_orbit_config = {
                 "preset_name": _get_str_param(params, 'preset', 'Custom HEO'),
@@ -1007,13 +645,8 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
             else:
                 cov_data = cov_engine.propagate_stm_and_covariance(times_arr, pos_arr, vel_arr)
 
-            time_engine = TimeStandardEngine(epoch=initial_epoch)
-            time_scales_data = time_engine.epoch_seconds_to_all_scales(float(times_arr[-1]))
-
             exact_apsides = predictor.predict_apsidal_events(times_arr, pos_arr, vel_arr)
             exact_nodes = predictor.predict_orbital_nodes(times_arr, pos_arr, vel_arr)
-            lunar_eclipses = predictor.predict_lunar_eclipses(times_arr, pos_arr)
-            reentry_hazard = predictor.predict_reentry_hazard(alt_km_arr)
 
             tle_str = CCSDSExporter.generate_tle(
                 sma_km=a_km, ecc=e, inc_deg=inc_deg, raan_deg=raan_deg, aop_deg=aop_deg, ta_deg=ta_deg
@@ -1021,29 +654,6 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
             opm_str = CCSDSExporter.generate_ccsds_opm(
                 sma_km=a_km, ecc=e, inc_deg=inc_deg, raan_deg=raan_deg, aop_deg=aop_deg, ta_deg=ta_deg
             )
-
-            diff_corr = DifferentialCorrector()
-            shooting_sol = diff_corr.solve_apogee_raise(r0_km=a_km * (1.0 - e), target_ra_km=42164.0)
-
-            finite_engine = FiniteBurnEngine(thrust_newtons=450.0, isp_sec=315.0)
-            target_dv_burn = delta_v_data.get("burn_metrics", {}).get("combined_optimal_dv_ms", 1478.0)
-            finite_burn_sol = finite_engine.execute_finite_burn(target_deltav_ms=target_dv_burn, initial_mass_kg=spacecraft_mass)
-
-            # Advanced Innovations Calculations
-            rad_opt = RadiationParetoOptimizer()
-            pareto_data = rad_opt.evaluate_pareto_frontier(initial_perigee_km=max(150.0, a_km * (1.0 - e) - r_earth_km), apogee_km=max(1000.0, a_km * (1.0 + e) - r_earth_km))
-
-            pumping_planner = MultiBurnPerigeePumpingPlanner(thrust_newtons=450.0, isp_sec=315.0)
-            pumping_data = pumping_planner.plan_perigee_pumping(
-                r_perigee_km=a_km * (1.0 - e),
-                initial_apogee_km=a_km * (1.0 + e),
-                target_apogee_km=384400.0,
-                wet_mass_kg=spacecraft_mass,
-                num_burns=5
-            )
-
-            constellation_engine = MolniyaConstellationEngine(semi_major_axis_km=a_km, eccentricity=e, inclination_deg=inc_deg)
-            constellation_data = constellation_engine.propagate_constellation(duration_hours=min(24.0, num_orbits * (period / 3600.0)))
 
             payload: dict[str, Any] = {
                 "status": "ok",
@@ -1078,43 +688,24 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
                 "energy_error": cast(np.ndarray, sol['energy_fractional_error']).tolist(),
                 "orbital_period_hours": float(sol.get('orbital_period_hours', period / 3600.0)),
                 "active_orbit_config": active_orbit_config,
-                "benchmark_certificates": {
-                    "runtime_seconds": round(float(t_solve_sec), 3),
-                    "energy_conservation_max_dE_E0": f"{float(np.max(np.abs(sol['energy_fractional_error']))):.2e}"
-                },
                 "events_suite": {
                     "solar_eclipses": eclipses,
-                    "lunar_eclipses": lunar_eclipses,
                     "ground_stations": gs_summary,
                     "exact_apsidal_events": exact_apsides,
-                    "exact_nodal_events": exact_nodes,
-                    "reentry_hazard_assessment": reentry_hazard,
-                    "apogee_boost_maneuver": delta_v_data,
-                    "b_plane_targeting": bplane_data,
-                    "multi_decadal_lifetime": lifetime_data
+                    "exact_nodal_events": exact_nodes
                 },
                 "radiation_belts": rb_data,
                 "covariance_dispersion": cov_data,
-                "time_standards": time_scales_data,
                 "force_diagnostics": sol.get("force_diagnostics", {}),
                 "ccsds_interoperability": {
                     "tle_string": tle_str,
                     "opm_string": opm_str
                 },
-                "numerical_targeting": {
-                    "shooting_method_apogee_raise": shooting_sol,
-                    "finite_burn_execution": finite_burn_sol
-                },
                 "innovations_suite": {
                     "ecr_mf": sol.get('ecr_mf'),
-                    "radiation_pareto": pareto_data,
-                    "multi_burn_perigee_pumping": pumping_data,
-                    "molniya_constellation_handover": constellation_data,
                     "covariance_steered_stepping": _steering_summary(sol.get('steps'))
                 },
-                "fsw_subsystems": fsw_telemetry_payload,
                 "script_workbench": script_workbench_payload,
-                "benchmark_summary": HEOBenchmarkSuite().generate_benchmark_report(),
             }
             # Unit Sun vector in the frame of position_m; absent outside the bundled DE440 years
             if sol.get('sun_direction_eci') is not None:

@@ -28,3 +28,15 @@ test('a parameter without a unit shows its name or nothing', () => {
     assert.equal(axisLabel(ecc, 100, width), 'Eccentricity');
     assert.equal(axisLabel(ecc, 60, width), '');
 });
+
+test('the energy plot is named for what it shows: change in orbital energy', () => {
+    assert.equal(parameter('energy_error').label, 'Energy change');
+});
+
+test('plots offer only what the engine computes: no simulated flight software or invented doses', async () => {
+    const { PARAMETERS } = await import('../../frontend/js/parameters.js');
+    const keys = PARAMETERS.map((p) => p.key);
+    for (const gone of ['solar_power_w', 'battery_soc_pct', 'temperature_c', 'wheel1_rpm', 'wheel2_rpm', 'dose_rate', 'dose_total']) {
+        assert.ok(!keys.includes(gone), gone);
+    }
+});

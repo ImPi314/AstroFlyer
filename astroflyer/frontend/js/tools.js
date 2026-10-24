@@ -16,7 +16,6 @@ const TOOLS = {
         ['events', 'Events'],
         ['access', 'Access'],
         ['targeting', 'Targeting'],
-        ['lifetime', 'Lifetime'],
         ['radiation', 'Radiation'],
         ['covariance', 'Covariance'],
     ],
@@ -25,7 +24,7 @@ const TOOLS = {
         ['export', 'Export'],
     ],
 };
-const PAGES = { events, access, targeting, lifetime, radiation, covariance, script, export: exportPage };
+const PAGES = { events, access, targeting, radiation, covariance, script, export: exportPage };
 
 let root;
 let page;
@@ -35,7 +34,6 @@ let targetingState = { apogee: null, burn: null, busy: false, inputs: {} };   //
 let scriptDraft = null;   // the user's edits; null means "show the last run's script"
 let scriptRun = { busy: false, run: null, failure: null };   // last full script run, see scriptrun.js
 let accessState = { busy: false, access: null, failure: null, forResult: null };   // see access.js
-let lifetimeChart = null;
 
 export function mountTools(element) {
     root = element;
@@ -79,18 +77,15 @@ function render() {
     const current = openTool[workspace];
     root.querySelector('.tool-tabs').innerHTML = TOOLS[workspace].map(([id, label]) =>
         `<button type="button" role="tab" data-tool="${id}" aria-selected="${id === current}" class="tool-tab">${label}</button>`).join('');
-    lifetimeChart?.destroy();
-    lifetimeChart = null;
     const result = store.get('result');
     const needsRun = current !== 'script';
     if (needsRun && !result) {
         page.innerHTML = '<div class="empty"><p class="empty-title">No run yet</p><p>Press Run or F5. This tool works from the last run.</p></div>';
     } else if (result && !result.summary.closedOrbit && closedOrbitTools.has(current)) {
-        page.innerHTML = '<div class="empty"><p class="empty-title">Closed orbits only</p><p>The last run is an escape trajectory, so it has no orbital lifetime or apogee to target.</p></div>';
+        page.innerHTML = '<div class="empty"><p class="empty-title">Closed orbits only</p><p>The last run is an escape trajectory, so it has no apogee to target.</p></div>';
     } else {
         page.innerHTML = PAGES[current](result);
     }
-    if (current === 'lifetime' && result?.summary.closedOrbit) drawLifetime(result);
 }
 
 function seek(t) {
@@ -309,59 +304,19 @@ async function submitTargeting(form) {
     }
 }
 
-// ---------- Lifetime ----------
-
-function lifetime(result) {
-    const { years, meetsIadc, series } = result.lifetime;
-    return `
-        <header class="tool-head">
-            <div>
-                <h2 class="tool-title">Lifetime</h2>
-                <p class="tool-lead">The engine's long-term decay estimate from the initial orbit.</p>
-            </div>
-        </header>
-        ${facts([
-            ['Estimated lifetime', years == null ? '–' : `${escapeHtml(years)} years`],
-            ['Meets the 25-year disposal guideline', meetsIadc == null ? '–' : meetsIadc ? 'Yes' : 'No'],
-        ])}
-        ${series ? `
-            <ul class="legend chart-legend">
-                <li><i class="key key-line key-apogee-line"></i>Apogee altitude</li>
-                <li><i class="key key-line key-perigee-line"></i>Perigee altitude</li>
-            </ul>
-            <div class="tool-chart" id="lifetime-chart"></div>` : '<p class="tool-lead">The engine did not report a decay history for this run.</p>'}`;
-}
-
-function drawLifetime(result) {
-    const series = result.lifetime.series;
-    const host = page.querySelector('#lifetime-chart');
-    if (!series || !host) return;
-    const axis = { stroke: token('--muted'), grid: { stroke: token('--line') }, ticks: { stroke: token('--line') }, font: `12px ${token('--font')}`, labelFont: `12px ${token('--font')}` };
-    lifetimeChart = new window.uPlot({
-        width: host.clientWidth || 600,
-        height: 280,
-        legend: { show: false },
-        cursor: { show: false },
-        scales: { x: { time: false } },
-        axes: [{ ...axis, label: 'Years', size: 44 }, { ...axis, label: 'Altitude (km)', size: 72, values: (u, splits) => splits.map((v) => num(v)) }],
-        series: [{}, { stroke: token('--track-high'), width: 1.5 }, { stroke: token('--track-low'), width: 1.5 }],
-    }, [series.years, series.apogee_altitude_km, series.perigee_altitude_km], host);
-}
-
 // ---------- Radiation and covariance ----------
 
 function radiation(result) {
-    const { totalDoseRad, crossings } = result.radiation;
+    const { crossings } = result.radiation;
     const time = (belt) => crossings.filter((c) => c.belt === belt).reduce((sum, c) => sum + (c.t1 - c.t0), 0) / 60;
     return `
         <header class="tool-head">
             <div>
                 <h2 class="tool-title">Radiation</h2>
-                <p class="tool-lead">Belt crossings in this run. Dose and L-shell over time are in Plot, under Radiation.</p>
+                <p class="tool-lead">Time spent in the Van Allen belts in this run, from a tilted-dipole L-shell. No dose is estimated: that needs a trapped-particle model this app does not have. L-shell and field strength over time are in Plot, under Radiation.</p>
             </div>
         </header>
         ${facts([
-            ['Total dose', `${num(totalDoseRad, 2)} rad(Si)`],
             ['Inner belt crossings', `${num(crossings.filter((c) => c.belt === 'Inner').length)}, ${num(time('Inner'), 1)} min`],
             ['Outer belt crossings', `${num(crossings.filter((c) => c.belt === 'Outer').length)}, ${num(time('Outer'), 1)} min`],
         ])}

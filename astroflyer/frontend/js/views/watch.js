@@ -3,7 +3,7 @@
 // One instance per pane; ctx gives this pane's settings and tracks subscriptions.
 
 import * as store from '../store.js';
-import { sampleIndex, clockText } from '../results.js';
+import { sampleIndex, clockText, energySummary } from '../results.js';
 import { PARAMETERS, formatValue } from '../parameters.js';
 import { num, sci } from '../format.js';
 
@@ -58,7 +58,7 @@ export function createWatch(ctx) {
             ['Apogee altitude', `${num(s.apogee_alt_km)} km`],
             ['Period', `${num(s.period_h, 3)} h`],
             ['Time in shadow', s.shadow_pct == null ? DASH : `${num(s.shadow_pct, 1)} %`],
-            ['Largest energy error', sci(s.max_energy_error)],
+            [energySummary(s)[0], sci(s.max_energy_error)],
             ['Solve time', `${num(s.solve_s, 2)} s`],
         ];
         root.innerHTML = `

@@ -36,7 +36,6 @@ test('an escape run reads without the closed-orbit sections and says it is not c
     assert.equal(result.times.length, 2);
     assert.equal(result.script, '');
     assert.equal(result.tle, '');
-    assert.equal(result.lifetime.years, null);
 });
 
 test('a closed run, and an older engine that does not say, count as closed', () => {
@@ -45,6 +44,19 @@ test('a closed run, and an older engine that does not say, count as closed', () 
     assert.equal(fromPayload(older).summary.closedOrbit, true);
 });
 
-test('lifetime and apsis targeting are listed as closed-orbit tools', () => {
-    assert.deepEqual([...closedOrbitTools].sort(), ['lifetime', 'targeting']);
+test('apsis targeting is listed as a closed-orbit tool', () => {
+    assert.deepEqual([...closedOrbitTools], ['targeting']);
+});
+
+// The engine reports the relative change in two-body orbital energy. Only a two-body run should
+// keep it constant, so only there is it an integration error; with other forces it is real change.
+import { energySummary } from '../../frontend/js/results.js';
+
+test('a two-body run reports its energy drift as an error', () => {
+    assert.deepEqual(energySummary({ model: 'two_body', max_energy_error: 2e-12 }), ['Largest energy error', 2e-12]);
+});
+
+test('a run with other forces reports energy change, not error', () => {
+    assert.deepEqual(energySummary({ model: 'coupled', max_energy_error: 9.31e-3 }), ['Largest energy change', 9.31e-3]);
+    assert.deepEqual(energySummary({ model: 'j2', max_energy_error: 1e-4 }), ['Largest energy change', 1e-4]);
 });
