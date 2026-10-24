@@ -187,6 +187,39 @@ class OrekitContext:
 
         return ConstantSpaceWeather()
 
+    def mean_sun(self):
+        """
+        Sun direction that gives NRLMSISE-00 its standard local solar time,
+        UT + longitude / 15. Orekit's NRLMSISE00 otherwise takes local time from
+        the true Sun (apparent solar time), which differs from the MSIS
+        convention (and pymsis) by the equation of time, up to 16 minutes: about
+        0.3% in density, or 30 m per day for a 250 km GTO perigee.
+        """
+        from jpype import JImplements, JOverride
+        from org.hipparchus.geometry.euclidean.threed import Vector3D
+        from org.orekit.time import AbsoluteDate, TimeScalesFactory
+        utc = TimeScalesFactory.getUTC()
+        itrf = self.itrf
+
+        @JImplements("org.orekit.utils.ExtendedPositionProvider")
+        class MeanSun:
+            @JOverride
+            def getPosition(self, date, frame):
+                if not isinstance(date, AbsoluteDate):
+                    raise NotImplementedError("field dates are not used by the cross-check")
+                seconds = date.getComponents(utc).getTime().getSecondsInUTCDay()
+                lon = math.pi - 2.0 * math.pi * seconds / 86400.0
+                p = Vector3D(math.cos(lon) * forces.AU_METERS, math.sin(lon) * forces.AU_METERS, 0.0)
+                return itrf.getStaticTransformTo(frame, date).transformPosition(p)
+
+        return MeanSun()
+
+    def atmosphere(self):
+        """Orekit NRLMSISE-00 with AstroFlyer's constant space weather and the mean Sun."""
+        from org.orekit.models.earth.atmosphere import NRLMSISE00
+        from org.orekit.time import TimeScalesFactory
+        return NRLMSISE00(self._msis_inputs(), self.mean_sun(), self.earth, TimeScalesFactory.getUTC())
+
     def propagator(self, orbit_state, date, level):
         from org.hipparchus.ode.nonstiff import DormandPrince853Integrator
         from org.hipparchus.geometry.euclidean.threed import Vector3D
@@ -229,13 +262,7 @@ class OrekitContext:
                 sun, self.earth, IsotropicRadiationSingleCoefficient(C.CR_AREA_OVER_M, 1.0)))
         if level.drag:
             from org.orekit.forces.drag import DragForce, IsotropicDrag
-            from org.orekit.models.earth.atmosphere import NRLMSISE00
-            from org.orekit.time import TimeScalesFactory
-            try:
-                atmosphere = NRLMSISE00(self._msis_inputs(), sun, self.earth, TimeScalesFactory.getUTC())
-            except TypeError:
-                atmosphere = NRLMSISE00(self._msis_inputs(), sun, self.earth)
-            prop.addForceModel(DragForce(atmosphere, IsotropicDrag(C.CD_AREA_OVER_M, 1.0)))
+            prop.addForceModel(DragForce(self.atmosphere(), IsotropicDrag(C.CD_AREA_OVER_M, 1.0)))
         if level.relativity:
             prop.addForceModel(Relativity(self.mu))
         return prop

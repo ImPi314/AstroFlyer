@@ -33,7 +33,8 @@ class Level:
 
     @property
     def needs_ephemeris(self):
-        return self.third_body or self.srp or self.drag
+        # Drag does not: the reference atmosphere uses the mean Sun (see orekit_crosscheck)
+        return self.third_body or self.srp
 
 
 LEVELS = {
