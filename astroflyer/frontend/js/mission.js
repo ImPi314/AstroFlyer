@@ -4,6 +4,7 @@
 export const defaultMission = {
     spacecraft: {
         name: 'Molniya-1',
+        epoch: '2026-01-01 00:00:00',
         orbitInput: 'apsides',
         hp: 1000,
         ha: 39350,
@@ -49,6 +50,7 @@ export const schemas = {
             {
                 title: 'Orbit state',
                 fields: [
+                    { key: 'epoch', label: 'Start epoch', unit: 'UTC', type: 'epoch', hint: 'Date and time of the state below, as YYYY-MM-DD HH:MM:SS. The bundled Sun and Moon ephemeris covers 1990 to 2060.' },
                     { key: 'orbitInput', label: 'Enter orbit as', type: 'select', options: [['apsides', 'Perigee and apogee altitude'], ['keplerian', 'Semi-major axis and eccentricity']] },
                     { key: 'hp', label: 'Perigee altitude', unit: 'km', type: 'number', min: 100, max: 400000, step: 1, when: apsides, hint: 'Height of the lowest point above the Earth’s surface.' },
                     { key: 'ha', label: 'Apogee altitude', unit: 'km', type: 'number', min: 100, max: 400000, step: 1, when: apsides, hint: 'Height of the highest point. Must be above perigee.' },
@@ -109,6 +111,23 @@ export function visibleFields(schema, values) {
     }));
 }
 
+// Years of the bundled DE440 Sun and Moon ephemeris; the engine has no Sun direction outside them.
+const EPOCH_MIN = Date.UTC(1990, 0, 1);
+const EPOCH_MAX = Date.UTC(2060, 0, 1);
+
+// "YYYY-MM-DD HH:MM", with optional seconds and fraction, as a UTC calendar time.
+// Returns { iso, ms } for a real date and time, otherwise null.
+function parseEpoch(text) {
+    const m = /^(\d{4})-(\d\d)-(\d\d) (\d\d):(\d\d)(?::(\d\d)(\.\d{1,6})?)?$/.exec(String(text ?? '').trim());
+    if (!m) return null;
+    const [, y, mo, d, h, mi, s = '00', frac = ''] = m;
+    const ms = Date.UTC(+y, +mo - 1, +d, +h, +mi, +s);
+    const back = new Date(ms);
+    // Date rolls 30 February into March and 25:00 into the next day; refuse those.
+    if (back.getUTCMonth() !== +mo - 1 || back.getUTCDate() !== +d || back.getUTCHours() !== +h || +mi > 59 || +s > 59) return null;
+    return { iso: `${y}-${mo}-${d}T${h}:${mi}:${s}${frac}Z`, ms };
+}
+
 // Returns { key: message } for every visible field that is invalid.
 export function validate(schema, values) {
     const errors = {};
@@ -121,6 +140,10 @@ export function validate(schema, values) {
                 errors[field.key] = 'Pick one of the options.';
             } else if (field.type === 'checkbox' && typeof value !== 'boolean') {
                 errors[field.key] = 'Turn this on or off.';
+            } else if (field.type === 'epoch') {
+                const epoch = parseEpoch(value);
+                if (!epoch) errors[field.key] = 'Enter a real date and time as YYYY-MM-DD HH:MM:SS.';
+                else if (epoch.ms < EPOCH_MIN || epoch.ms >= EPOCH_MAX) errors[field.key] = 'Use a date from 1990 to 2059.';
             } else if (field.type === 'number') {
                 if (typeof value !== 'number' || !Number.isFinite(value)) {
                     errors[field.key] = 'Enter a number.';
@@ -140,6 +163,7 @@ export function toPropagateRequest(mission) {
     const { spacecraft: sc, propagator: prop } = mission;
     const orbit = apsides(sc) ? { hp: sc.hp, ha: sc.ha } : { a: sc.a, e: sc.e };
     return {
+        epoch: parseEpoch(sc.epoch)?.iso,
         ...orbit,
         inc: sc.inc,
         raan: sc.raan,
