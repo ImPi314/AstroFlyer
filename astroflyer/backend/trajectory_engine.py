@@ -440,7 +440,7 @@ class MissionScriptWorkbench:
         cd=2.2,
         cr=1.2,
         num_orbits=3,
-        enable_bplane_target=True
+        enable_bplane_target=False
     ):
         """Generates complete, compliant mission .script code."""
         period_sec = 2.0 * math.pi * math.sqrt((sma_km * 1000.0)**3 / MU_EARTH)

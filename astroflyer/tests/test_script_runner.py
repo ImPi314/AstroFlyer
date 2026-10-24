@@ -75,6 +75,25 @@ class TestEditorScriptsStillRun(unittest.TestCase):
         self.assertGreater(len(out["ephemeris"]["AstroFlyer_HEO_SC"]["epochs_utc"]), 100)
         self.assertIn("AstroFlyer HEO Mission Sequence Completed Successfully.", out["log"])
 
+    def test_default_generated_script_runs(self):
+        # The script /api/propagate hands the editor must run as-is: an Earth-orbit HEO never reaches
+        # a lunar periapsis, so the generator leaves the lunar B-plane targeter out unless asked
+        out = run_script(MissionScriptWorkbench.generate_mission_script(num_orbits=1))
+        self.assertIsNone(out["error"], out["error"])
+
+    def test_propagate_endpoint_script_runs(self):
+        from astroflyer.backend.app_server import create_server
+        server = create_server(port=0)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        body = json.dumps({"hp": 500, "ha": 39800, "inc": 63.4, "num_orbits": 1}).encode()
+        req = urllib.request.Request(f"http://127.0.0.1:{server.server_address[1]}/api/propagate", body,
+                                     {"Content-Type": "application/json"})
+        payload = json.load(urllib.request.urlopen(req, timeout=600))
+        out = run_script(payload["script_workbench"]["script_content"])
+        self.assertIsNone(out["error"], out["error"])
+
     def test_unsupported_bplane_goal_is_a_clear_error(self):
         text = MissionScriptWorkbench.generate_mission_script(num_orbits=1, enable_bplane_target=True)
         out = run_script(text)
