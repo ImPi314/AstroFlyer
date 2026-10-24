@@ -14,7 +14,7 @@ const COLOR_STEPS = 12;
 let seam = 0;   // a segment longer than this crosses the map's edge (set before each draw)
 
 export const groundtrackDefaults = () => ({
-    center: 'greenwich',
+    center: 'track',
     center_lon: 0,
     night: true,
     stations: true,
@@ -76,7 +76,9 @@ function draw(canvas, night, map, settings) {
 
     const result = store.get('result');
     const now = result ? stateAt(result, store.get('time')) : null;
-    const centerLon = settings.center === 'spacecraft' && now ? now.lonDeg : settings.center === 'longitude' ? settings.center_lon : 0;
+    const centerLon = settings.center === 'spacecraft' && now ? now.lonDeg
+        : settings.center === 'longitude' ? settings.center_lon
+        : settings.center === 'track' && result ? centerOf(result) : 0;
     const x = (lon) => ox + (((lon - centerLon + 540) % 360) / 360) * w;
     const y = (lat) => oy + ((90 - lat) / 180) * h;
 
@@ -95,7 +97,7 @@ function draw(canvas, night, map, settings) {
 
     drawGrid(ctx, x, y, ox, oy, w, h);
     if (result && settings.night) drawNight(ctx, night, now, centerLon, ox, oy, w, h);
-    if (result) drawTrack(ctx, result, now, x, y);
+    if (result) drawTrack(ctx, result, now, (rel) => ox + ((rel + 180) / 360) * w, y, centerLon);
     if (result && settings.masks) drawMasks(ctx, result, now, x, y);
     if (result && settings.footprint) drawFootprint(ctx, result, now, x, y);
     if (result && settings.stations) drawStations(ctx, result, x, y);
@@ -148,19 +150,60 @@ function drawNight(ctx, night, now, centerLon, ox, oy, w, h) {
     ctx.drawImage(night, ox, oy, w, h);
 }
 
-function drawTrack(ctx, result, now, x, y) {
+const wrap180 = (deg) => ((deg + 540) % 360) - 180;
+
+// Map centre that keeps the whole track on the map: the edge goes in the middle of the widest band
+// of longitude the track never crosses, rounded to 10 deg. A track over (nearly) every longitude
+// has no such band, so the map stays on Greenwich.
+export function trackCenter(lon) {
+    const sorted = lon.map((l) => ((l % 360) + 360) % 360).sort((a, b) => a - b);
+    let gap = 0;
+    let from = 0;
+    for (let k = 0; k < sorted.length; k++) {
+        const next = k + 1 < sorted.length ? sorted[k + 1] : sorted[0] + 360;
+        if (next - sorted[k] > gap) {
+            gap = next - sorted[k];
+            from = sorted[k];
+        }
+    }
+    if (gap < 60) return 0;
+    const center = Math.round(wrap180(from + gap / 2 + 180) / 10) * 10;
+    return center === -180 ? 180 : center;
+}
+
+const centers = new WeakMap();   // run result -> its track centre
+function centerOf(result) {
+    if (!centers.has(result)) centers.set(result, trackCenter(result.samples.longitude_deg));
+    return centers.get(result);
+}
+
+// One track segment as pieces [lon0, lat0, lon1, lat1], longitudes in degrees from the map centre
+// (-180 is the left edge, 180 the right). A segment that crosses the edge is cut where it meets it,
+// latitude interpolated, and carries on from the other edge, so the track has no gaps there.
+export function splitAtEdge(lon0, lat0, lon1, lat1, centerLon) {
+    const r0 = wrap180(lon0 - centerLon);
+    let d = lon1 - lon0;
+    d -= 360 * Math.round(d / 360);   // the short way round
+    const r1 = r0 + d;
+    if (r1 >= -180 && r1 <= 180) return [[r0, lat0, r1, lat1]];
+    const edge = r1 > 180 ? 180 : -180;
+    const latEdge = lat0 + ((edge - r0) / d) * (lat1 - lat0);
+    return [[r0, lat0, edge, latEdge], [-edge, latEdge, r1 - 2 * edge, lat1]];
+}
+
+// xr maps a longitude from the map centre (see splitAtEdge) to the canvas.
+function drawTrack(ctx, result, now, xr, y, centerLon) {
     const { latitude_deg: lat, longitude_deg: lon, altitude_km: alt } = result.samples;
     const min = Math.min(...alt);
     const max = Math.max(...alt);
     const paths = Array.from({ length: COLOR_STEPS }, () => [new Path2D(), new Path2D()]);
     for (let i = 1; i < lat.length; i++) {
-        const x0 = x(lon[i - 1]);
-        const x1 = x(lon[i]);
-        if (Math.abs(x1 - x0) > seam) continue;
         const step = Math.min(Math.floor(((alt[i] - min) / (max - min || 1)) * COLOR_STEPS), COLOR_STEPS - 1);
         const path = paths[step][i <= now.index ? 0 : 1];
-        path.moveTo(x0, y(lat[i - 1]));
-        path.lineTo(x1, y(lat[i]));
+        for (const [a0, b0, a1, b1] of splitAtEdge(lon[i - 1], lat[i - 1], lon[i], lat[i], centerLon)) {
+            path.moveTo(xr(a0), y(b0));
+            path.lineTo(xr(a1), y(b1));
+        }
     }
     ctx.lineWidth = 1.5;
     paths.forEach(([past, future], step) => {

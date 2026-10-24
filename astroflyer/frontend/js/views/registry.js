@@ -47,7 +47,7 @@ export const VIEW_TYPES = {
                 {
                     title: 'Map',
                     fields: [
-                        { key: 'center', label: 'Centre map on', type: 'select', options: [['greenwich', 'Greenwich meridian'], ['longitude', 'A longitude'], ['spacecraft', 'Spacecraft longitude']] },
+                        { key: 'center', label: 'Centre map on', type: 'select', options: [['track', 'The whole track'], ['greenwich', 'Greenwich meridian'], ['longitude', 'A longitude'], ['spacecraft', 'Spacecraft longitude']] },
                         { key: 'center_lon', label: 'Centre longitude', unit: 'deg', type: 'number', min: -180, max: 180, step: 1, when: (v) => v.center === 'longitude' },
                         { key: 'night', label: 'Night side', type: 'checkbox' },
                         { key: 'stations', label: 'Ground stations', type: 'checkbox' },
