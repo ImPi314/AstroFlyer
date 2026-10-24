@@ -756,7 +756,8 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
                 rtol=tol,
                 atol=tol,
                 b_star=b_star,
-                cr_area_over_m=cr_area_over_m
+                cr_area_over_m=cr_area_over_m,
+                fixed_step=_get_float_param(params, 'step_s', 0.0) or None
             ))
             t_solve_sec = time.time() - t_solve_start
 

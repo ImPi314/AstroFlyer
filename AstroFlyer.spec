@@ -54,7 +54,7 @@ backend_modules = sorted(
 hiddenimports = (
     ['webview', 'webview.platforms.winforms', 'webview.platforms.edgechromium', 'clr_loader', 'pythonnet',
      'scipy.integrate', 'scipy.spatial.transform', 'astroflyer', 'astroflyer.resource_paths',
-     'astroflyer.offline_data', 'resource_paths', 'offline_data', 'jplephem', 'jplephem.spk']
+     'astroflyer.offline_data', 'resource_paths', 'offline_data', 'jplephem', 'jplephem.spk', 'sgp4', 'sgp4.api']
     + [f'backend.{m}' for m in backend_modules]
     + [f'astroflyer.backend.{m}' for m in backend_modules]
     + erfa_imports

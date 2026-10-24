@@ -24,6 +24,8 @@ from . import forces
 from .epoch import Epoch
 from .forces import ForceModelConfig, SimpleEarthRotation
 from .frames import EarthOrientation, FastEarthRotation, gcrf_to_geodetic, transform_state
+from . import analytic
+from .integrators import integrate
 
 # ==============================================================================
 # LAYER 1: MATH CORE
@@ -413,6 +415,21 @@ def sun_directions(times, epoch_tt_j2000_s):
 # ==============================================================================
 # THIRD REVIEW UNIFIED PRODUCTION PROPAGATOR
 # ==============================================================================
+# Propagator names accepted by propagate(method=...), normalized: upper case, no spaces, dashes or underscores
+ANALYTIC_METHODS = {'KEPLER': 'kepler', 'TWOBODYANALYTIC': 'kepler', 'J2MEAN': 'j2_mean', 'SGP4': 'sgp4'}
+OWN_INTEGRATORS = {'RKF78': 'RKF78', 'RK78': 'RKF78', 'BS': 'BS', 'BULIRSCHSTOER': 'BS', 'RK4': 'RK4'}
+
+
+class _AnalyticSolution:
+    """The solve_ivp fields propagate() reads, for a closed-form trajectory."""
+
+    def __init__(self, t, r, v):
+        self.t = np.asarray(t)
+        self.y = np.hstack([r, v]).T
+        self.t_events, self.y_events = [], []
+        self.success = True
+
+
 class ThirdReviewEngine:
     """
     Final Production Propagator & Mission Analysis Engine for the Third Review.
@@ -428,6 +445,26 @@ class ThirdReviewEngine:
         self.initial_elements = elem
         self.initial_energy = elem['energy']
         self.initial_h = elem['h_mag']
+        self.tle = None
+
+    @classmethod
+    def from_tle(cls, line1, line2, epoch=None, **kwargs):
+        """Engine whose initial state is the SGP4 state of a TLE at `epoch` (default: the TLE epoch)."""
+        tle = analytic.TLEPropagator(line1, line2)
+        epoch = tle.epoch if epoch is None else Epoch.coerce(epoch)
+        r, v = tle.states(epoch, np.zeros(1))
+        engine = cls(np.concatenate([r[0], v[0]]), epoch=epoch, **kwargs)
+        engine.tle = tle
+        return engine
+
+    def _analytic_state_function(self, kind):
+        if kind == 'kepler':
+            return lambda t: analytic.kepler_states(self.y0, t, mu=self.mu)
+        if kind == 'j2_mean':
+            return lambda t: analytic.j2_mean_states(self.y0, t, mu=self.mu)
+        if self.tle is None:
+            raise ValueError("SGP4 needs a TLE: build the engine with ThirdReviewEngine.from_tle(line1, line2)")
+        return lambda t: self.tle.states(self.epoch, t)
 
     def propagate(
         self,
@@ -489,14 +526,29 @@ class ThirdReviewEngine:
             force_config=cfg
         )
 
-        solver_method = method
-        if solver_method in ('PD853', 'DOP853', 'RK89', 'RK78'):
-            solver_method = 'DOP853'
-        elif solver_method in ('Radau', 'RADAU', 'RadauIIA'):
-            solver_method = 'Radau'
-
-        sol = solve_ivp(eom, t_span, self.y0, method=solver_method, t_eval=t_eval, rtol=rtol, atol=atol,
-                        events=_ORBIT_EVENT_FUNCTIONS)
+        # Propagator: analytic (no integration), one of ours (exact outputs), or SciPy's
+        method_key = str(method).replace(' ', '').replace('-', '').replace('_', '').upper()
+        analytic_kind = ANALYTIC_METHODS.get(method_key)
+        own_integrator = OWN_INTEGRATORS.get(method_key)
+        event_list = None
+        if analytic_kind is not None:
+            state_fn = self._analytic_state_function(analytic_kind)
+            r_out, v_out = state_fn(t_eval)
+            sol = _AnalyticSolution(t_eval, r_out, v_out)
+            apsides = bool(cartesian_to_keplerian(self.y0[:3], self.y0[3:], mu=self.mu)['e'] > 1e-3)
+            event_list = analytic.analytic_events(state_fn, t_eval, self.epoch, apsides=apsides)
+        elif own_integrator is not None:
+            fixed_step = float(kwargs.get('fixed_step') or 10.0) if own_integrator == 'RK4' else None
+            sol = integrate(eom, t_span, self.y0, method=own_integrator, t_eval=t_eval,
+                            events=_ORBIT_EVENT_FUNCTIONS, rtol=rtol, atol=atol, fixed_step=fixed_step)
+        else:
+            solver_method = method
+            if solver_method in ('PD853', 'DOP853', 'RK89'):
+                solver_method = 'DOP853'
+            elif solver_method in ('Radau', 'RADAU', 'RadauIIA'):
+                solver_method = 'Radau'
+            sol = solve_ivp(eom, t_span, self.y0, method=solver_method, t_eval=t_eval, rtol=rtol, atol=atol,
+                            events=_ORBIT_EVENT_FUNCTIONS)
 
         times = sol.t
         pos = sol.y[0:3].T
@@ -598,7 +650,7 @@ class ThirdReviewEngine:
             'frame': 'GCRF',
             'eop_in_range': bool(orientation.eop_in_range),
             'epoch': {scale.lower(): self.epoch.iso(scale, 6) for scale in ('UTC', 'TAI', 'TT', 'TDB', 'UT1')},
-            'events': orbit_events(sol, self.epoch, apsides=bool(e_arr[0] > 1e-3)),
+            'events': event_list if event_list is not None else orbit_events(sol, self.epoch, apsides=bool(e_arr[0] > 1e-3)),
             'sun_direction_eci': sun_directions(times, epoch_tt),
             'position_itrf_m': r_itrf,
             'velocity_itrf_ms': v_itrf,
