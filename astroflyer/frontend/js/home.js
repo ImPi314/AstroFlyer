@@ -6,39 +6,11 @@ import { defaultMission, schemas, validate } from './mission.js';
 import { loadMission } from './inspector.js';
 import { log } from './messages.js';
 import { escapeHtml, icon, num, saveFile } from './format.js';
+import { SAMPLES, sampleMission } from './samples.js';
 
 const FORMAT = 'astroflyer-mission';
 const RECENT_KEY = 'astroflyer.recent.v1';
 const MAX_RECENT = 6;
-
-// Starting orbits for common highly elliptical and inclined missions. Only the orbit and
-// duration differ from the default mission.
-const SAMPLES = [
-    {
-        name: 'Molniya',
-        lead: 'Twelve-hour orbit at 63.4 deg with apogee held over the northern hemisphere.',
-        spacecraft: { orbitInput: 'apsides', hp: 1000, ha: 39350, inc: 63.4, raan: 45, aop: 270, ta: 0 },
-        orbits: 3,
-    },
-    {
-        name: 'Tundra',
-        lead: 'Geosynchronous period with e = 0.25, so the spacecraft dwells over one region each day.',
-        spacecraft: { orbitInput: 'keplerian', a: 42164, e: 0.25, inc: 63.4, raan: 0, aop: 270, ta: 0 },
-        orbits: 2,
-    },
-    {
-        name: 'GTO',
-        lead: 'Geostationary transfer orbit from a 28.5 deg launch site, apogee at GEO altitude.',
-        spacecraft: { orbitInput: 'apsides', hp: 250, ha: 35786, inc: 28.5, raan: 0, aop: 180, ta: 0 },
-        orbits: 3,
-    },
-    {
-        name: 'QZS-1',
-        lead: 'Quasi-zenith orbit: geosynchronous, e = 0.075 and 41 deg, tracing a figure eight over Japan.',
-        spacecraft: { orbitInput: 'keplerian', a: 42164, e: 0.075, inc: 41, raan: 0, aop: 270, ta: 0 },
-        orbits: 2,
-    },
-];
 
 let root;
 
@@ -96,6 +68,7 @@ function render() {
                     <span class="sample-name">${s.name}</span>
                     <span class="sample-lead">${s.lead}</span>
                     <span class="sample-meta">${sampleMeta(s)}</span>
+                    <span class="sample-meta">${escapeHtml(s.source)}</span>
                 </button>`).join('')}
             </div>
         </div>`;
@@ -126,10 +99,7 @@ function onClick(event) {
         }
         case 'sample': {
             const sample = SAMPLES[index];
-            const mission = structuredClone(defaultMission);
-            Object.assign(mission.spacecraft, sample.spacecraft, { name: sample.name });
-            mission.propagator.num_orbits = sample.orbits;
-            start(mission, null);
+            start(sampleMission(sample), null);
             log('info', `Loaded the ${sample.name} sample. Press Run to propagate it.`);
             break;
         }
