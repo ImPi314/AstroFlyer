@@ -71,6 +71,14 @@ class RunReportsTest(unittest.TestCase):
         text = json.dumps(radiation)
         self.assertNotIn("dose", text)
 
+    def test_a_run_that_names_no_method_uses_dop853(self):
+        # DOP853 is the integrator validated against Orekit; Radau (implicit) was ~10x slower on these orbits
+        query = "hp=1000&ha=39350&inc=63.4&raan=0&aop=270&ta=0&num_orbits=1&num_points=200&model=two_body"
+        with urllib.request.urlopen(f"{self.base}/api/propagate?{query}", timeout=300) as resp:
+            self.assertEqual(json.load(resp)["active_orbit_config"]["integrator"], "DOP853")
+        with urllib.request.urlopen(f"{self.base}/api/propagate?{query}&method=Radau", timeout=300) as resp:
+            self.assertEqual(json.load(resp)["active_orbit_config"]["integrator"], "Radau")
+
     def test_demo_endpoints_are_gone(self):
         for path in GONE_ENDPOINTS:
             with self.subTest(path=path):

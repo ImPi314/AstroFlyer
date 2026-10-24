@@ -442,7 +442,7 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
 
             num_orbits = max(0.5, min(20.0, _get_float_param(params, 'num_orbits', 3.0)))
             model_type: str = _get_str_param(params, 'model', _get_str_param(params, 'gravity_model', 'coupled'))
-            method_type: str = _get_str_param(params, 'method', _get_str_param(params, 'integrator', 'Radau'))
+            method_type: str = _get_str_param(params, 'method', _get_str_param(params, 'integrator', 'DOP853'))
             # Initial-state epoch (ISO 8601, UTC unless tagged TAI/TT/TDB/UT1/GPS); default J2000.0
             epoch_text: str = _get_str_param(params, 'epoch', '')
             try:

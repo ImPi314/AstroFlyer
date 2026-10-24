@@ -73,3 +73,10 @@ test('run lengths beyond the engine limit of 30 days are refused', () => {
     assert.ok(validate(schemas.propagator, span('hours', 721).propagator).duration);
     assert.deepEqual(validate(schemas.propagator, span('days', 30).propagator), {});
 });
+
+test('a new mission propagates with DOP853, and Radau is still offered', () => {
+    assert.equal(defaultMission.propagator.method, 'DOP853');
+    const method = schemas.propagator.groups.flatMap((g) => g.fields).find((f) => f.key === 'method');
+    assert.ok(method.options.some(([value]) => value === 'Radau'));
+    assert.equal(method.options[0][0], 'DOP853');
+});

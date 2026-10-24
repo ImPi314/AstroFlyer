@@ -517,7 +517,7 @@ class ThirdReviewEngine:
         enable_drag=True,
         enable_third_body=True,
         enable_srp=True,
-        method='Radau',
+        method='DOP853',
         rtol=1e-11,
         atol=1e-11,
         b_star=0.015,
