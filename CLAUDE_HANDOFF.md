@@ -21,7 +21,7 @@
 
 Then: full-model Orekit results committed (`832dfa6`).
 
-**Not pushed.** `integration` has no upstream. Remote branches (`origin/phase*`, `origin/general-mission-inputs`,
+**Pushed** to `origin/integration` on 2026-10-24. The other remote branches (`origin/phase*`, `origin/general-mission-inputs`,
 `origin/frontend-rebuild`, …) are still on GitHub and are all contained in `integration`. `main` is still the old
 pre-restructure state (`46cfb86`).
 
