@@ -29,9 +29,15 @@ How we got here (each fix written test-first):
   (fixed altitudes such as 160/300/450 km, and UTC midnight).
 - **Relativity** agrees with Orekit to millimetres.
 
-The remaining Molniya SRP difference (~30 m over 7 days, about 1% of the SRP effect) is
-the largest left. Not yet diagnosed; a likely candidate is the occulting-Earth shape (AstroFlyer
-uses a sphere of equatorial radius, Orekit is given the WGS-84 ellipsoid).
+- **Earth's shape in the shadow.** Orekit casts the shadow with the WGS-84 ellipsoid; AstroFlyer
+  used a sphere of equatorial radius. Seen from a Molniya or Tundra apogee the limb toward the
+  Sun can lie near a pole, 21 km lower, so our penumbra was too dark (the 7-day tables above
+  show Molniya L5 at 31.7 m). AstroFlyer now finds the ellipsoid limb in the same plane as
+  Orekit (`forces.occulting_radius`); the penumbra fraction agrees with Orekit to 1e-10.
+  Cloud rerun over 7 days, before → after: Molniya L5 32.6 m → 0.87 m, Tundra L5
+  2.3 m → 1.1 cm. GTO and the stress orbit move by under 2 m either way (their remaining few
+  metres are not the shadow). The tables above are from before this fix; the laptop rerun
+  will replace them.
 
 ## Gravity only (earlier run)
 

@@ -49,10 +49,90 @@ class TestShadowBoundaries(unittest.TestCase):
         r_sun = forces.get_ephemeris().sun_gcrf(epoch_tt + 3600.0)
         r = -7000e3 * r_sun / np.linalg.norm(r_sun)      # deep in umbra
         y = np.concatenate([r, np.zeros(3)])
-        g_pen, g_umb = forces.shadow_boundaries(r, r_sun)
+        g_pen, g_umb = forces.shadow_boundaries(r, r_sun, pole=np.array([0.0, 0.0, 1.0]))
         self.assertAlmostEqual(events[0](3600.0, y), g_pen, places=12)
         self.assertAlmostEqual(events[1](3600.0, y), g_umb, places=12)
         self.assertLess(events[1](3600.0, y), 0.0)
+
+
+class TestOblateShadow(unittest.TestCase):
+    """
+    The Earth's shadow is cast by the WGS-84 ellipsoid, not a sphere: seen from
+    an HEO apogee the limb toward the Sun can lie near a pole, 21 km lower than
+    the equator. Orekit models this; a sphere of equatorial radius made Molniya
+    penumbra ~20% too dark and caused a 30 m/7-day SRP difference.
+    """
+    POLE = np.array([0.0, 0.0, 1.0])
+    C_POLAR = forces.R_EARTH_EQ * (1.0 - forces.WGS84_F)
+
+    def test_limb_radius_equatorial_plane(self):
+        """Sun and observer in the equatorial plane: the limb is on the equator."""
+        r = np.array([-4.0e7, 1.0e6, 0.0])
+        r_sun = np.array([forces.AU_METERS, 0.0, 0.0])
+        self.assertAlmostEqual(forces.occulting_radius(r, r_sun, self.POLE), forces.R_EARTH_EQ, delta=1e-3)
+
+    def test_limb_radius_toward_pole(self):
+        """Far observer, Sun over the pole: the limb toward the Sun is the polar radius."""
+        r = np.array([-1.0e10, 0.0, 0.0])
+        r_sun = np.array([0.0, 0.0, forces.AU_METERS])
+        self.assertAlmostEqual(forces.occulting_radius(r, r_sun, self.POLE), self.C_POLAR, delta=1.0)
+
+    def test_limb_radius_rotated_pole(self):
+        """Same geometry with the frame rotated: the result follows the pole, not the z axis."""
+        rot = np.array([[1.0, 0.0, 0.0], [0.0, 0.0, -1.0], [0.0, 1.0, 0.0]])   # z -> y
+        r = rot @ np.array([-1.0e10, 0.0, 0.0])
+        r_sun = rot @ np.array([0.0, 0.0, forces.AU_METERS])
+        self.assertAlmostEqual(forces.occulting_radius(r, r_sun, rot @ self.POLE), self.C_POLAR, delta=1.0)
+
+    def test_shadow_uses_ellipsoid_when_pole_given(self):
+        """Penumbra at a Molniya-like apogee is lighter with the ellipsoid than with the sphere."""
+        r_sun = np.array([0.0, 0.0, forces.AU_METERS])
+        # Behind the Earth along -z (Sun over the north pole), just inside the penumbra
+        for offset in np.linspace(6.30e6, 6.40e6, 21):
+            r = np.array([offset, 0.0, -3.9e7])
+            nu_sphere = forces.shadow_function(r, r_sun)
+            nu_ell = forces.shadow_function(r, r_sun, pole=self.POLE)
+            g_pen, g_umb = forces.shadow_boundaries(r, r_sun, pole=self.POLE)
+            self.assertGreaterEqual(nu_ell, nu_sphere)
+            if g_pen > 1e-9:
+                self.assertEqual(nu_ell, 1.0)
+            if g_umb < -1e-9:
+                self.assertEqual(nu_ell, 0.0)
+
+    def test_accelerations_use_spin_axis_from_rotation(self):
+        """The force model takes the pole from the GCRF -> ITRF matrix it is given."""
+        cfg = forces.ForceModelConfig(gravity_degree=0, gravity_order=0, third_body=False, srp=True, drag=False,
+                                 relativity=False, albedo=False, cr_area_over_m=0.02)
+        tt = float(EPOCH - Epoch.j2000())
+        r_sun = forces.get_ephemeris().sun_gcrf(tt)
+        u = r_sun / np.linalg.norm(r_sun)
+        side = np.cross(u, [0.0, 0.0, 1.0])
+        side /= np.linalg.norm(side)
+        tilt = math.radians(30.0)
+        rot = np.array([[1.0, 0.0, 0.0], [0.0, math.cos(tilt), math.sin(tilt)],
+                        [0.0, -math.sin(tilt), math.cos(tilt)]])
+        found = 0
+        for off in np.linspace(6.2e6, 6.5e6, 31):
+            r = -3.9e7 * u + off * np.cross(side, u)
+            comps = forces.acceleration_components(tt, r, np.zeros(3), cfg, rot_gcrf2itrf=rot)
+            expected = forces.shadow_function(r, r_sun, pole=rot[2, :])
+            self.assertAlmostEqual(comps["shadow_factor"], expected, places=12)
+            found += 0.0 < expected < 1.0
+        self.assertGreater(found, 3)
+
+    def test_shadow_events_use_spin_axis(self):
+        from astroflyer.backend.eclipse import shadow_boundary_events
+        epoch_tt = float(EPOCH - Epoch.j2000())
+        tilt = math.radians(30.0)
+        rot = np.array([[1.0, 0.0, 0.0], [0.0, math.cos(tilt), math.sin(tilt)],
+                        [0.0, -math.sin(tilt), math.cos(tilt)]])
+        events = shadow_boundary_events(epoch_tt, rotation_at=lambda t: rot)
+        r_sun = forces.get_ephemeris().sun_gcrf(epoch_tt + 60.0)
+        r = -3.9e7 * r_sun / np.linalg.norm(r_sun) + np.array([0.0, 0.0, 6.3e6])
+        y = np.concatenate([r, np.zeros(3)])
+        g = forces.shadow_boundaries(r, r_sun, pole=rot[2, :])
+        self.assertAlmostEqual(events[0](60.0, y), g[0], places=12)
+        self.assertAlmostEqual(events[1](60.0, y), g[1], places=12)
 
 
 def solve_ivp_segmented(*args, **kwargs):

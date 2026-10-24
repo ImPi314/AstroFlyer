@@ -430,11 +430,11 @@ class ThirdReviewEngine:
 
         # Restart at each shadow edge and atmosphere-model jump (see backend/eclipse.py)
         boundaries = []
+        rotation_at = lambda t: _earth_rotation_at(t, epoch_tt, earth_rotation)[0]
         if cfg.srp or cfg.albedo:
-            boundaries += shadow_boundary_events(epoch_tt)
+            boundaries += shadow_boundary_events(epoch_tt, rotation_at=rotation_at)
         if cfg.drag:
-            boundaries += drag_boundary_events(
-                epoch_tt, lambda t: _earth_rotation_at(t, epoch_tt, earth_rotation)[0])
+            boundaries += drag_boundary_events(epoch_tt, rotation_at)
         if boundaries:
             sol = solve_ivp_segmented(eom, t_span, self.y0, boundaries,
                                       method=solver_method, t_eval=t_eval, rtol=rtol, atol=atol)

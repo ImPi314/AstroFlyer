@@ -218,8 +218,46 @@ def third_body_acceleration(r, r_body, mu_body):
     return mu_body * (d / np.linalg.norm(d) ** 3 - r_body / np.linalg.norm(r_body) ** 3)
 
 
-def _shadow_angles(r, r_sun, r_occ):
+_Z_AXIS = np.array([0.0, 0.0, 1.0])
+
+
+def occulting_radius(r, r_sun, pole):
+    """
+    Radius of the sphere that hides as much of the sky as the WGS-84 ellipsoid does
+    at its limb toward the Sun, seen from r. Like Orekit, the limb point is taken in
+    the plane of the satellite, the Earth's centre and the Sun. Stretching along the
+    pole by a/c turns the ellipsoid into a sphere of radius a; tangency and that
+    plane survive the stretch, so the limb is found on the sphere and mapped back.
+    """
+    pole = np.asarray(pole, dtype=float)
+    pole = pole / np.linalg.norm(pole)
+    k = 1.0 / (1.0 - WGS84_F)                        # a / c
+    o = r + (k - 1.0) * float(np.dot(r, pole)) * pole
+    s = r_sun + (k - 1.0) * float(np.dot(r_sun, pole)) * pole
+    d2 = float(np.dot(o, o))
+    if d2 <= R_EARTH_EQ * R_EARTH_EQ:
+        return R_EARTH_EQ
+    u = s - float(np.dot(s, o)) / d2 * o             # in-plane, perpendicular to o, toward the Sun
+    n_u = np.linalg.norm(u)
+    if n_u == 0.0:                                   # Sun exactly behind or in front: any limb point
+        u = np.cross(o, pole)
+        n_u = np.linalg.norm(u)
+        if n_u == 0.0:
+            return R_EARTH_EQ
+    u = u / n_u
+    d = math.sqrt(d2)
+    t = (R_EARTH_EQ * R_EARTH_EQ / d2) * o + (R_EARTH_EQ * math.sqrt(d2 - R_EARTH_EQ * R_EARTH_EQ) / d) * u
+    limb = t + (1.0 / k - 1.0) * float(np.dot(t, pole)) * pole
+    to_limb = limb - r
+    dist = np.linalg.norm(r)
+    cos_b = -float(np.dot(r, to_limb)) / (dist * np.linalg.norm(to_limb))
+    return dist * math.sqrt(max(0.0, 1.0 - cos_b * cos_b))
+
+
+def _shadow_angles(r, r_sun, r_occ, pole=None):
     """Apparent radii of the Sun (a) and occulting body (b), and their separation (c), seen from r."""
+    if pole is not None:
+        r_occ = occulting_radius(r, r_sun, pole)
     d = r_sun - r
     dist_sun = np.linalg.norm(d)
     dist_occ = np.linalg.norm(r)
@@ -230,19 +268,23 @@ def _shadow_angles(r, r_sun, r_occ):
     return a, b, c
 
 
-def shadow_boundaries(r, r_sun, r_occ=R_EARTH_EQ):
+def shadow_boundaries(r, r_sun, r_occ=R_EARTH_EQ, pole=None):
     """
     Smooth functions that cross zero at the shadow edges (radians):
     (penumbra: > 0 fully sunlit, umbra: < 0 fully dark). The propagator restarts
     the integration at their zeros, where the SRP acceleration has a kink.
+    With `pole` (the Earth's spin axis) the occulting body is the WGS-84 ellipsoid.
     """
-    a, b, c = _shadow_angles(r, r_sun, r_occ)
+    a, b, c = _shadow_angles(r, r_sun, r_occ, pole)
     return c - (a + b), c - (b - a)
 
 
-def shadow_function(r, r_sun, r_occ=R_EARTH_EQ):
-    """Fraction of the solar disc visible (1 sunlit, 0 umbra), conical model (M&G 3.4.2)."""
-    a, b, c = _shadow_angles(r, r_sun, r_occ)
+def shadow_function(r, r_sun, r_occ=R_EARTH_EQ, pole=None):
+    """
+    Fraction of the solar disc visible (1 sunlit, 0 umbra), conical model (M&G 3.4.2).
+    With `pole` (the Earth's spin axis) the occulting body is the WGS-84 ellipsoid.
+    """
+    a, b, c = _shadow_angles(r, r_sun, r_occ, pole)
     if c >= a + b:
         return 1.0
     if c < b - a:
@@ -357,7 +399,8 @@ def acceleration_components(tt_seconds_j2000, r, v, cfg, rot_gcrf2itrf=None, ome
             out["moon"] = third_body_acceleration(r, r_moon, MU_MOON)
 
     if cfg.srp or cfg.albedo:
-        out["shadow_factor"] = shadow_function(r, r_sun)
+        pole = rot_gcrf2itrf[2, :] if rot_gcrf2itrf is not None else _Z_AXIS
+        out["shadow_factor"] = shadow_function(r, r_sun, pole=pole)
     if cfg.srp:
         out["srp"], _ = srp_acceleration(r, r_sun, cfg.cr_area_over_m, out["shadow_factor"])
     if cfg.albedo:
