@@ -84,11 +84,12 @@ class TestGeneralMissionInputs(unittest.TestCase):
         status, out = self.post("/api/propagate", dict(FAST, position_km=[7000.0, 0.0], velocity_kms=[0.0, 7.5, 0.0]))
         self.assertEqual(status, 400)
         self.assertIn("position_km", out["error"])
-        # An escape orbit has no period, so it needs an explicit duration_s
-        status, out = self.post("/api/propagate", dict(FAST, position_km=[7000.0, 0.0, 0.0],
-                                                        velocity_kms=[0.0, 12.0, 0.0]))
-        self.assertEqual(status, 400)
-        self.assertIn("duration_s", out["error"])
+        # Escape trajectories are refused with a clear message, with or without duration_s
+        for extra in ({}, {"duration_s": 3600.0}):
+            status, out = self.post("/api/propagate", dict(FAST, position_km=[7000.0, 0.0, 0.0],
+                                                            velocity_kms=[0.0, 12.0, 0.0], **extra))
+            self.assertEqual(status, 400)
+            self.assertIn("escape", out["error"])
 
     def test_script_propagate_takes_duration_s(self):
         script = MissionScriptWorkbench.generate_mission_script(sma_km=26560.0, ecc=0.72, num_orbits=1)

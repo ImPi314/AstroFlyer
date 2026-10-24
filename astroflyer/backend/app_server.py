@@ -113,6 +113,22 @@ def _get_bool_param(params: dict[str, list[str]], key: str, default: bool) -> bo
     return default
 
 
+def _get_vector_param(params: dict[str, list[str]], body: dict[str, Any], key: str) -> Optional[np.ndarray]:
+    """A 3-vector from a JSON list or from text such as "x, y, z" or "[x, y, z]"; None when absent."""
+    raw: Any = body.get(key) if key in body else (params.get(key, [None])[0])
+    if raw is None or raw == '':
+        return None
+    if isinstance(raw, str):
+        raw = [p for p in raw.strip().strip('[]').replace(',', ' ').split() if p]
+    try:
+        vec = np.array([float(x) for x in raw], dtype=float)
+    except (TypeError, ValueError):
+        raise ValueError(f"{key} must be three numbers") from None
+    if vec.shape != (3,) or not np.all(np.isfinite(vec)):
+        raise ValueError(f"{key} must be three numbers, got {len(vec)}")
+    return vec
+
+
 def _get_int_param(params: dict[str, list[str]], key: str, default: int) -> int:
     val_list = params.get(key)
     if val_list and len(val_list) > 0:
@@ -754,10 +770,28 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
             except ValueError as exc:
                 self.send_json({"error": str(exc)}, 400)
                 return
+            # Run length: duration_s (seconds, up to 30 days) wins over num_orbits when given
+            duration_s: Optional[float] = None
+            if _get_str_param(params, 'duration_s', ''):
+                duration_s = _get_float_param(params, 'duration_s', 0.0)
+                if not (0.0 < duration_s <= 30 * 86400.0):
+                    self.send_json({"error": "duration_s must be between 0 and 2592000 s (30 days)"}, 400)
+                    return
+            try:
+                r_cart = _get_vector_param(params, getattr(self, 'json_body', {}) or {}, 'position_km')
+                v_cart = _get_vector_param(params, getattr(self, 'json_body', {}) or {}, 'velocity_kms')
+            except ValueError as exc:
+                self.send_json({"error": str(exc)}, 400)
+                return
+            if (r_cart is None) != (v_cart is None):
+                self.send_json({"error": "Give both position_km and velocity_kms for a Cartesian initial state"}, 400)
+                return
             pts_val = _get_int_param(params, 'num_points', _get_int_param(params, 'points', 0))
             if pts_val <= 0:
                 pts_per_orb = _get_int_param(params, 'points_per_orbit', 400)
-                pts_val = int(pts_per_orb * num_orbits)
+                approx_period = 2.0 * np.pi * np.sqrt((a_km * 1000.0) ** 3 / MU_EARTH)
+                orbits_run = num_orbits if duration_s is None else duration_s / approx_period
+                pts_val = int(pts_per_orb * orbits_run)
             num_points: int = max(200, min(3600, pts_val))
             tol: float = _get_float_param(params, 'tolerance', _get_float_param(params, 'tol', 1e-10))
 
@@ -779,19 +813,34 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
             b_star = (cd * drag_area) / max(10.0, spacecraft_mass)  # Cd*A/m; the EOM applies the 1/2
             cr_area_over_m = (cr * srp_area) / max(10.0, spacecraft_mass)
 
-            # Initial State Vector via Classical Keplerian Conversion
-            a_m = a_km * 1000.0
-            r0, v0 = keplerian_to_cartesian(
-                a_m, e,
-                float(np.radians(inc_deg)),
-                float(np.radians(raan_deg)),
-                float(np.radians(aop_deg)),
-                float(np.radians(ta_deg))
-            )
+            # Initial state: a Cartesian GCRF state (position_km, velocity_kms) when given, else Keplerian
+            initial_state_kind = 'keplerian'
+            if r_cart is not None:
+                initial_state_kind = 'cartesian'
+                r0, v0 = r_cart * 1000.0, v_cart * 1000.0
+                kep0 = mission_targeting.keplerian_from_state(r0, v0, MU_EARTH)
+                a_m = float(kep0['a'])        # plain floats: downstream reports go straight to JSON
+                a_km, e = a_m / 1000.0, float(kep0['e'])
+                inc_deg, raan_deg, aop_deg, ta_deg = (float(np.degrees(kep0[k])) for k in ('inc', 'raan', 'argp', 'ta'))
+            else:
+                a_m = a_km * 1000.0
+                r0, v0 = keplerian_to_cartesian(
+                    a_m, e,
+                    float(np.radians(inc_deg)),
+                    float(np.radians(raan_deg)),
+                    float(np.radians(aop_deg)),
+                    float(np.radians(ta_deg))
+                )
             y0 = np.concatenate([r0, v0])
 
+            if not (a_m > 0 and e < 1.0):
+                # The events, lifetime and targeting reports here all assume a closed orbit
+                self.send_json({"error": "The initial state is an escape trajectory (e >= 1); "
+                                         "only closed Earth orbits are supported for now"}, 400)
+                return
             period: float = float(2.0 * np.pi * np.sqrt(a_m**3 / MU_EARTH))
-            t_span = (0.0, num_orbits * period)
+            run_duration_s: float = duration_s if duration_s is not None else num_orbits * period
+            t_span = (0.0, run_duration_s)
 
             # 4. Integrate Coupled Equations of Motion in Real-Time
             t_solve_start = time.time()
@@ -908,7 +957,9 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
                 "perigee_alt_km": round(float(a_km * (1.0 - e) - r_earth_km), 2),
                 "apogee_alt_km": round(float(a_km * (1.0 + e) - r_earth_km), 2),
                 "orbital_period_hours": round(float(period / 3600.0), 3),
-                "num_orbits": num_orbits,
+                "num_orbits": num_orbits if duration_s is None else round(float(run_duration_s / period), 6),
+                "duration_s": float(run_duration_s),
+                "initial_state": initial_state_kind,
                 "model": model_type,
                 "integrator": method_type,
                 "num_points": num_points,
@@ -975,6 +1026,7 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
 
             payload: dict[str, Any] = {
                 "status": "ok",
+                "duration_s": float(run_duration_s),
                 "total_points": len(times_arr),
                 "times": times_arr.tolist(),
                 "times_sec": times_arr.tolist(),
