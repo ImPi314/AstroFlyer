@@ -66,22 +66,12 @@ def main():
     print("=" * 80)
     start_time = time.time()
 
-    print("\n[*] [0/3] Preflight checks...")
+    print("\n[*] [0/2] Preflight checks...")
     if not preflight():
         sys.exit(1)
 
-    # Step 1: Ensure PDF is generated and up to date
-    pdf_path = os.path.join(PROJECT_ROOT, "THIRD_REVIEW_COMPLETE_PROJECT_GUIDE.pdf")
-    if not os.path.exists(pdf_path):
-        print("\n[*] [1/3] Generating publication-grade Technical Handbook PDF...")
-        # Needs the dev requirements (reportlab); the handbook ships beside the app, not inside it
-        if subprocess.run([sys.executable, "main.py", "--pdf"], cwd=PROJECT_ROOT).returncode != 0:
-            print("[!] PDF generation failed (pip install -r requirements-dev.txt); continuing without it.")
-    else:
-        print("\n[*] [1/3] Technical Handbook PDF verified.")
-
-    # Step 2: Run PyInstaller to build standalone desktop application
-    print("\n[*] [2/3] Building Standalone Windows Desktop Application with PyInstaller...")
+    # Step 1: Run PyInstaller to build standalone desktop application
+    print("\n[*] [1/2] Building Standalone Windows Desktop Application with PyInstaller...")
     spec_path = os.path.join(PROJECT_ROOT, "AstroFlyer.spec")
     pyinstaller_cmd = [sys.executable, "-m", "PyInstaller", "--noconfirm", spec_path]
     res = subprocess.run(pyinstaller_cmd, cwd=PROJECT_ROOT)
@@ -97,8 +87,8 @@ def main():
     exe_size_mb = os.path.getsize(exe_path) / (1024 * 1024)
     print(f"      [+] Standalone Executable generated successfully: {exe_path} ({exe_size_mb:.2f} MB)")
 
-    # Step 3: Run Inno Setup Compiler to create the installer
-    print("\n[*] [3/3] Compiling Inno Setup Windows Installer Package...")
+    # Step 2: Run Inno Setup Compiler to create the installer
+    print("\n[*] [2/2] Compiling Inno Setup Windows Installer Package...")
     if not ISCC_PATH or not os.path.exists(ISCC_PATH):
         print(f"[!] Warning: ISCC.exe not found at standard locations. Checked: {ISCC_CANDIDATE_PATHS}")
         print("[!] Standalone executable in dist/AstroFlyer_HEO is ready, but installer compilation skipped.")

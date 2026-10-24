@@ -147,7 +147,7 @@ weather first with `python tools/fetch_offline_data.py`.
 major_project_py/
 ├── main.py                     # Launcher (delegates to astroflyer/main.py)
 ├── astroflyer/
-│   ├── main.py                 # Desktop window / browser / PDF entry point
+│   ├── main.py                 # Desktop window / browser entry point
 │   ├── backend/                # Astrodynamics engine and the HTTP API (app_server.py)
 │   ├── frontend/               # Operations console: index.html, css/, js/, vendor/
 │   ├── resources/              # Bundled DE440, EGM2008, IERS and space-weather data

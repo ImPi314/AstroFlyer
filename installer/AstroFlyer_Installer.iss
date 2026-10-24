@@ -40,13 +40,11 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "..\dist\AstroFlyer_HEO\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\THIRD_REVIEW_COMPLETE_PROJECT_GUIDE.pdf"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 ; Optional offline WebView2 runtime (put Microsoft's Evergreen Standalone x64 installer in installer\redist\)
 Source: "redist\MicrosoftEdgeWebView2RuntimeInstallerX64.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall skipifsourcedoesntexist; Check: not IsWebView2Installed
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"
-Name: "{group}\Technical Handbook (PDF)"; Filename: "{app}\THIRD_REVIEW_COMPLETE_PROJECT_GUIDE.pdf"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon; IconFilename: "{app}\{#MyAppExeName}"
 

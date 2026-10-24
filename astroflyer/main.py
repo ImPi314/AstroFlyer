@@ -56,6 +56,21 @@ def warm_up_models():
     return thread
 
 
+def configure_offline_webview():
+    """Stops WebView2's own background traffic to Microsoft (SmartScreen checks, component updates,
+    telemetry), so the window talks only to the local server. WebView2 reads this variable when it
+    starts; Chromium honours a single --disable-features list, so pywebview's ElasticOverscroll is kept in it."""
+    os.environ["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = " ".join([
+        "--disable-background-networking",
+        "--disable-component-update",
+        "--disable-domain-reliability",
+        "--disable-sync",
+        "--no-pings",
+        "--disable-features=ElasticOverscroll,msSmartScreenProtection,OptimizationHints,Translate,"
+        "AutofillServerCommunication,MediaRouter",
+    ])
+
+
 def start_desktop_application(port=8003):
     print("=" * 80)
     print("      ASTROFLYER HEO - PRODUCTION DESKTOP FLIGHT DYNAMICS STUDIO")
@@ -67,6 +82,7 @@ def start_desktop_application(port=8003):
     
     try:
         import webview
+        configure_offline_webview()
         print("[*] Launching native Windows desktop application window (WebView2 engine)...")
         webview.settings['ALLOW_DOWNLOADS'] = True   # plots save as PNG through the window's download dialog
         window = webview.create_window(
@@ -89,14 +105,10 @@ def start_desktop_application(port=8003):
 def main():
     parser = argparse.ArgumentParser(description="AstroFlyer HEO Third Review Desktop Launcher")
     parser.add_argument('--port', type=int, default=8003, help="Internal port for offline daemon (falls back to a free port if busy)")
-    parser.add_argument('--pdf', action='store_true', help="Re-generate Technical Handbook PDF")
     parser.add_argument('--browser', action='store_true', help="Open in browser instead of desktop window")
     args = parser.parse_args()
     
-    if args.pdf:
-        from scripts.generate_review_pdf import build_pdf
-        build_pdf()
-    elif args.browser:
+    if args.browser:
         server_thread, port = start_server_thread(args.port)
         warm_up_models()
         webbrowser.open(f"http://127.0.0.1:{port}")

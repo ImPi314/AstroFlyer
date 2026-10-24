@@ -157,5 +157,84 @@ class RuntimeDependenciesTest(unittest.TestCase):
             self.assertNotIn("collect_all('pymsis')", f.read())
 
 
+class QuietWebViewTest(unittest.TestCase):
+    """WebView2 phones Microsoft (SmartScreen, component updates, telemetry) unless told not to."""
+
+    def test_launcher_turns_off_webview2_background_networking(self):
+        launcher = _load_launcher()
+        saved = os.environ.pop("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", None)
+        try:
+            launcher.configure_offline_webview()
+            args = os.environ["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"].split()
+        finally:
+            os.environ.pop("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", None)
+            if saved is not None:
+                os.environ["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = saved
+        for flag in ("--disable-background-networking", "--disable-component-update",
+                     "--disable-domain-reliability", "--no-pings"):
+            self.assertIn(flag, args)
+        # Chromium honours only one --disable-features list, so it must keep pywebview's own entry
+        features = [a for a in args if a.startswith("--disable-features=")]
+        self.assertEqual(len(features), 1)
+        disabled = features[0].split("=", 1)[1].split(",")
+        for feature in ("ElasticOverscroll", "msSmartScreenProtection"):
+            self.assertIn(feature, disabled)
+
+
+class ManifestTest(unittest.TestCase):
+    """/api/manifest states only what the app does; nothing invented, nothing from the old demo."""
+
+    def _manifest(self):
+        import json
+        launcher = _load_launcher()
+        _, port = launcher.start_server_thread(0)
+        with urllib.request.urlopen(f"http://127.0.0.1:{port}/api/manifest", timeout=10) as resp:
+            return json.load(resp)
+
+    def test_no_invented_or_stale_claims(self):
+        import json
+        text = json.dumps(self._manifest())
+        for claim in ("26.35", "Sub-Meter", "Radau-IIA Core", "Review", "25-Year", "FSW", "Battery",
+                      "#00e5ff", "Certification"):
+            self.assertNotIn(claim, text)
+
+    def test_altitudes_follow_from_the_orbit_on_wgs84(self):
+        from backend import forces
+        orbit = self._manifest()["default_mission"]["orbit_parameters"]
+        a, e = orbit["semi_major_axis_km"], orbit["eccentricity"]
+        r_eq = forces.R_EARTH_EQ / 1000.0
+        self.assertAlmostEqual(orbit["perigee_altitude_km"], a * (1 - e) - r_eq, places=1)
+        self.assertAlmostEqual(orbit["apogee_altitude_km"], a * (1 + e) - r_eq, places=1)
+
+
+class NoDocumentationTest(unittest.TestCase):
+    """The app ships no documentation (handbooks, READMEs, notes); only the licence texts the bundled
+    font, icons and uPlot require to travel with them."""
+    ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    SHIPPED = (("astroflyer", "frontend"), ("astroflyer", "resources"))
+    DOC_EXTENSIONS = (".md", ".pdf", ".txt", ".rst", ".doc", ".docx")
+
+    def _read(self, *parts):
+        with open(os.path.join(self.ROOT, *parts), encoding="utf-8") as f:
+            return f.read()
+
+    def test_shipped_folders_hold_no_documents(self):
+        for parts in self.SHIPPED:
+            for folder, _, files in os.walk(os.path.join(self.ROOT, *parts)):
+                docs = [f for f in files if f.lower().endswith(self.DOC_EXTENSIONS)
+                        and not f.upper().startswith(("LICENSE", "OFL"))]
+                self.assertEqual(docs, [], folder)
+
+    def test_ui_links_no_document(self):
+        self.assertNotIn(".pdf", self._read("astroflyer", "frontend", "index.html"))
+
+    def test_spec_bundles_only_runtime_folders(self):
+        spec = self._read("AstroFlyer.spec")
+        self.assertNotIn("'datasources'", spec)
+
+    def test_installer_and_build_add_no_document(self):
+        self.assertNotIn(".pdf", self._read("installer", "AstroFlyer_Installer.iss"))
+        self.assertNotIn("--pdf", self._read("build_release.py"))
+
 if __name__ == "__main__":
     unittest.main()

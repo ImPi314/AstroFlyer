@@ -72,6 +72,40 @@ from backend.ccsds_exporter import CCSDSExporter
 from backend.mission_plan_io import export_to_mission_plan, import_from_mission_plan, validate_mission_plan
 
 
+def app_manifest() -> dict[str, Any]:
+    """What the app is and does, stated plainly; numbers are computed, never typed in."""
+    a_km, ecc = 24389.0, 0.728525          # default mission: the GTO the script editor starts from
+    r_eq_km = R_EARTH_EQ / 1000.0
+    return {
+        "app_name": "AstroFlyer HEO",
+        "propagator": "Cowell (Cartesian state) with SciPy DOP853 by default; also Radau, RKF7(8), "
+                      "Bulirsch-Stoer, RK4, and analytic Kepler, J2 mean elements and SGP4",
+        "force_model": [
+            "EGM2008 gravity up to degree and order 70 (8x8 by default)",
+            "Sun and Moon from JPL DE440 (1990-2060)",
+            "Solar radiation pressure with a conical shadow on the WGS-84 ellipsoid",
+            "NRLMSISE-00 drag with bundled space weather",
+            "IERS relativity correction",
+        ],
+        "validation": "Cross-checked against Orekit on Molniya, Tundra, GTO and a high-eccentricity "
+                      "orbit, two-body through the full model, over 1 and 7 days",
+        "default_mission": {
+            "mission_name": "Geostationary transfer orbit",
+            "orbit_parameters": {
+                "semi_major_axis_km": a_km,
+                "eccentricity": ecc,
+                "inclination_deg": 28.5,
+                "raan_deg": 45.0,
+                "argument_of_perigee_deg": 30.0,
+                "true_anomaly_deg": 0.0,
+                "perigee_altitude_km": round(a_km * (1.0 - ecc) - r_eq_km, 3),
+                "apogee_altitude_km": round(a_km * (1.0 + ecc) - r_eq_km, 3),
+                "period_hours": round(2.0 * math.pi * math.sqrt((a_km * 1e3) ** 3 / MU_EARTH) / 3600.0, 4),
+            },
+        },
+    }
+
+
 class NumpyJSONEncoder(json.JSONEncoder):
     @override
     def default(self, o: Any) -> Any:
@@ -187,37 +221,7 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
         predictor = EventPredictor()
 
         if path == "/api/manifest":
-            manifest_path = resolve_app_path("datasources", "gto_manifest.json")
-            data: dict[str, Any] = {}
-            if os.path.exists(manifest_path):
-                with open(manifest_path, 'r', encoding='utf-8') as f:
-                    data = cast(dict[str, Any], json.load(f))
-            else:
-                data = {
-                    "project_name": "AstroFlyer HEO",
-                    "target_regime": "Molniya-1 / GTO",
-                    "epoch": "2026-09-24T00:00:00Z"
-                }
-            data["app_name"] = "AstroFlyer HEO Studio"
-            data["review_stage"] = "Third Review: Final Production & V&V Certification Release"
-            data["astrodynamics_engine"] = "AstroFlyer Coupled Cowell / Stiff Radau-IIA Core"
-            data["operations_ui"] = {
-                "ui_standard": "AstroFlyer HEO Aerospace Operations Console",
-                "background_palette": "#1e1e1e canvas with #161616 toolbars and #00e5ff cyan telemetry",
-                "regime_badges": ["PERIGEE CORRIDOR (LIME)", "APOGEE DWELL (RED)", "UMBRA (PURPLE)", "PENUMBRA (AMBER)"]
-            }
-            data["production_capabilities"] = [
-                "Full Coupled Physics Kernel (J2-J8, Moon, Sun, Drag, SRP)",
-                "Flight Software V&V Benchmark Matrix (Sub-Meter Accuracy, 26.35x Speedup)",
-                "AstroFlyer Mission Script Workbench & Targeting (B-Plane & Hohmann)",
-                "On-Board FSW Subsystems (MRP Attitude, Solar Power, Battery SoC, Thermal)",
-                "Conical Umbra/Penumbra Eclipse & Thermal Shock Gating",
-                "Global Ground Station Network (SEZ Topocentric Horizon AOS/LOS)",
-                "Optimal Vectorial Apogee Boost & Plane-Change Delta-V Targeter",
-                "Hyperbolic B-Plane LGA Targeter with 1-Sigma Dispersion Ellipse",
-                "Multi-Decadal 25-Year Space Debris Lifetime Prediction"
-            ]
-            self.send_json(data)
+            self.send_json(app_manifest())
 
         elif path == "/api/benchmark/summary":
             bench = HEOBenchmarkSuite()

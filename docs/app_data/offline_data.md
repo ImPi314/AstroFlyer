@@ -1,4 +1,4 @@
-Bundled offline data. See manifest.json for sources and validity.
+Offline data bundled in astroflyer/resources/. See manifest.json for sources and validity.
 
 - iers/          Leap seconds and Earth orientation (backend/eop.py)
 - ephemeris/     JPL DE440 subset, 1990-2060, for Sun/Moon positions (backend/ephemeris.py)

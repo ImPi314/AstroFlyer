@@ -125,20 +125,12 @@ button, input, select { font: inherit; color: inherit; }
 }
 
 .layout-controls[hidden] { display: none; }
-.layout-controls[hidden] + .topbar-link { margin-left: auto; }
 
 .layout-controls [aria-pressed="true"] {
     background: var(--raised);
     border-color: var(--line);
     color: var(--amber);
 }
-
-.topbar-link {
-    color: var(--muted);
-    text-decoration: none;
-}
-
-.topbar-link:hover { color: var(--text); }
 
 .region-title {
     font-family: var(--font-condensed);

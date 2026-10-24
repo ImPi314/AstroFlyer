@@ -17,7 +17,6 @@ pkg = os.path.join(project_root, 'astroflyer')
 datas = [
     (os.path.join(pkg, 'frontend'), os.path.join('astroflyer', 'frontend')),
     (os.path.join(pkg, 'resources'), os.path.join('astroflyer', 'resources')),
-    (os.path.join(pkg, 'datasources'), os.path.join('astroflyer', 'datasources')),
     (os.path.join(pkg, 'data', 'AstroFlyer_HEO_Mission_Plan.MissionPlan'), os.path.join('astroflyer', 'data')),
     (os.path.join(pkg, 'icon.ico'), 'astroflyer'),
 ]
