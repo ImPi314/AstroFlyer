@@ -51,6 +51,14 @@ class TestOrbitEvents(unittest.TestCase):
         first = events[0]
         self.assertEqual(first["utc"], (Epoch.from_iso(EPOCH) + first["t_s"]).iso("UTC"))
 
+    def test_events_survive_the_shadow_restarts(self):
+        # With SRP on, SciPy runs restart at each shadow edge; apsides and nodes must still come through
+        period = 2.0 * math.pi * math.sqrt(A_MOLNIYA ** 3 / MU_EARTH)
+        sol = ThirdReviewEngine(molniya_state(ta_deg=5.0), epoch=EPOCH).propagate(
+            (0.0, 1.1 * period), num_points=200, model="coupled", method="DOP853", enable_srp=True)
+        kinds = [ev["type"] for ev in sol["events"]]
+        self.assertEqual(kinds[:4], ["ascending_node", "apogee", "descending_node", "perigee"])
+
     def test_starting_at_perigee_and_on_a_node_is_reported_once(self):
         sol = run(molniya_state(ta_deg=0.0), 3600.0)
         starts = [ev["type"] for ev in sol["events"] if ev["t_s"] == 0.0]
