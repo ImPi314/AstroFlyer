@@ -28,6 +28,7 @@ from .frames import EarthOrientation, FastEarthRotation, gcrf_to_geodetic, trans
 from . import analytic
 from .integrators import integrate
 from .covariance_engine import CovarianceEngine, CovarianceSteering
+from .ecr_mf_controller import FidelitySchedule
 
 # ==============================================================================
 # LAYER 1: MATH CORE
@@ -520,6 +521,9 @@ class ThirdReviewEngine:
             cfg.third_body = bool(enable_third_body)
             cfg.srp = bool(enable_srp)
         self.force_config = cfg
+        # ECR-MF: the gravity degree follows the orbit's radius tier (backend/ecr_mf_controller.py)
+        schedule = FidelitySchedule(cfg, epsilon=kwargs.get('ecr_epsilon', 1e-10))             if kwargs.get('fidelity') == 'ecr_mf' else None
+        events = _ORBIT_EVENT_FUNCTIONS + (schedule.boundary_events() if schedule else [])
         j2_v = J2_EARTH if cfg.gravity_degree >= 2 else 0.0
         j3_v = J3_EARTH if cfg.gravity_degree >= 3 else 0.0
         j4_v = J4_EARTH if cfg.gravity_degree >= 4 else 0.0
@@ -538,7 +542,7 @@ class ThirdReviewEngine:
             cr_area_over_m=cr_area_over_m,
             epoch_tt_j2000_s=epoch_tt,
             earth_rotation=earth_rotation,
-            force_config=cfg
+            force_config=schedule.config_at(y[0:3]) if schedule else cfg
         )
 
         # Propagator: analytic (no integration), one of ours (exact outputs), or SciPy's
@@ -558,12 +562,12 @@ class ThirdReviewEngine:
             # Variational equations dPhi/dt = A(t) Phi ride along; only the orbit sets the step size
             steerer = CovarianceSteering(P0=kwargs.get('covariance0'), eta=kwargs.get('steering_eta', 0.02))
             sol = integrate(_with_variational_equations(eom), t_span, np.concatenate([self.y0, np.eye(6).ravel()]),
-                            method=own_integrator, t_eval=t_eval, events=_ORBIT_EVENT_FUNCTIONS,
+                            method=own_integrator, t_eval=t_eval, events=events,
                             rtol=rtol, atol=atol, n_error=6, steering=steerer)
         elif own_integrator is not None:
             fixed_step = float(kwargs.get('fixed_step') or 10.0) if own_integrator == 'RK4' else None
             sol = integrate(eom, t_span, self.y0, method=own_integrator, t_eval=t_eval,
-                            events=_ORBIT_EVENT_FUNCTIONS, rtol=rtol, atol=atol, fixed_step=fixed_step)
+                            events=events, rtol=rtol, atol=atol, fixed_step=fixed_step)
         else:
             solver_method = method
             if solver_method in ('PD853', 'DOP853', 'RK89'):
@@ -580,10 +584,10 @@ class ThirdReviewEngine:
             if boundaries:
                 sol = solve_ivp_segmented(eom, t_span, self.y0, boundaries,
                                           method=solver_method, t_eval=t_eval, rtol=rtol, atol=atol,
-                                          events=_ORBIT_EVENT_FUNCTIONS)
+                                          events=events)
             else:
                 sol = solve_ivp(eom, t_span, self.y0, method=solver_method, t_eval=t_eval, rtol=rtol, atol=atol,
-                                events=_ORBIT_EVENT_FUNCTIONS)
+                                events=events)
 
         times = sol.t
         pos = sol.y[0:3].T
@@ -694,6 +698,7 @@ class ThirdReviewEngine:
             'force_diagnostics': force_diag,
             'stm': sol.y[6:42].T.reshape(-1, 6, 6) if steering is not None else None,
             'steps': steerer.record() if steering is not None else None,
+            'ecr_mf': schedule.report(sol.t_events[len(_ORBIT_EVENT_FUNCTIONS):]) if schedule else None,
         }
 
 # Aliases for backwards compatibility across tests and legacy scripts
