@@ -165,8 +165,20 @@ export function fromPayload(payload) {
             points: payload.total_points,
             max_energy_error: Math.max(...payload.energy_error.map(Math.abs)),
             shadow_pct: eclipses.mission_eclipse_fraction_pct ?? null,
+            // Reported by engines that take a Cartesian start and duration_s; null from older ones.
+            initialState: payload.active_orbit_config.initial_state ?? null,
+            durationS: payload.duration_s ?? null,
         },
     };
+}
+
+// Inputs in the request that the engine's answer shows it did not use, in plain words.
+// An older engine silently runs its default orbit or length instead.
+export function ignoredInputs(request, summary) {
+    const ignored = [];
+    if (request.position_km && summary.initialState !== 'cartesian') ignored.push('position and velocity');
+    if (request.duration_s != null && !(Math.abs((summary.durationS ?? NaN) - request.duration_s) <= 1)) ignored.push('run length in hours or days');
+    return ignored;
 }
 
 function sunDirections(reported, count) {
