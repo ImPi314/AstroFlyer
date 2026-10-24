@@ -84,12 +84,31 @@ class TestGeneralMissionInputs(unittest.TestCase):
         status, out = self.post("/api/propagate", dict(FAST, position_km=[7000.0, 0.0], velocity_kms=[0.0, 7.5, 0.0]))
         self.assertEqual(status, 400)
         self.assertIn("position_km", out["error"])
-        # Escape trajectories are refused with a clear message, with or without duration_s
-        for extra in ({}, {"duration_s": 3600.0}):
-            status, out = self.post("/api/propagate", dict(FAST, position_km=[7000.0, 0.0, 0.0],
-                                                            velocity_kms=[0.0, 12.0, 0.0], **extra))
-            self.assertEqual(status, 400)
-            self.assertIn("escape", out["error"])
+        # An escape trajectory has no period, so it needs an explicit duration_s
+        status, out = self.post("/api/propagate", dict(FAST, position_km=[7000.0, 0.0, 0.0],
+                                                        velocity_kms=[0.0, 12.0, 0.0]))
+        self.assertEqual(status, 400)
+        self.assertIn("duration_s", out["error"])
+
+    def test_escape_trajectory_with_duration(self):
+        r_km, v_kms = [7000.0, 0.0, 0.0], [0.0, 12.0, 0.0]
+        status, out = self.post("/api/propagate", dict(FAST, position_km=r_km, velocity_kms=v_kms, duration_s=36000.0))
+        self.assertEqual(status, 200, out.get("error"))
+        r = np.array(out["position_m"])
+        v = np.array(out["velocity_ms"])
+        np.testing.assert_allclose(r[0], np.array(r_km) * 1e3, atol=1e-6)
+        self.assertAlmostEqual(out["times"][-1], 36000.0, places=6)
+        energy = 0.5 * np.sum(v * v, axis=1) - MU_EARTH / np.linalg.norm(r, axis=1)
+        self.assertGreater(energy[0], 0.0)
+        np.testing.assert_allclose(energy, energy[0], rtol=1e-8)          # two-body: energy is conserved
+        self.assertGreater(np.linalg.norm(r[-1]), 300000e3)                # well on its way out
+        cfg = out["active_orbit_config"]
+        self.assertFalse(out["closed_orbit"])
+        self.assertGreater(cfg["eccentricity"], 1.0)
+        self.assertIsNone(cfg["orbital_period_hours"])
+        self.assertIsNone(cfg["apogee_alt_km"])
+        self.assertIn("events", out)
+        self.assertIn("sun_direction_eci", out)
 
     def test_script_propagate_takes_duration_s(self):
         script = MissionScriptWorkbench.generate_mission_script(sma_km=26560.0, ecc=0.72, num_orbits=1)
