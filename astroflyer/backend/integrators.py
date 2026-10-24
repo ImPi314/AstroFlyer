@@ -65,7 +65,7 @@ def _modified_midpoint(fun, t, y, h, n, f0):
     return 0.5 * (z0 + z1 + sub * fun(t + h, z1))
 
 
-def _bs_step(fun, t, y, h, rtol, atol):
+def _bs_step(fun, t, y, h, rtol, atol, n_error=None):
     """One extrapolated step; returns (y_new, err_norm, nfev, columns used)."""
     f0 = fun(t, y)
     nfev = 1
@@ -79,8 +79,8 @@ def _bs_step(fun, t, y, h, rtol, atol):
             row.append(row[k - 1] + (row[k - 1] - table[j - 1][k - 1]) / (ratio - 1.0))
         table.append(row)
         if j >= 2:
-            scale = atol + rtol * np.maximum(np.abs(y), np.abs(row[-1]))
-            err = np.sqrt(np.mean(((row[-1] - row[-2]) / scale) ** 2))
+            scale = atol + rtol * np.maximum(np.abs(y[:n_error]), np.abs(row[-1][:n_error]))
+            err = np.sqrt(np.mean(((row[-1][:n_error] - row[-2][:n_error]) / scale) ** 2))
             if err <= 1.0:
                 return row[-1], err, nfev, j
     return table[-1][-1], err, nfev, len(_BS_SEQUENCE) - 1
@@ -114,13 +114,15 @@ class IntegrationResult:
 class _Stepper:
     """Takes one accepted step of a requested size (the controller lives in integrate)."""
 
-    def __init__(self, fun, method, rtol, atol):
+    def __init__(self, fun, method, rtol, atol, n_error=None):
         self.fun, self.method, self.rtol, self.atol = fun, method, rtol, atol
+        self.n_error = n_error              # only the first n_error components set the step size
         self.nfev = 0
 
     def error_norm(self, y, y_new, err_vec):
-        scale = self.atol + self.rtol * np.maximum(np.abs(y), np.abs(y_new))
-        return np.sqrt(np.mean((err_vec / scale) ** 2))
+        n = self.n_error
+        scale = self.atol + self.rtol * np.maximum(np.abs(y[:n]), np.abs(y_new[:n]))
+        return np.sqrt(np.mean((err_vec[:n] / scale) ** 2))
 
     def attempt(self, t, y, h):
         """Returns (y_new, err_norm, suggested next |h|)."""
@@ -133,7 +135,7 @@ class _Stepper:
             err = self.error_norm(y, y_new, err_vec)
             factor = 0.9 * (1.0 / err) ** (1.0 / 8.0) if err > 0 else 4.0
             return y_new, err, abs(h) * min(4.0, max(0.2, factor))
-        y_new, err, n, j = _bs_step(self.fun, t, y, h, self.rtol, self.atol)
+        y_new, err, n, j = _bs_step(self.fun, t, y, h, self.rtol, self.atol, self.n_error)
         self.nfev += n
         factor = 0.94 * (0.65 / err) ** (1.0 / (2 * j + 1)) if err > 0 else 4.0
         if err <= 1.0 and j < 4:
@@ -158,13 +160,17 @@ class _Stepper:
 
 
 def integrate(fun, t_span, y0, method="RKF78", t_eval=None, events=None,
-              rtol=1e-11, atol=1e-11, first_step=None, fixed_step=None, max_step=np.inf):
+              rtol=1e-11, atol=1e-11, first_step=None, fixed_step=None, max_step=np.inf,
+              n_error=None, steering=None):
     """Integrates dy/dt = fun(t, y) from t_span[0] to t_span[1].
 
     Events follow solve_ivp conventions: callables g(t, y) with optional
     `direction` (+1 rising, -1 falling, 0 both) and `terminal` attributes; a
     terminal event ends the run there, with the event state as the last output.
-    RK4 needs fixed_step (s).
+    RK4 needs fixed_step (s). n_error limits step-size control to the first
+    n_error components (e.g. the 6 orbit states when variational equations ride along).
+    steering, if given, has start(t, y), limit(t, y, h) -> max |h|, admits(y, y_new) -> bool
+    (False rejects the step) and accepted(t, y, h); it can only shorten steps (see covariance_engine.CovarianceSteering).
     """
     method = method.upper()
     if method not in METHODS:
@@ -178,7 +184,7 @@ def integrate(fun, t_span, y0, method="RKF78", t_eval=None, events=None,
     direction = 1.0 if tf >= t0 else -1.0
     y = np.asarray(y0, dtype=float).copy()
     outputs = np.asarray(t_eval if t_eval is not None else [t0, tf], dtype=float)
-    stepper = _Stepper(fun, method, rtol, atol)
+    stepper = _Stepper(fun, method, rtol, atol, n_error)
     events = list(events or [])
     ev_dir = [float(getattr(ev, "direction", 0.0)) for ev in events]
     ev_terminal = [bool(getattr(ev, "terminal", False)) for ev in events]
@@ -202,14 +208,20 @@ def integrate(fun, t_span, y0, method="RKF78", t_eval=None, events=None,
         out_y.append(stepper.exact(t0, y, outputs[k_out] - t0))
         k_out += 1
     g_prev = [ev(t0, y) for ev in events]
+    if steering is not None:
+        steering.start(t0, y)
 
     t = t0
     while (tf - t) * direction > 0:
         h = direction * min(abs(h), abs(tf - t), max_step)
+        if steering is not None and not fixed_step:
+            h = direction * steering.limit(t, y, abs(h))
         if fixed_step:
             y_new, err, h_next = stepper.attempt(t, y, h)
         else:
             y_new, err, h_next = stepper.attempt(t, y, h)
+            if err <= 1.0 and steering is not None and not steering.admits(y, y_new):
+                err, h_next = np.inf, 0.5 * abs(h)
             if err > 1.0:
                 h = direction * h_next
                 if abs(h) < 1e-12 * max(1.0, abs(t)):
@@ -257,6 +269,8 @@ def integrate(fun, t_span, y0, method="RKF78", t_eval=None, events=None,
             out_y.append(y_new.copy() if dt == h else stepper.exact(t, y, dt))
             k_out += 1
 
+        if steering is not None:
+            steering.accepted(t_new, y_new, h)
         t, y = t_new, y_new
         h = direction * (abs(fixed_step) if fixed_step else h_next)
 

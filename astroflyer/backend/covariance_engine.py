@@ -185,6 +185,59 @@ class CovarianceEngine:
         }
 
 
+class CovarianceSteering:
+    """
+    Covariance-steered step limiter (Innovation 5) for integrators.integrate.
+
+    The integrated state carries the STM after the orbit, y = [r, v, Phi(6x6)]. Before
+    each step the position covariance P = Phi P0 Phi^T and its rate dP/dt = A P + P A^T
+    give sigma_pos = sqrt(tr P_rr) and d(sigma_pos)/dt; the step is capped so the
+    linearised fractional growth of sigma_pos over one step is at most eta, and a step
+    whose actual growth exceeds eta is rejected and retried shorter. Truncation error
+    control still runs as usual: this only ever shortens steps.
+    """
+    def __init__(self, P0=None, eta=0.02, sigma_pos_m=10.0, sigma_vel_ms=0.01):
+        self.P0 = np.diag([sigma_pos_m**2] * 3 + [sigma_vel_ms**2] * 3) if P0 is None else np.asarray(P0, float)
+        self.eta = float(eta)
+        self._gradient = CovarianceEngine().compute_gravity_gradient
+        self._limited = False
+        self.t, self.h, self.sigma, self.limited = [], [], [], []
+
+    def _sigma_and_rate(self, y):
+        phi = y[6:42].reshape(6, 6)
+        P = phi @ self.P0 @ phi.T
+        G = self._gradient(y[0:3])
+        # (A P + P A^T)_rr with A = [[0, I], [G, 0]] is P_vr + P_rv
+        rate_rr = np.trace(P[3:6, 0:3]) + np.trace(P[0:3, 3:6])
+        sigma = math.sqrt(max(np.trace(P[0:3, 0:3]), 0.0))
+        return sigma, rate_rr / (2.0 * sigma) if sigma > 0 else 0.0
+
+    def start(self, t, y):
+        self.t, self.h, self.sigma, self.limited = [float(t)], [0.0], [self._sigma_and_rate(y)[0]], [False]
+
+    def limit(self, t, y, h):
+        """Largest allowed |step| from (t, y), given the controller's proposal h > 0."""
+        sigma, rate = self._sigma_and_rate(y)
+        cap = self.eta * sigma / abs(rate) if rate != 0.0 else math.inf
+        self._limited = cap < h
+        return min(h, cap)
+
+    def admits(self, y, y_new):
+        """The guarantee behind the prediction: a step may grow sigma_pos by at most eta."""
+        sigma, sigma_new = self._sigma_and_rate(y)[0], self._sigma_and_rate(y_new)[0]
+        return sigma == 0.0 or abs(sigma_new - sigma) <= self.eta * sigma
+
+    def accepted(self, t, y, h):
+        self.t.append(float(t))
+        self.h.append(float(h))
+        self.sigma.append(self._sigma_and_rate(y)[0])
+        self.limited.append(self._limited)
+
+    def record(self):
+        return {"t_s": self.t, "h_s": self.h, "sigma_pos_m": self.sigma, "limited": self.limited,
+                "eta": self.eta}
+
+
 class CovarianceSteeredAdaptiveStepController:
     """
     Variational Covariance-Steered Adaptive Step Controller (Innovation 5).

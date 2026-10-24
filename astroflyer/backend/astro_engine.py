@@ -27,6 +27,7 @@ from .forces import ForceModelConfig, SimpleEarthRotation
 from .frames import EarthOrientation, FastEarthRotation, gcrf_to_geodetic, transform_state
 from . import analytic
 from .integrators import integrate
+from .covariance_engine import CovarianceEngine, CovarianceSteering
 
 # ==============================================================================
 # LAYER 1: MATH CORE
@@ -421,6 +422,18 @@ ANALYTIC_METHODS = {'KEPLER': 'kepler', 'TWOBODYANALYTIC': 'kepler', 'J2MEAN': '
 OWN_INTEGRATORS = {'RKF78': 'RKF78', 'RK78': 'RKF78', 'BS': 'BS', 'BULIRSCHSTOER': 'BS', 'RK4': 'RK4'}
 
 
+def _with_variational_equations(eom):
+    """Right-hand side for [r, v, Phi]: the orbit's own EOM plus dPhi/dt = A Phi, with
+    A = [[0, I], [G(r), 0]] and G the point-mass + J2 gravity gradient."""
+    gradient = CovarianceEngine().compute_gravity_gradient
+
+    def rhs(t, y):
+        phi = y[6:42].reshape(6, 6)
+        dphi = np.vstack([phi[3:6], gradient(y[0:3]) @ phi[0:3]])
+        return np.concatenate([eom(t, y[0:6]), dphi.ravel()])
+    return rhs
+
+
 class _AnalyticSolution:
     """The solve_ivp fields propagate() reads, for a closed-form trajectory."""
 
@@ -480,6 +493,7 @@ class ThirdReviewEngine:
         atol=1e-11,
         b_star=0.015,
         cr_area_over_m=0.02,
+        steering=None,
         **kwargs
     ):
         """
@@ -538,6 +552,14 @@ class ThirdReviewEngine:
             sol = _AnalyticSolution(t_eval, r_out, v_out)
             apsides = bool(cartesian_to_keplerian(self.y0[:3], self.y0[3:], mu=self.mu)['e'] > 1e-3)
             event_list = analytic.analytic_events(state_fn, t_eval, self.epoch, apsides=apsides)
+        elif steering is not None:
+            if steering != 'covariance' or own_integrator not in ('RKF78', 'BS'):
+                raise ValueError("steering='covariance' runs with method 'RKF78' or 'BS'")
+            # Variational equations dPhi/dt = A(t) Phi ride along; only the orbit sets the step size
+            steerer = CovarianceSteering(P0=kwargs.get('covariance0'), eta=kwargs.get('steering_eta', 0.02))
+            sol = integrate(_with_variational_equations(eom), t_span, np.concatenate([self.y0, np.eye(6).ravel()]),
+                            method=own_integrator, t_eval=t_eval, events=_ORBIT_EVENT_FUNCTIONS,
+                            rtol=rtol, atol=atol, n_error=6, steering=steerer)
         elif own_integrator is not None:
             fixed_step = float(kwargs.get('fixed_step') or 10.0) if own_integrator == 'RK4' else None
             sol = integrate(eom, t_span, self.y0, method=own_integrator, t_eval=t_eval,
@@ -669,7 +691,9 @@ class ThirdReviewEngine:
             'velocity_itrf_ms': v_itrf,
             'model': model_clean,
             'method': method,
-            'force_diagnostics': force_diag
+            'force_diagnostics': force_diag,
+            'stm': sol.y[6:42].T.reshape(-1, 6, 6) if steering is not None else None,
+            'steps': steerer.record() if steering is not None else None,
         }
 
 # Aliases for backwards compatibility across tests and legacy scripts
