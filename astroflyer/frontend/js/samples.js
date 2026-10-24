@@ -22,14 +22,14 @@ export const SAMPLES = [
     {
         name: 'Sirius (Tundra)',
         lead: 'The Tundra orbit flown by the first Sirius satellite radio spacecraft, apogee over North America.',
-        source: 'Sirius FM-1 to FM-3: e about 0.268 at 63.4 deg, as published for the Sirius constellation.',
-        spacecraft: { orbitInput: 'keplerian', a: 42164, e: 0.268, inc: 63.4, raan: 0, aop: 270, ta: 0 },
+        source: 'Sirius FM-1 to FM-3 constellation orbit: 23,975 by 46,983 km at 63.4 deg (Gunter\'s Space Page).',
+        spacecraft: { orbitInput: 'apsides', hp: 23975, ha: 46983, inc: 63.4, raan: 0, aop: 270, ta: 0 },
         orbits: 2,
     },
     {
         name: 'QZS-1',
         lead: 'Quasi-zenith orbit: geosynchronous, e = 0.075 and about 41 deg, tracing a figure eight over Japan.',
-        source: 'QZS-1 (Michibiki), approximate published elements.',
+        source: 'Quasi-zenith orbit design values for QZS-1 (Michibiki): a 42,164 km, e 0.075, 41 deg (JAXA IS-QZSS). QZS-1 has since been retired to a higher orbit.',
         spacecraft: { orbitInput: 'keplerian', a: 42164, e: 0.075, inc: 41, raan: 0, aop: 270, ta: 0 },
         orbits: 2,
     },
@@ -43,8 +43,8 @@ export const SAMPLES = [
     {
         name: 'GTO (Kourou)',
         lead: 'Near-equatorial transfer orbit from French Guiana, so less plane change is left for the spacecraft.',
-        source: 'Ariane 5 standard GTO: 250 by 35,943 km at 6 deg, argument of perigee 178 deg.',
-        spacecraft: { orbitInput: 'apsides', hp: 250, ha: 35943, inc: 6, raan: 0, aop: 178, ta: 0 },
+        source: 'Ariane 5 flight V192 target orbit: 250 by 35,786 km at 6 deg (ESA). Argument of perigee 178 deg is typical for Kourou, not from that source.',
+        spacecraft: { orbitInput: 'apsides', hp: 250, ha: 35786, inc: 6, raan: 0, aop: 178, ta: 0 },
         orbits: 3,
     },
     {
@@ -64,22 +64,22 @@ export const SAMPLES = [
     {
         name: 'XMM-Newton',
         lead: 'Two-day X-ray observatory orbit that spends most of its time above the radiation belts.',
-        source: 'ESA XMM-Newton initial orbit: 7,000 by 114,000 km at 40 deg.',
-        spacecraft: { orbitInput: 'apsides', hp: 7000, ha: 114000, inc: 40, raan: 0, aop: 0, ta: 0 },
+        source: 'ESA XMM-Newton orbit after launch: 7,000 by 114,000 km at 40 deg, apogee in the south (ESA fact sheet).',
+        spacecraft: { orbitInput: 'apsides', hp: 7000, ha: 114000, inc: 40, raan: 0, aop: 90, ta: 0 },
         orbits: 2,
     },
     {
         name: 'INTEGRAL',
         lead: 'Three-day gamma-ray observatory orbit, also kept clear of the belts for long observations.',
-        source: 'ESA INTEGRAL initial orbit: about 9,000 by 153,000 km at about 52 deg.',
-        spacecraft: { orbitInput: 'apsides', hp: 9000, ha: 153000, inc: 52, raan: 0, aop: 0, ta: 0 },
+        source: 'ESA INTEGRAL initial orbit: 9,000 by 153,000 km at 51.6 deg (ESA orbit page).',
+        spacecraft: { orbitInput: 'apsides', hp: 9000, ha: 153000, inc: 51.6, raan: 0, aop: 0, ta: 0 },
         orbits: 1,
     },
     {
         name: 'Chandra',
         lead: 'X-ray observatory orbit of about 64 hours, reaching more than a third of the way to the Moon.',
-        source: 'NASA Chandra mission facts: about 16,000 by 139,000 km; 28.5 deg launch inclination.',
-        spacecraft: { orbitInput: 'apsides', hp: 16000, ha: 139000, inc: 28.5, raan: 0, aop: 0, ta: 0 },
+        source: 'Chandra initial operational orbit: about 10,000 by 140,000 km at 28.5 deg (Weisskopf et al. 2000).',
+        spacecraft: { orbitInput: 'apsides', hp: 10000, ha: 140000, inc: 28.5, raan: 0, aop: 0, ta: 0 },
         orbits: 1,
     },
     {
