@@ -205,8 +205,10 @@ class TestReports(unittest.TestCase):
                                        "INC", "RMAG", "VMAG", "BetaAngle", "ShadowFraction", "Elevation.EQ",
                                        "Range.EQ"])
         self.assertEqual(table["Epoch"][1], (EPOCH + 60.0).iso("UTC"))
-        np.testing.assert_allclose(table["Altitude"], 700.0, atol=1e-6)               # km, on the equator
-        np.testing.assert_allclose(table["Latitude"], 0.0, atol=1e-6)
+        # GCRF-equatorial is ~0.36 deg off the equator of date (precession since J2000), so latitude
+        # wanders by that much and the WGS-84 height by about a metre
+        np.testing.assert_allclose(table["Altitude"], 700.0, atol=0.01)
+        np.testing.assert_allclose(table["Latitude"], 0.0, atol=0.5)
         np.testing.assert_allclose(table["SMA"], (R_EARTH_EQ + 700e3) / 1e3, rtol=1e-9)
         np.testing.assert_allclose(table["RMAG"], (R_EARTH_EQ + 700e3) / 1e3, rtol=1e-9)
         np.testing.assert_allclose(table["INC"], 0.0, atol=1e-9)
@@ -226,7 +228,9 @@ class TestReports(unittest.TestCase):
         lines = write_report_csv(None, table).strip().splitlines()
         self.assertEqual(lines[0], "Epoch,Altitude")
         self.assertEqual(len(lines), len(self.t) + 1)
-        self.assertTrue(lines[1].startswith(EPOCH.iso("UTC") + ",700.0"))
+        first_epoch, first_alt = lines[1].split(",")
+        self.assertEqual(first_epoch, EPOCH.iso("UTC"))
+        self.assertAlmostEqual(float(first_alt), 700.0, delta=0.01)
 
 
 class TestAccessEndpoint(unittest.TestCase):
@@ -240,7 +244,8 @@ class TestAccessEndpoint(unittest.TestCase):
         body = {"epoch": "2026-03-20T00:00:00Z", "sma_km": 42164.17, "ecc": 0.0, "inc_deg": 0.0,
                 "raan_deg": 0.0, "aop_deg": 0.0, "ta_deg": 0.0, "duration_s": 86400.0, "step_s": 60.0,
                 "model": "two_body",
-                "stations": [{"name": "EQ", "lat_deg": 0.0, "lon_deg": 0.0, "height_m": 0.0,
+                # Sidereal time is ~12 h at 0h UT on the March equinox, so the satellite sits over 180 deg
+                "stations": [{"name": "EQ", "lat_deg": 0.0, "lon_deg": 180.0, "height_m": 0.0,
                               "min_elevation_deg": 5.0}],
                 "parameters": ["Epoch", "Altitude", "Elevation.EQ"]}
         req = urllib.request.Request(f"http://127.0.0.1:{server.server_address[1]}/api/analysis/access",

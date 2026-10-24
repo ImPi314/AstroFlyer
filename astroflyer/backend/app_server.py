@@ -62,6 +62,7 @@ from backend.fsw_subsystems import (
 )
 from backend.time_systems import TimeStandardEngine, CoordinateFrameEngine
 from backend.epoch import Epoch
+from backend import access as access_analysis
 from backend import mission as mission_targeting
 from backend.script_runner import run_script
 from backend.radiation_belts import RadiationBeltModel, RadiationParetoOptimizer
@@ -145,9 +146,11 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
             content_length = int(self.headers.get('Content-Length', '0'))
             post_data = self.rfile.read(content_length) if content_length > 0 else b'{}'
             params: dict[str, list[str]] = {}
+            self.json_body: dict[str, Any] = {}     # the parsed body, for routes that take lists or objects
             try:
                 body = cast(dict[str, Any], json.loads(post_data.decode('utf-8')))
                 params = {str(k): [str(v)] for k, v in body.items()}
+                self.json_body = body
             except Exception:
                 params = {}
             self.handle_api(path, params)
@@ -290,6 +293,10 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
         elif path == "/api/script/run":
             # Runs a full mission script (Create ... BeginMissionSequence ...) on the AstroFlyer engine
             self.send_json(run_script(_get_str_param(params, 'script_text', '')))
+
+        elif path == "/api/analysis/access":
+            # Ground-station passes, eclipses, beta angle and a report for one propagated orbit
+            self.send_json(_analysis_access(getattr(self, 'json_body', {}) or {}))
 
         elif path == "/api/mission/target":
             # General vary/achieve targeter (backend/mission.py) on a propagated trajectory
@@ -1055,6 +1062,28 @@ class LocalAppServer(ThreadingHTTPServer):
         if sys.platform == "win32" and hasattr(socket, "SO_EXCLUSIVEADDRUSE"):
             self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
         super().server_bind()
+
+
+def _analysis_access(body: dict[str, Any]) -> dict[str, Any]:
+    """Runs /api/analysis/access: Keplerian elements in, passes/eclipses/beta/report out."""
+    try:
+        epoch = Epoch.coerce(body.get('epoch') or None)
+        r0, v0 = keplerian_to_cartesian(float(body.get('sma_km', 24389.0)) * 1000.0, float(body.get('ecc', 0.0)),
+                                        *(float(np.radians(float(body.get(k, 0.0))))
+                                          for k in ('inc_deg', 'raan_deg', 'aop_deg', 'ta_deg')))
+        duration = float(body.get('duration_s', 86400.0))
+        step = max(1.0, float(body.get('step_s', 60.0)))
+        sol = ThirdReviewEngine(np.concatenate([r0, v0]), epoch=epoch).propagate(
+            (0.0, duration), num_points=int(round(duration / step)) + 1, model=str(body.get('model', 'two_body')),
+            method=str(body.get('method', 'RKF78')))
+        stations = [access_analysis.GroundStation.from_dict(d) for d in body.get('stations', [])]
+        out = access_analysis.analyze(epoch, np.asarray(sol['times']), np.asarray(sol['position_m']),
+                                      np.asarray(sol['velocity_ms']), stations,
+                                      body.get('parameters') or ['Epoch'])
+        out['error'] = None
+        return out
+    except (KeyError, TypeError, ValueError) as exc:
+        return {'error': str(exc), 'passes': {}, 'eclipses': [], 'beta_angle_deg': [], 'report': {}}
 
 
 def create_server(port: int = 8003, host: str = "127.0.0.1") -> ThreadingHTTPServer:
