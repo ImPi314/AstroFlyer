@@ -39,6 +39,19 @@ is downloaded at runtime.
 * Analytic **Kepler**, **J2 mean-element** and **SGP4** (from TLEs).
 * Closed orbits by element set or Cartesian GCRF state; escape trajectories (e ≥ 1) by duration.
 
+### Propagation innovations
+* **Covariance-steered stepping** (`steering="covariance"`, RKF7(8)/BS; `covariance_engine.py`): the
+  variational equations dΦ/dt = AΦ are integrated with the orbit, and each step is capped so the
+  1-σ position uncertainty of P = ΦP₀Φᵀ grows by at most η (predicted from dP/dt, enforced by rejecting
+  steps that exceed it). The run returns its STM and step record.
+* **ECR-MF fidelity tiers** (`fidelity="ecr_mf"`; `ecr_mf_controller.py`): above 2,000 km and 20,000 km
+  altitude the gravity field is cut to the lowest degree whose omitted acceleration is provably below
+  ε = 10⁻¹⁰ m/s²; the run reports each tier's degree, its certified bound and every switch time.
+* Measured against Orekit in
+  [validation/results/innovations](astroflyer/validation/results/innovations/README.md): steering removes
+  most of plain RKF7(8)'s error on many cases at ~3.6× the run time; ECR-MF keeps the full model's accuracy
+  but gives no speed-up, because gravity is not the costly force.
+
 ### Events and access (`event_predictor.py`, `access.py`, `eclipse.py`)
 * Apsides and nodes located by root-finding during integration.
 * Ground-station AOS/LOS with elevation masks, look angles and peak elevation.
@@ -52,8 +65,7 @@ is downloaded at runtime.
 ### Analysis modules
 * Van Allen belt L-shell, AP-8/AE-8-style dose and a radiation-vs-lifetime trade
   (`radiation_belts.py`).
-* STM and covariance propagation (`covariance_engine.py`); Molniya constellation coverage
-  (`constellation_engine.py`); regime-switching ECR-MF controller (`ecr_mf_controller.py`);
+* Molniya constellation coverage (`constellation_engine.py`);
   flight-software subsystems — MRP attitude, power, thermal, reaction wheels (`fsw_subsystems.py`).
 
 ### Data exchange

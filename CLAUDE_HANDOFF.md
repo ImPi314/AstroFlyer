@@ -19,14 +19,16 @@
 | `origin/packaging-offline` | Offline PyInstaller/Inno Setup packaging, local-only server, Python 3.12+ preflight, no C++ DLL |
 | `frontend-rebuild` | The new operations console (Mission / Analysis / Data workspaces) |
 
-Then: full-model Orekit results committed (`832dfa6`).
+Then: full-model Orekit results (`832dfa6`), and the two propagation innovations made real, test-first
+(`1607a5a` covariance steering, `f74c544` ECR-MF tiers, `2113e52` API reports from the run, `b929a9d`
+cross-check variants), re-measured against Orekit (see §4).
 
 **Pushed** to `origin/integration` on 2026-10-24. The other remote branches (`origin/phase*`, `origin/general-mission-inputs`,
 `origin/frontend-rebuild`, …) are still on GitHub and are all contained in `integration`. `main` is still the old
 pre-restructure state (`46cfb86`).
 
-**Verified on 2026-10-24:** pytest — 139 pass; the 4 Orekit cross-check tests error because Orekit is not
-installed; 27 frontend `node:test` tests pass; in the browser a Molniya run, Events, Access analysis and a
+**Verified on 2026-10-24:** pytest — 143 pass without Orekit installed (the 4 Orekit cross-check tests then
+error; Orekit now runs on this machine with `JAVA_HOME` set to the Temurin 25 JDK); 27 frontend `node:test` tests pass; in the browser a Molniya run, Events, Access analysis and a
 mission script all worked with no console or server errors.
 
 ---
@@ -61,12 +63,15 @@ window on the main thread; `--browser` opens the default browser instead. The C+
 | Propagation | `astro_engine.py` (`ThirdReviewEngine.propagate`, orbit events), `integrators.py` (RKF78, BS, RK4), `analytic.py` (Kepler, J2 mean, SGP4), `eclipse.py` (segmented `solve_ivp` restarts) |
 | Events & access | `event_predictor.py`, `access.py` (stations, masks, eclipses, beta angle, reports) |
 | Mission design | `mission.py` (Spacecraft, burns, Propagator, DifferentialCorrector, targeting), `script_runner.py` (mission-script interpreter), `differential_corrector.py` (B-plane, finite burn, perigee pumping) |
-| Analysis | `radiation_belts.py`, `covariance_engine.py`, `constellation_engine.py`, `ecr_mf_controller.py`, `fsw_subsystems.py` |
+| Innovations | `covariance_engine.py` (`CovarianceSteering`: STM + step limiter; dispersion), `ecr_mf_controller.py` (`FidelitySchedule`: gravity degree by radius tier with a certified omitted-acceleration bound) |
+| Analysis | `radiation_belts.py`, `constellation_engine.py`, `fsw_subsystems.py` |
 | Data exchange | `ephemeris_io.py` (OEM/OPM/SP3), `ccsds_exporter.py` (TLE/OEM/OPM text), `mission_plan_io.py` (.MissionPlan XML) |
 | Legacy / thin | `trajectory_engine.py`, `gmat_engine.py`, `basilisk_fsw.py`, `freeflyer_interop.py`, `benchmark_comparison.py` |
 
 Propagator methods: `DOP853`/`PD853`, `Radau` (SciPy, with restarts), `RKF78`, `BS`, `RK4`, `KEPLER`, `J2MEAN`,
 `SGP4`. Force-model presets: `two_body`, `j2`, `j2_j3_j4`, anything else = full model (8×8 default).
+Options: `steering="covariance"` (RKF78/BS; returns `stm`, `steps`), `fidelity="ecr_mf"` (returns `ecr_mf`);
+`/api/propagate` takes the same two and reports them under `innovations_suite`.
 
 **Endpoints the new frontend uses:** `/api/propagate`, `/api/script/propagate`, `/api/script/run`,
 `/api/analysis/access`, `/api/targeting/differential_corrector`, `/api/targeting/finite_burn`. The server
@@ -84,6 +89,12 @@ Results in `astroflyer/validation/results/`: every case passes; largest differen
 
 These Orekit numbers are the project's measured accuracy evidence. Do **not** quote the older figures below.
 
+**Innovations re-measured** (`results/innovations/README.md`, `--variant`): covariance steering cuts plain RKF7(8)'s
+error on many cases (HEO stress L7, 7 days: 28.4 → 4.4 m) at ~3.6× the run time, but does not beat the DOP853
+baseline overall and made GTO L7 over 7 days worse (RKF7(8) has no shadow/drag restarts). ECR-MF is exact at 8×8
+(nothing to drop); at 70×70 its tiers are 70/58/8, it stays within mm over a day of the full model, and gives
+no speed-up — gravity is not the costly force. Present it as certified fidelity, not acceleration.
+
 ---
 
 ## 5. Known issues and stale material
@@ -97,6 +108,10 @@ These Orekit numbers are the project's measured accuracy evidence. Do **not** qu
   mission plans that Phase 0 removed.
 * FreeFlyer naming remains in code: `freeflyer_interop.py`, `/api/freeflyer/theme`, `.MissionPlan` I/O.
 * `ccsds_exporter.py` uses deprecated `datetime.utcnow()`.
+* The RKF7(8)/BS path has no shadow-edge or drag-jump restarts (only the SciPy path does), which limits its
+  accuracy with SRP and drag on, steered or not.
+* No Sundman regularisation exists; the review documents still describe one, and still describe the removed
+  post-hoc ECR-MF "certificates" and the cond(Φ) step factor.
 * Threading: the server is a `ThreadingHTTPServer` and runs on a background thread beside pywebview; tests also
   start servers on threads. Whether the user's no-multiple-threads rule applies to app code is still undecided.
 * Leftover folder `Desktop/major_project_py-frontend` (no longer a git worktree) could not be deleted because a
