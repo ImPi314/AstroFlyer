@@ -498,7 +498,8 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
             engine = ThirdReviewEngine(np.concatenate([r0, v0]))
             sol_prop = cast(dict[str, Any], engine.propagate((0.0, 37905.5), num_points=1000))
             eclipses: dict[str, Any] = cast(dict[str, Any], predictor.predict_solar_eclipses(
-                cast(np.ndarray, sol_prop['times']), cast(np.ndarray, sol_prop['position_m'])
+                cast(np.ndarray, sol_prop['times']), cast(np.ndarray, sol_prop['position_m']),
+                sol_prop.get('sun_direction_eci')
             ))
             self.send_json(eclipses)
 
@@ -804,7 +805,7 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
             pos_arr = cast(np.ndarray, sol['position_m'])
             vel_arr = cast(np.ndarray, sol['velocity_ms'])
 
-            eclipses: dict[str, Any] = cast(dict[str, Any], predictor.predict_solar_eclipses(times_arr, pos_arr))
+            eclipses: dict[str, Any] = cast(dict[str, Any], predictor.predict_solar_eclipses(times_arr, pos_arr, sol.get('sun_direction_eci')))
             gs_passes: dict[str, Any] = cast(dict[str, Any], predictor.predict_ground_station_passes(times_arr, pos_arr))
             delta_v_data: dict[str, Any] = cast(dict[str, Any], predictor.calculate_apogee_boost_deltav(a_km, e, inc_initial_deg=inc_deg))
             bplane_data: dict[str, Any] = cast(dict[str, Any], predictor.calculate_b_plane_targeting())

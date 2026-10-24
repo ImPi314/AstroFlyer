@@ -82,13 +82,17 @@ class EventPredictor:
             self.ground_stations = ground_stations
 
     def predict_solar_eclipses(self, times, positions, sun_dir=None):
-        """Calculates Umbra and Penumbra shadow passages and flux fractions."""
-        if sun_dir is None:
-            s_hat = np.array([1.0, 0.0, 0.0])
-        else:
-            s_hat = np.array(sun_dir) / np.linalg.norm(sun_dir)
+        """Calculates Umbra and Penumbra shadow passages and flux fractions.
 
+        sun_dir is the Sun direction in the frame of positions: one vector for the whole arc, or
+        one per sample (the engine's sun_direction_eci). Without it the Sun sits on +X.
+        """
         n_pts = len(times)
+        if sun_dir is None:
+            sun_dir = [1.0, 0.0, 0.0]
+        s_hats = np.broadcast_to(np.asarray(sun_dir, dtype=np.float64), (n_pts, 3))
+        s_hats = s_hats / np.linalg.norm(s_hats, axis=1, keepdims=True)
+
         flux_fraction = np.ones(n_pts, dtype=np.float64)
         regimes = []
         events = []
@@ -105,6 +109,7 @@ class EventPredictor:
 
         for i in range(n_pts):
             r_sc = positions[i]
+            s_hat = s_hats[i]
             r_proj = np.dot(r_sc, s_hat)
             r_perp_vec = r_sc - r_proj * s_hat
             d_perp = np.linalg.norm(r_perp_vec)
