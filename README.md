@@ -2,112 +2,157 @@
 
 [![License](https://img.shields.io/badge/license-Proprietary%20%2F%20Academic-blue.svg)]()
 [![Platform](https://img.shields.io/badge/platform-Windows%20x64-lightgrey.svg)]()
-[![Astrodynamics](https://img.shields.io/badge/kernel-Radau--IIA%20%2F%20Cowell-00e5ff.svg)]()
+[![Python](https://img.shields.io/badge/python-3.12%2B-00e5ff.svg)]()
 
-**AstroFlyer HEO** is a high-precision aerospace desktop application and astrodynamics flight software workbench engineered specifically for **Highly Eccentric Orbits (HEOs)**, including Molniya, Tundra, Chandrayaan Lunar Transfer Injections (LTI), and Geostationary Transfer Orbits (GTO).
+**AstroFlyer HEO** is an offline desktop application for precise trajectory propagation and
+event prediction in **Highly Eccentric Orbits** — Molniya, Tundra, QZS, geostationary transfer
+orbits (GTO), high-apogee science orbits and lunar transfers.
 
-Designed to industrial standards (NASA GMAT, FreeFlyer, ISRO, and Basilisk FSW architecture), AstroFlyer integrates multi-regime orbital propagation, full coupled perturbation physics, autonomous mission events prediction, space radiation fluence tracking, and CCSDS navigation data exchange.
+It is a Python astrodynamics backend served on `127.0.0.1` and a browser-based operations
+console, shown in a native window through pywebview (Edge WebView2). Everything it needs —
+ephemerides, gravity field, Earth-orientation and space-weather data — ships with it; nothing
+is downloaded at runtime.
 
----
-
-## 🚀 Key Architectural Capabilities
-
-### 1. High-Order Numerical Astrodynamics Engine
-* **Coupled Gravitational Field**: Central point-mass gravity with full $J_2, J_3, J_4$ zonal harmonics, higher-order spherical harmonics up to $J_8$, and $C_{22}/S_{22}$ sectoral tesseral harmonics (equatorial ellipticity).
-* **Third-Body Gravitational Perturbations**: High-precision 3D solar and lunar point-mass third-body tidal accelerations with exact orbital precession.
-* **Non-Gravitational Forces**:
-  * MSISE-90 atmospheric drag with Jacchia-Roberts ballistic coefficient ($B^*$) scaling and diurnal thermospheric bulges.
-  * Solar Radiation Pressure (SRP) with dual-cone conical shadow (Umbra/Penumbra) transitions and inverse-square solar distance scaling.
-  * Post-Newtonian General Relativity Schwarzschild accelerations.
-  * Terrestrial Infrared (TIR) and Earth Albedo flux modeling.
-* **Stiff ODE Integrators**: Stiff implicit **Radau-IIA** (5th/13th order), Prince-Dormand **DOP853**, and Runge-Kutta-Fehlberg **RK45** with adaptive step sizes down to $0.001\text{ s}$ through hypersonic perigee corridors.
-* **Jacobi Energy Invariant**: Conserves specific orbital energy to $|\Delta E / E_0| \le 10^{-11}$.
-
-### 2. Multi-Regime Flight Operations Console
-* **3D Celestial Orbit Viewport**: High-performance Three.js hardware-accelerated 3D view with ECI J2000 coordinate axes (+X Vernal Equinox, +Y Orbit Normal, +Z North Celestial Pole), 3D satellite bus model with rotating solar wings and parabolic dish, and live 1-sigma covariance dispersion ellipsoids.
-* **2D Ground Track & Topocentric Visibility**: Equirectangular planetary map with day/night solar terminator, ground station topocentric visibility cones (10°–18° horizon masks), and topocentric azimuth/elevation track paths.
-* **Dynamic Watch Window**: Instantaneous Keplerian classical orbital elements (SMA, ECC, INC, RAAN, AOP, TA), geodetic altitudes, flight speeds, and continuous real-time force balance readouts.
-
-### 3. Flight Software (FSW) Subsystems & Attitude Guidance
-* **Attitude Guidance**: Modified Rodrigues Parameters (MRP) kinematics with Nadir-pointing, Sun-pointing, Velocity-aligned, and Inertial-hold guidance laws.
-* **Power & Thermal**: Dual-channel solar panel array generation, battery State-of-Charge (SoC), and radiative thermal equilibrium modeling.
-* **Reaction Wheel Assemblies**: Bi-directional momentum wheel spin rates (RPM) with saturation protection.
-
-### 4. Space Environment & Radiation Belts
-* **Van Allen Belts**: Geomagnetic dipole coordinate modeling with McIlwain $L$-shell tracking.
-* **Radiation Fluence**: Real-time Inner Proton and Outer Electron belt ingress/egress timestamps, peak $L$-shell values, and Total Ionizing Dose (TID) accumulation (NASA AP-8 / AE-8 standard).
-
-### 5. Numerical Targeting & CCSDS Interoperability
-* **Differential Corrector**: Single-parameter Newton-Raphson shooting method for precision apogee raising maneuvers.
-* **Finite Burn Engine**: Thrust-vector integration with mass depletion ($dM/dt = -T / (I_{\text{sp}} g_0)$) and finite burn gravity loss quantification.
-* **CCSDS Standards**: Automated generation and local export of:
-  * NORAD Two-Line Element sets (`.tle`)
-  * CCSDS 502.0-B-2 Orbit Parameter Messages (`.opm`)
-  * CCSDS 502.0-B-2 Orbit Ephemeris Messages (`.oem`)
+*Major Project, Department of Aerospace Engineering, ACS College of Engineering (VTU).*
 
 ---
 
-## 🛠️ Project Structure
+## Capabilities
+
+### Force model (`astroflyer/backend/forces.py`)
+* **Gravity:** EGM2008 spherical harmonics up to degree/order 70 (default 8×8), plus `two_body`,
+  `j2` and `j2_j3_j4` presets.
+* **Third bodies:** Sun and Moon from JPL **DE440** (bundled subset, 1990–2060).
+* **Solar radiation pressure** with conical umbra/penumbra shadow from the Earth and the Moon;
+  optional Earth albedo and infrared.
+* **Atmospheric drag:** double-precision **NRLMSISE-00** with bundled CelesTrak F10.7/Ap history.
+* **Relativity:** post-Newtonian Schwarzschild term.
+
+### Time and reference frames
+* `Epoch` with UTC, TAI, TT, TDB, UT1 and GPS scales; IERS leap seconds and `finals2000A` EOP.
+* IAU 2006/2000A GCRF ↔ ITRF transformation with polar motion; RTN, VNC and LVLH local frames.
+
+### Propagators (`astro_engine.py`, `integrators.py`, `analytic.py`)
+* SciPy **DOP853** and **Radau** (implicit, for stiff arcs), restarted exactly at shadow edges and
+  drag-model discontinuities so step control never straddles them.
+* In-house **RKF7(8)**, **Bulirsch–Stoer** and fixed-step **RK4**.
+* Analytic **Kepler**, **J2 mean-element** and **SGP4** (from TLEs).
+* Closed orbits by element set or Cartesian GCRF state; escape trajectories (e ≥ 1) by duration.
+
+### Events and access (`event_predictor.py`, `access.py`, `eclipse.py`)
+* Apsides and nodes located by root-finding during integration.
+* Ground-station AOS/LOS with elevation masks, look angles and peak elevation.
+* Earth and Moon eclipses (umbra/penumbra), beta angle, CSV reports.
+
+### Mission design (`mission.py`, `script_runner.py`, `differential_corrector.py`)
+* Impulsive and finite burns with mass flow; differential corrector (vary/achieve).
+* A mission-script interpreter (Create/Propagate/Maneuver/Target/If/While/For/Report).
+* GTO→GEO and perigee-raise targeting; multi-burn perigee pumping.
+
+### Analysis modules
+* Van Allen belt L-shell, AP-8/AE-8-style dose and a radiation-vs-lifetime trade
+  (`radiation_belts.py`).
+* STM and covariance propagation (`covariance_engine.py`); Molniya constellation coverage
+  (`constellation_engine.py`); regime-switching ECR-MF controller (`ecr_mf_controller.py`);
+  flight-software subsystems — MRP attitude, power, thermal, reaction wheels (`fsw_subsystems.py`).
+
+### Data exchange
+* CCSDS OEM / OPM read and write, SP3 read, NORAD TLE generation (`ephemeris_io.py`,
+  `ccsds_exporter.py`).
+
+### Operations console (`astroflyer/frontend/`)
+* Three workspaces: **Mission** (mission tree, inspector, tiled panes), **Analysis** (Events,
+  Access, Targeting, Lifetime, Radiation, Covariance) and **Data** (mission script, export).
+* Linked 3D orbit view (Three.js), ground track with station contacts and shadow, parameter plots
+  (uPlot) and a watch panel, all driven by one playback timeline.
+* Twelve sample orbits, from Molniya and Tundra to XMM-Newton, Chandra and a lunar transfer.
+* Fonts, icons, textures and libraries are bundled; the console works with no network.
+
+---
+
+## Validation
+
+The propagator is cross-checked against **Orekit 13.1** with the same EGM2008 coefficients, at
+epoch 2026-01-01 00:00 TT, on four orbits (Molniya, Tundra, GTO, an HEO stress case), building
+the force model up one level at a time (L0 two-body → L7 full model).
+
+| Run | Largest position difference | Limit |
+| --- | --- | --- |
+| 1 day, L0–L7 | 1.01 m (Molniya, SRP on) | 10 m |
+| 7 days, L3–L7 | 31.7 m (Molniya, SRP on) | 100 m |
+
+Every case passes. Gravity, Sun/Moon and drag agree to centimetres over a day; the larger
+differences appear when solar radiation pressure switches on. Details and the gravity-only runs
+are in [astroflyer/validation/results](astroflyer/validation/results/README.md).
+
+---
+
+## Running locally
+
+**Requirements:** Windows x64, Python 3.12 or newer, and the packages in `requirements.txt`
+(NumPy, SciPy, pywebview, pyerfa, jplephem, pymsis, sgp4; Numba is optional and speeds up gravity).
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+```bash
+python main.py
+```
+
+opens the desktop window. `python main.py --browser` opens the console in your default browser
+instead, and `python astroflyer/backend/app_server.py` runs the server alone at
+`http://127.0.0.1:8003`. If port 8003 is busy, the launcher picks a free port.
+
+### Tests
+
+```bash
+python -m pytest astroflyer/tests
+```
+
+```bash
+node --test astroflyer/tests/frontend/*.test.mjs
+```
+
+The four Orekit cross-check tests need Orekit (`orekit-jpype`) and its data; without them they
+fail at import and the rest of the suite is unaffected.
+
+### Building the Windows installer
+
+```bash
+python build_release.py
+```
+
+builds `dist/AstroFlyer_HEO/AstroFlyer.exe` with PyInstaller (`AstroFlyer.spec`) and, if Inno
+Setup 6 is installed, `dist_installer/AstroFlyer_HEO_v1.0_Setup.exe`. Refresh the bundled space
+weather first with `python tools/fetch_offline_data.py`.
+
+---
+
+## Project structure
 
 ```
 major_project_py/
-├── astroflyer/               # Primary Production Aerospace Application
-│   ├── backend/              # Astrodynamics engine, FSW subsystems, server & REST APIs
-│   │   ├── astro_engine.py   # High-order coupled equations of motion & Radau-IIA solver
-│   │   ├── app_server.py     # Production HTTP server and JSON telemetry endpoints
-│   │   ├── radiation_belts.py# McIlwain L-shell & AP-8/AE-8 radiation belt model
-│   │   ├── covariance_engine.py # State transition matrix (STM) & covariance propagation
-│   │   ├── event_predictor.py# Eclipse, ground station, apsidal & nodal event engine
-│   │   ├── ccsds_exporter.py # CCSDS OEM/OPM and NORAD TLE generation
-│   │   └── differential_corrector.py # Apogee raise & finite burn targeting
-│   ├── frontend/             # High-fidelity Aerospace Operations Console UI
-│   │   ├── index.html        # Multi-tab console with HUD overlays
-│   │   ├── styles.css        # FreeFlyer dark operations theme
-│   │   └── js/               # Viewport 3D, 2D ground track, and telemetry controllers
-│   ├── cpp_engine/           # C++17 SIMD math kernel bindings
-│   ├── figures/              # Verification figures and LaTeX equations
-│   ├── scripts/              # Verification & benchmark scripts
-│   └── main.py               # Application desktop launcher
-├── core/                     # Clean root import proxy
-├── datasources/              # FreeFlyer reference mission plans and station data
-├── docs/                     # Central documentation library
-│   ├── abstract/             # Formal IEEE / VTU project abstracts
-│   ├── handbooks/            # Technical handbooks and defense guides
-│   ├── reports/              # Cross-validation & UI/UX gap analyses
-│   └── screenshots/          # Mission control operations screenshots
-├── literature_survey/        # Research papers & Elicit prior-art surveys
-├── installer/                # Inno Setup Windows desktop packaging scripts
-├── archive/                  # Historical review milestones safely preserved
-│   └── review_milestones/    # Zeroeth, First, and Second review snapshots
-├── main.py                   # Root application launcher
-├── LAUNCH_ASTROFLYER_DESKTOP_APP.bat # One-click Windows desktop launcher
-└── README.md
+├── main.py                     # Launcher (delegates to astroflyer/main.py)
+├── astroflyer/
+│   ├── main.py                 # Desktop window / browser / PDF entry point
+│   ├── backend/                # Astrodynamics engine and the HTTP API (app_server.py)
+│   ├── frontend/               # Operations console: index.html, css/, js/, vendor/
+│   ├── resources/              # Bundled DE440, EGM2008, IERS and space-weather data
+│   ├── validation/             # Orekit cross-check and its results
+│   ├── tests/                  # pytest suite and frontend/ (node:test)
+│   ├── cpp_engine/             # Retired C++ kernel, kept for reference
+│   └── scripts/, figures/, data/, docs/
+├── core/                       # Compatibility imports for older scripts
+├── installer/                  # Inno Setup script
+├── tools/fetch_offline_data.py # Refreshes bundled space weather
+├── docs/                       # Abstracts, review handbooks, reports
+├── literature_survey/          # Prior-art and benchmark surveys
+├── requirements.txt, requirements-dev.txt
+└── build_release.py, AstroFlyer.spec
 ```
 
 ---
 
-## 🖥️ Running Locally
-
-### Prerequisites
-* Python 3.10+ (64-bit recommended)
-* Required packages: `numpy`, `scipy`
-* Optional: `pywebview` for native desktop container window
-
-### Quick Start
-```bash
-# Launch the AstroFlyer Desktop App (Root launcher)
-python main.py
-
-# Or via the one-click Windows launcher
-LAUNCH_ASTROFLYER_DESKTOP_APP.bat
-```
-Or start the dedicated flight dynamics server directly:
-```bash
-python astroflyer/backend/app_server.py
-```
-Then navigate to `http://localhost:8003` in any modern web browser.
-
----
-
-## 📜 Repository
-Primary Repository: **[https://github.com/ImPi314/AstroFlyer.git](https://github.com/ImPi314/AstroFlyer.git)**
+## Repository
+[https://github.com/ImPi314/AstroFlyer](https://github.com/ImPi314/AstroFlyer)
