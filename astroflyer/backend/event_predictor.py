@@ -167,7 +167,10 @@ class EventPredictor:
                     "solar_flux_min": round(float(np.min(flux_fraction[max(0, i-50):i+1])), 4)
                 })
 
-        total_eclipse_sec = float(np.sum(flux_fraction < 0.99) * (times[1] - times[0])) if n_pts > 1 else 0.0
+        # Output points need not be evenly spaced: each stands for the time halfway to its neighbours
+        t = np.asarray(times, dtype=float)
+        edges = np.concatenate([[t[0]], 0.5 * (t[1:] + t[:-1]), [t[-1]]]) if n_pts > 1 else t[:1]
+        total_eclipse_sec = float(np.sum((flux_fraction < 0.99) * np.diff(edges))) if n_pts > 1 else 0.0
         eclipse_fraction_pct = (total_eclipse_sec / (times[-1] - times[0])) * 100.0 if times[-1] > times[0] else 0.0
 
         return {

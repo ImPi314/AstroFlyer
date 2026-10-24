@@ -29,6 +29,16 @@ class TestEclipseSunDirection(unittest.TestCase):
         shadowed = EventPredictor().predict_solar_eclipses(times, np.tile([0.0, -7000e3, 0.0], (11, 1)), sun_y)
         self.assertTrue(all(r == "UMBRA" for r in shadowed["regimes"]))
 
+    def test_shadow_time_counts_each_sample_for_the_time_it_stands_for(self):
+        # Output points are denser near perigee, so a sample stands for the time halfway to its neighbours.
+        # Samples at 0, 10, 20 and 1000 s, the first three in shadow: the halfway marks are 5, 15 and 510 s,
+        # so shadow lasts until 510 s of the 1000 s run.
+        times = np.array([0.0, 10.0, 20.0, 1000.0])
+        positions = np.array([[-7000e3, 0.0, 0.0]] * 3 + [[7000e3, 0.0, 0.0]])
+        result = EventPredictor().predict_solar_eclipses(times, positions)
+        self.assertAlmostEqual(result["total_shadow_duration_s"], 510.0)
+        self.assertAlmostEqual(result["mission_eclipse_fraction_pct"], 51.0)
+
     def test_propagate_shadow_matches_its_own_sun_direction(self):
         server = create_server(port=0)
         threading.Thread(target=server.serve_forever, daemon=True).start()
@@ -42,7 +52,10 @@ class TestEclipseSunDirection(unittest.TestCase):
         s = np.array(payload["sun_direction_eci"])
         along = np.sum(r * s, axis=1)
         across = np.linalg.norm(r - along[:, None] * s, axis=1)
-        cylinder_pct = np.mean((along < 0) & (across < R_EQ)) * 100.0
+        # Time in shadow, each output point standing for the time halfway to its neighbours
+        times = np.array(payload["times"])
+        edges = np.concatenate([[times[0]], 0.5 * (times[1:] + times[:-1]), [times[-1]]])
+        cylinder_pct = np.sum(((along < 0) & (across < R_EQ)) * np.diff(edges)) / (times[-1] - times[0]) * 100.0
         engine_pct = payload["events_suite"]["solar_eclipses"]["mission_eclipse_fraction_pct"]
         self.assertGreater(cylinder_pct, 1.0)   # this GTO does pass through the shadow
         self.assertAlmostEqual(engine_pct, cylinder_pct, delta=0.5)

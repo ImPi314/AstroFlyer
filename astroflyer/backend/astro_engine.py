@@ -445,6 +445,34 @@ class _AnalyticSolution:
         self.success = True
 
 
+def _anomaly_search_grid(t_span, num_points, y0, mu):
+    """Evenly spaced times fine enough that num_points can be picked from them evenly in eccentric
+    anomaly. The points needed at perigee, per unit time, are a/r_p times the orbit's average (Kepler:
+    the time average of 1/r is 1/a), so the grid is that much finer, twice over, within limits.
+    Output points are read from the integrator's interpolant, so a finer grid adds no steps."""
+    r0, v0 = np.asarray(y0[0:3], dtype=float), np.asarray(y0[3:6], dtype=float)
+    r = np.linalg.norm(r0)
+    energy = 0.5 * float(np.dot(v0, v0)) - mu / r
+    e_vec = ((float(np.dot(v0, v0)) - mu / r) * r0 - float(np.dot(r0, v0)) * v0) / mu
+    p = float(np.dot(np.cross(r0, v0), np.cross(r0, v0))) / mu
+    r_p = p / (1.0 + np.linalg.norm(e_vec))
+    ratio = (-mu / (2.0 * energy)) / r_p if energy < 0 else 32.0
+    factor = int(np.clip(np.ceil(2.0 * ratio), 2, 256))
+    return np.linspace(t_span[0], t_span[1], (num_points - 1) * factor + 1)
+
+
+def _anomaly_spaced(times, pos, num_points):
+    """Indices of about num_points of the given states, evenly spaced in s = integral of dt / r
+    (eccentric anomaly over sqrt(mu / a) for a Kepler orbit), first and last always kept."""
+    w = 1.0 / np.linalg.norm(pos, axis=1)
+    s = np.concatenate([[0.0], np.cumsum(0.5 * (w[1:] + w[:-1]) * np.diff(times))])
+    targets = np.linspace(0.0, s[-1], num_points)
+    hi = np.clip(np.searchsorted(s, targets), 1, len(s) - 1)
+    idx = np.where(targets - s[hi - 1] < s[hi] - targets, hi - 1, hi)
+    idx[0], idx[-1] = 0, len(s) - 1
+    return np.unique(idx)
+
+
 class ThirdReviewEngine:
     """
     Final Production Propagator & Mission Analysis Engine for the Third Review.
@@ -495,13 +523,18 @@ class ThirdReviewEngine:
         b_star=0.015,
         cr_area_over_m=0.02,
         steering=None,
+        sampling='time',
         **kwargs
     ):
         """
-        Integrates the trajectory with high-order implicit Stiff Radau-IIA.
-        Computes true osculating orbital elements across all time steps.
+        Integrates the trajectory and computes osculating elements at the output points.
+        sampling='time' spaces the num_points outputs evenly in time; sampling='anomaly' spaces
+        them evenly in eccentric anomaly of the integrated trajectory (time step proportional to
+        distance), so a high-eccentricity perigee gets as many points as the rest of the orbit.
         """
-        t_eval = np.linspace(t_span[0], t_span[1], num_points)
+        if sampling not in ('time', 'anomaly'):
+            raise ValueError("sampling must be 'time' or 'anomaly'")
+        t_eval = np.linspace(t_span[0], t_span[1], num_points) if sampling == 'time'             else _anomaly_search_grid(t_span, num_points, self.y0, self.mu)
 
         model_clean = str(model).lower()
         cfg = ForceModelConfig.for_model(
@@ -589,9 +622,10 @@ class ThirdReviewEngine:
                 sol = solve_ivp(eom, t_span, self.y0, method=solver_method, t_eval=t_eval, rtol=rtol, atol=atol,
                                 events=events)
 
-        times = sol.t
-        pos = sol.y[0:3].T
-        vel = sol.y[3:6].T
+        keep = slice(None) if sampling == 'time' else _anomaly_spaced(sol.t, sol.y[0:3].T, num_points)
+        times = sol.t[keep]
+        pos = sol.y[0:3, keep].T
+        vel = sol.y[3:6, keep].T
 
         n_pts = len(times)
         r_mags = np.linalg.norm(pos, axis=1)
@@ -696,7 +730,7 @@ class ThirdReviewEngine:
             'model': model_clean,
             'method': method,
             'force_diagnostics': force_diag,
-            'stm': sol.y[6:42].T.reshape(-1, 6, 6) if steering is not None else None,
+            'stm': sol.y[6:42, keep].T.reshape(-1, 6, 6) if steering is not None else None,
             'steps': steerer.record() if steering is not None else None,
             'ecr_mf': schedule.report(sol.t_events[len(_ORBIT_EVENT_FUNCTIONS):]) if schedule else None,
         }

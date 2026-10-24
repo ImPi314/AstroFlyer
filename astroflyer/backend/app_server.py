@@ -873,6 +873,7 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
                 sol: dict[str, Any] = cast(dict[str, Any], engine.propagate(
                     t_span,
                     num_points=num_points,
+                    sampling='anomaly',     # points follow the orbit, so perigees aren't jagged
                     model=model_type,
                     enable_drag=enable_drag,
                     enable_third_body=enable_third_body,
