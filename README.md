@@ -110,6 +110,12 @@ to 0.5 m a day on GTO and 0.1 m on Molniya. Tables, method and how to rerun them
 
 ---
 
+## Installing
+
+Download `AstroFlyer_HEO_v1.0_Setup.exe` from the
+[v1.0 release](https://github.com/ImPi314/AstroFlyer/releases/tag/v1.0) and run it (Windows 10/11,
+64-bit). It installs the app with its data and, if missing, the Edge WebView2 runtime.
+
 ## Running locally
 
 **Requirements:** Windows x64, Python 3.12 or newer, and the packages in `requirements.txt`
