@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AstroFlyer</title>
+    <link rel="icon" href="icon.ico">
+    <link rel="stylesheet" href="vendor/uPlot.min.css">
+    <link rel="stylesheet" href="css/tokens.css">
+    <link rel="stylesheet" href="css/app.css">
+    <script src="vendor/three.min.js"></script>
+    <script src="vendor/uPlot.iife.min.js"></script>
+    <script type="module" src="js/main.js"></script>
+</head>
+<body>
+    <div class="app" id="app">
+        <header class="topbar">
+            <div class="brand">
+                <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">
+                    <ellipse cx="12" cy="12" rx="10" ry="5" transform="rotate(-24 12 12)" />
+                    <circle cx="9" cy="13.4" r="2.6" class="brand-earth" />
+                    <circle cx="20.2" cy="8.3" r="1.6" class="brand-craft" />
+                </svg>
+                <span class="brand-name">AstroFlyer</span>
+            </div>
+            <span class="topbar-mission" id="topbar-mission"></span>
+            <div class="topbar-actions">
+                <button class="icon-button" type="button" data-action="home" aria-label="Start: new, open, recent and samples" title="Start"><svg class="icon" aria-hidden="true"><use href="icons/icons.svg#house"></use></svg></button>
+                <button class="icon-button" type="button" data-action="save" aria-label="Save mission file" title="Save mission file (Ctrl+S)"><svg class="icon" aria-hidden="true"><use href="icons/icons.svg#save"></use></svg></button>
+            </div>
+            <div class="workspace-switch" id="workspace-switch" role="tablist" aria-label="Workspace">
+                <button type="button" role="tab" data-workspace="mission" aria-selected="true">Mission</button>
+                <button type="button" role="tab" data-workspace="analysis" aria-selected="false">Analysis</button>
+                <button type="button" role="tab" data-workspace="data" aria-selected="false">Data</button>
+            </div>
+            <div class="layout-controls" id="layout-controls" role="group" aria-label="View layout"></div>
+            <div class="panel-toggles">
+                <button class="icon-button" type="button" data-panel="tree" aria-pressed="true" aria-label="Show mission tree" title="Show mission tree"><svg class="icon" aria-hidden="true"><use href="icons/icons.svg#panel-left"></use></svg></button>
+                <button class="icon-button" type="button" data-panel="inspector" aria-pressed="true" aria-label="Show inspector" title="Show inspector"><svg class="icon" aria-hidden="true"><use href="icons/icons.svg#panel-right"></use></svg></button>
+            </div>
+        </header>
+
+        <nav class="tree" aria-label="Mission">
+            <h2 class="region-title">Mission</h2>
+            <ul class="tree-list" id="tree" role="tree" aria-label="Mission objects"></ul>
+        </nav>
+
+        <main class="workspace" id="workspace" aria-label="Views"></main>
+        <main class="tools" id="tools" aria-label="Tools" hidden></main>
+        <section class="home" id="home" aria-label="Start" hidden></section>
+
+        <aside class="inspector" id="inspector" aria-label="Inspector"></aside>
+
+        <footer class="dock">
+            <section class="timeline" id="timeline" aria-label="Timeline"></section>
+            <div class="statusbar">
+                <section class="messages" id="messages" aria-label="Messages"></section>
+                <div class="status" id="status" aria-label="Status"></div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

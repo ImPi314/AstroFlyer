@@ -1,0 +1,88 @@
+# ==============================================================================
+# AstroFlyer HEO - Git Ignore Configuration
+# ==============================================================================
+
+# Compiled & Distribution Binaries (PyInstaller & Inno Setup)
+build/
+dist/
+dist_installer/
+installer/Output/
+*.exe
+*.dll
+*.so
+*.dylib
+*.pyd
+*.obj
+*.lib
+*.exp
+
+# Large Binary Archives (>100MB exceeds GitHub hard limit)
+datasources/*.zip
+datasources/*.tar.gz
+datasources/*.iso
+
+# Screenshots & Screen Captures (Never commit screenshots to GitHub)
+Screenshot*
+screenshot*
+*screenshot*
+*Screenshot*
+*.png.bak
+
+# Debug Logs, Dumps & Conversation History
+*CONVERSATION_HISTORY*
+*conversation_history*
+*.log
+*.tmp
+*.bak
+*.dump
+*.trace
+*.crash
+
+# Python Bytecode & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.spec.bak
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+
+# IDE & Editor Configuration
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Operating System Temporary Files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Local-only: incoming patches, test/build caches, archives over 50 MB
+_incoming_patches/
+*.pyc
+.pytest_cache/
+datasources/basilisk-2.11.1.zip
+datasources/gmat-win-R2026a.zip
+# Third-party redistributables dropped in for the installer build
+installer/redist/
+
+# Orekit reference data (downloaded by validation/orekit_crosscheck.py)
+astroflyer/validation/orekit-data/
+
+# Kept on this computer, not in the repository (not part of the production app)
+literature_survey/
+astroflyer/datasources/
+astroflyer/data/
+astroflyer/figures/
+astroflyer/docs/
+astroflyer/cpp_engine/
+docs/handbooks/
+docs/abstract/
+scripts/
+CLAUDE_HANDOFF.md
+astroflyer/run_app.bat
