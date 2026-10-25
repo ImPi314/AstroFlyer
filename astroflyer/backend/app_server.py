@@ -171,6 +171,11 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
         parsed_path = urllib.parse.urlparse(self.path)
         path = parsed_path.path
         if path.startswith("/api/"):
+            # Only the console's own JSON requests: a page on another site can send a text/plain
+            # POST here without the browser's cross-origin check, but not an application/json one
+            if self.headers.get_content_type() != "application/json":
+                self.send_json({"error": "POST bodies must be application/json"}, 415)
+                return
             content_length = int(self.headers.get('Content-Length', '0'))
             post_data = self.rfile.read(content_length) if content_length > 0 else b'{}'
             params: dict[str, list[str]] = {}
@@ -190,9 +195,6 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
         self.send_response(status_code)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(resp_bytes)))
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.end_headers()
         _ = self.wfile.write(resp_bytes)
 

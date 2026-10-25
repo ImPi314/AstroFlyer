@@ -12,6 +12,7 @@ import os
 import tempfile
 import threading
 import unittest
+import urllib.error
 import urllib.request
 from http.server import ThreadingHTTPServer
 
@@ -288,6 +289,50 @@ Report Rpt Sat.UTCGregorian Sat.Altitude;
         self.assertEqual(len(body["reports"]["Rpt"]["rows"]), 1)
         eph = body["ephemeris"]["Sat"]
         self.assertEqual(len(eph["epochs_utc"]), len(eph["position_m"]))
+
+
+class TestScriptLimits(unittest.TestCase):
+    """A script cannot tie up the engine: the server runs whatever script it is sent."""
+
+    def run_limited(self, sequence):
+        import time
+        started = time.perf_counter()
+        out = run_script(header() + "Create Variable X;\nBeginMissionSequence;\n" + sequence)
+        self.assertLess(time.perf_counter() - started, 5.0)
+        return out
+
+    def test_overflowing_arithmetic_is_an_error(self):
+        # 9^9^9 used to build a 370-million-digit integer
+        out = self.run_limited("X = 9^9^9;\n")
+        self.assertIn("too large", out["error"]["message"])
+
+    def test_text_repetition_is_not_arithmetic(self):
+        out = self.run_limited("X = 'a' * 1000000000;\n")
+        self.assertIn("numbers", out["error"]["message"])
+
+    def test_propagation_length_is_bounded(self):
+        out = self.run_limited("Propagate Prop(Sat) {Sat.ElapsedDays = 1e9};\n")
+        self.assertIn("30 days", out["error"]["message"])
+
+
+class TestCrossSiteRequests(unittest.TestCase):
+
+    def test_only_json_posts_are_run_and_no_origin_is_allowed(self):
+        # A web page can send a text/plain POST to the local server without the browser's
+        # cross-origin check; the server must refuse it and must not let other origins read replies
+        from astroflyer.backend.app_server import create_server
+        server = create_server(port=0)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        url = f"http://127.0.0.1:{server.server_address[1]}/api/script/run"
+        body = json.dumps({"script_text": header() + "BeginMissionSequence;\n"}).encode()
+        plain = urllib.request.Request(url, body, {"Content-Type": "text/plain"})
+        with self.assertRaises(urllib.error.HTTPError) as caught:
+            urllib.request.urlopen(plain, timeout=60)
+        self.assertEqual(caught.exception.code, 415)
+        ok = urllib.request.urlopen(urllib.request.Request(url, body, {"Content-Type": "application/json"}), timeout=60)
+        self.assertIsNone(ok.headers.get("Access-Control-Allow-Origin"))
 
 
 if __name__ == "__main__":

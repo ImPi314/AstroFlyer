@@ -38,6 +38,10 @@ import numpy as np
 from . import mission as M
 from .epoch import Epoch
 from .forces import R_EARTH_EQ, ForceModelConfig
+
+# A script runs in the app's server: one Propagate and the whole script are bounded in time
+MAX_PROPAGATE_S = 30 * 86400.0
+MAX_SCRIPT_PROPAGATION_S = 366 * 86400.0
 from .frames import gcrf_to_geodetic, transform_state
 
 KM = 1000.0
@@ -329,6 +333,7 @@ class Interpreter:
         self.max_loop_iterations = max_loop_iterations
         self.quiet = False                  # inside targeter iterations: no reports or ephemeris
         self.mission_start = None
+        self.propagated_s = 0.0          # across the whole script, see MAX_SCRIPT_PROPAGATION_S
 
     # ---------------------------------------------------------------- resources
     def object(self, name, kind=None, line=None):
@@ -446,6 +451,8 @@ class Interpreter:
         elif short in ("ElapsedSecs", "ElapsedDays") and "=" in cond:
             value = float(self.evaluate(cond.split("=", 1)[1], stmt.line))
             duration = value * (86400.0 if short == "ElapsedDays" else 1.0)
+            if not abs(duration) <= MAX_PROPAGATE_S:
+                raise ScriptError("One Propagate can run at most 30 days", stmt.line)
         else:
             raise ScriptError(f"Unsupported stopping condition {cond!r}", stmt.line)
 
@@ -454,10 +461,18 @@ class Interpreter:
         finite = self._combined_finite_burn(burns, stmt.line) if burns else None
         period = sat.sc.keplerian()["period"]
         record = None if self.quiet else max(1.0, period / self.record_points_per_orbit)
+        left = MAX_SCRIPT_PROPAGATION_S - self.propagated_s
+        if (abs(duration) if duration is not None else 0.0) > left:
+            raise ScriptError("The script has propagated a year in total, the most one run may", stmt.line)
+        # A search for an apsis stops after three orbits, and never beyond the limits above
+        search = None if until is None else min(3.0 * max(period, 3600.0), MAX_PROPAGATE_S, left)
+        started = sat.sc.epoch
         try:
-            propagator.step(sat.sc, duration=duration, until=until, burn=finite, record_step=record)
+            propagator.step(sat.sc, duration=duration, until=until, burn=finite, record_step=record,
+                            max_duration=search)
         except (RuntimeError, ValueError) as exc:
             raise ScriptError(str(exc), stmt.line) from exc
+        self.propagated_s += abs(sat.sc.epoch - started)
         self._sync_tanks(sat)
 
     def _do_Maneuver(self, stmt):
@@ -860,11 +875,21 @@ class Interpreter:
             return self.get_parameter(dotted, line)
         if isinstance(node, ast.BinOp):
             a, b = self._eval(node.left, line), self._eval(node.right, line)
+            if isinstance(node.op, ast.Add) and isinstance(a, str) and isinstance(b, str):
+                return a + b
+            if not all(isinstance(x, (int, float)) and not isinstance(x, bool) for x in (a, b)):
+                raise ScriptError("Arithmetic needs numbers", line)
+            # Powers in floating point: an integer power such as 9^9^9 would never finish
             ops = {ast.Add: lambda: a + b, ast.Sub: lambda: a - b, ast.Mult: lambda: a * b,
-                   ast.Div: lambda: a / b, ast.Pow: lambda: a ** b, ast.Mod: lambda: a % b}
+                   ast.Div: lambda: a / b, ast.Pow: lambda: float(a) ** float(b), ast.Mod: lambda: a % b}
             if type(node.op) not in ops:
                 raise ScriptError("Unsupported operator", line)
-            return ops[type(node.op)]()
+            try:
+                return ops[type(node.op)]()
+            except OverflowError:
+                raise ScriptError("Number too large", line) from None
+            except ZeroDivisionError:
+                raise ScriptError("Division by zero", line) from None
         if isinstance(node, ast.UnaryOp):
             val = self._eval(node.operand, line)
             if isinstance(node.op, ast.USub):
