@@ -16,8 +16,8 @@
       "max_vel_err_ms": 1.6003578198602287e-05,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.8542314000078477,
-      "basilisk_runtime_s": 3.266055900021456
+      "astroflyer_runtime_s": 0.8836562000215054,
+      "basilisk_runtime_s": 3.8477220999775454
     },
     {
       "orbit": "molniya",
@@ -33,8 +33,8 @@
       "max_vel_err_ms": 0.00025632715474417157,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.646838899992872,
-      "basilisk_runtime_s": 3.3747666000272147
+      "astroflyer_runtime_s": 0.6822114000096917,
+      "basilisk_runtime_s": 3.580126899993047
     },
     {
       "orbit": "molniya",
@@ -50,8 +50,8 @@
       "max_vel_err_ms": 0.0002486033075301092,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.122646999952849,
-      "basilisk_runtime_s": 3.392034100019373
+      "astroflyer_runtime_s": 0.13237589999334887,
+      "basilisk_runtime_s": 3.5575145999900997
     },
     {
       "orbit": "molniya",
@@ -67,8 +67,8 @@
       "max_vel_err_ms": 0.00025014618494717484,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.12484490004135296,
-      "basilisk_runtime_s": 3.4639574000029825
+      "astroflyer_runtime_s": 0.12954709999030456,
+      "basilisk_runtime_s": 3.434527999954298
     },
     {
       "orbit": "molniya",
@@ -84,8 +84,8 @@
       "max_vel_err_ms": 0.00025064013551963604,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.17293649999191985,
-      "basilisk_runtime_s": 3.5520247000386007
+      "astroflyer_runtime_s": 0.1874985999893397,
+      "basilisk_runtime_s": 3.4213216999778524
     },
     {
       "orbit": "molniya",
@@ -93,16 +93,16 @@
       "forces": "L4 + SRP, conical shadow",
       "days": 1.0,
       "variant": "dop853",
-      "max_pos_err_m": 0.6614454137508423,
-      "final_pos_err_m": 0.6614454137508423,
-      "max_radial_m": 0.30525750173983335,
-      "max_intrack_m": 0.6257412963448176,
-      "max_crosstrack_m": 0.0032710862039227843,
-      "max_vel_err_ms": 0.000453915910441139,
+      "max_pos_err_m": 0.7188550690172841,
+      "final_pos_err_m": 0.7188550690172841,
+      "max_radial_m": 0.3318355333885702,
+      "max_intrack_m": 0.6799432601260451,
+      "max_crosstrack_m": 0.003270774468957016,
+      "max_vel_err_ms": 0.0004933604629568559,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.3978843000368215,
-      "basilisk_runtime_s": 18.450258099997882
+      "astroflyer_runtime_s": 0.34666860004654154,
+      "basilisk_runtime_s": 18.01763909996953
     },
     {
       "orbit": "molniya",
@@ -110,16 +110,16 @@
       "forces": "L5 + NRLMSISE-00 drag",
       "days": 1.0,
       "variant": "dop853",
-      "max_pos_err_m": 33.21731827559301,
-      "final_pos_err_m": 33.21731827559301,
-      "max_radial_m": 15.30586456267359,
-      "max_intrack_m": 31.411023770706958,
-      "max_crosstrack_m": 0.0032673052188572083,
-      "max_vel_err_ms": 0.022849051521787376,
+      "max_pos_err_m": 32.98299332001844,
+      "final_pos_err_m": 32.98299332001844,
+      "max_radial_m": 15.198104926089174,
+      "max_intrack_m": 31.189372223809485,
+      "max_crosstrack_m": 0.0032640910743225726,
+      "max_vel_err_ms": 0.022687807896532932,
       "threshold_m": 10.0,
       "passed": false,
-      "astroflyer_runtime_s": 7.9081262000254355,
-      "basilisk_runtime_s": 17.76902320003137
+      "astroflyer_runtime_s": 7.70226350001758,
+      "basilisk_runtime_s": 18.325467700022273
     },
     {
       "orbit": "tundra",
@@ -135,8 +135,8 @@
       "max_vel_err_ms": 7.69269306187064e-08,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.06098760000895709,
-      "basilisk_runtime_s": 3.25771369994618
+      "astroflyer_runtime_s": 0.059052900003734976,
+      "basilisk_runtime_s": 3.2378723000292666
     },
     {
       "orbit": "tundra",
@@ -152,8 +152,8 @@
       "max_vel_err_ms": 2.3892692160716273e-07,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.07327200000872836,
-      "basilisk_runtime_s": 3.279572299972642
+      "astroflyer_runtime_s": 0.06280530005460605,
+      "basilisk_runtime_s": 3.1435894000460394
     },
     {
       "orbit": "tundra",
@@ -169,8 +169,8 @@
       "max_vel_err_ms": 2.402148244899342e-07,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.07032539998181164,
-      "basilisk_runtime_s": 3.4652297000284307
+      "astroflyer_runtime_s": 0.059149500040803105,
+      "basilisk_runtime_s": 3.2136000999598764
     },
     {
       "orbit": "tundra",
@@ -186,8 +186,8 @@
       "max_vel_err_ms": 2.3441541642923945e-07,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.07257299998309463,
-      "basilisk_runtime_s": 3.3871137999813072
+      "astroflyer_runtime_s": 0.06569700001273304,
+      "basilisk_runtime_s": 3.6400830999482423
     },
     {
       "orbit": "tundra",
@@ -203,8 +203,8 @@
       "max_vel_err_ms": 2.0574564418354624e-07,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.08237779996125028,
-      "basilisk_runtime_s": 3.3930687999818474
+      "astroflyer_runtime_s": 0.08526669995626435,
+      "basilisk_runtime_s": 3.5266704999958165
     },
     {
       "orbit": "tundra",
@@ -212,16 +212,16 @@
       "forces": "L4 + SRP, conical shadow",
       "days": 1.0,
       "variant": "dop853",
-      "max_pos_err_m": 0.11159177290141312,
-      "final_pos_err_m": 0.10861399057127684,
-      "max_radial_m": 0.03189109543274031,
-      "max_intrack_m": 0.11144825581516947,
-      "max_crosstrack_m": 0.00038816812883274085,
-      "max_vel_err_ms": 1.0919281600413296e-05,
+      "max_pos_err_m": 0.11541427067287836,
+      "final_pos_err_m": 0.11270545196561794,
+      "max_radial_m": 0.03295200279185524,
+      "max_intrack_m": 0.11530865836804492,
+      "max_crosstrack_m": 0.00038640722725896345,
+      "max_vel_err_ms": 1.1326330766005747e-05,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.18461039999965578,
-      "basilisk_runtime_s": 18.436209600011352
+      "astroflyer_runtime_s": 0.17380300001241267,
+      "basilisk_runtime_s": 18.639152200019453
     },
     {
       "orbit": "tundra",
@@ -229,16 +229,16 @@
       "forces": "L5 + NRLMSISE-00 drag",
       "days": 1.0,
       "variant": "dop853",
-      "max_pos_err_m": 0.11175439528711673,
-      "final_pos_err_m": 0.10878640715323859,
-      "max_radial_m": 0.031937369242459324,
-      "max_intrack_m": 0.1116128112651909,
-      "max_crosstrack_m": 0.0003909849988981001,
-      "max_vel_err_ms": 1.0937254806313563e-05,
+      "max_pos_err_m": 0.11557991359462277,
+      "final_pos_err_m": 0.11287902346771188,
+      "max_radial_m": 0.032999030299453606,
+      "max_intrack_m": 0.11547525508077945,
+      "max_crosstrack_m": 0.0003892689487435888,
+      "max_vel_err_ms": 1.134439717400181e-05,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.22113700001500547,
-      "basilisk_runtime_s": 18.644496000022627
+      "astroflyer_runtime_s": 0.20218290004413575,
+      "basilisk_runtime_s": 18.376545600011013
     },
     {
       "orbit": "gto",
@@ -254,8 +254,8 @@
       "max_vel_err_ms": 1.5253887562896939e-05,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.14562150003621355,
-      "basilisk_runtime_s": 3.2577578999917023
+      "astroflyer_runtime_s": 0.13125079998280853,
+      "basilisk_runtime_s": 3.228564799996093
     },
     {
       "orbit": "gto",
@@ -271,8 +271,8 @@
       "max_vel_err_ms": 8.389608672462128e-05,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.16754150000633672,
-      "basilisk_runtime_s": 3.3270903000375256
+      "astroflyer_runtime_s": 0.15310380002483726,
+      "basilisk_runtime_s": 3.210166000004392
     },
     {
       "orbit": "gto",
@@ -288,8 +288,8 @@
       "max_vel_err_ms": 8.249674908847454e-05,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.16547939996235073,
-      "basilisk_runtime_s": 3.309490100014955
+      "astroflyer_runtime_s": 0.14333510003052652,
+      "basilisk_runtime_s": 3.2871374000096694
     },
     {
       "orbit": "gto",
@@ -305,8 +305,8 @@
       "max_vel_err_ms": 0.00028225418765019596,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.16348829999333248,
-      "basilisk_runtime_s": 3.500296500045806
+      "astroflyer_runtime_s": 0.1408852000022307,
+      "basilisk_runtime_s": 3.320135299989488
     },
     {
       "orbit": "gto",
@@ -322,8 +322,8 @@
       "max_vel_err_ms": 0.0002820753365581666,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.21505009999964386,
-      "basilisk_runtime_s": 3.3765384999569505
+      "astroflyer_runtime_s": 0.2048431999864988,
+      "basilisk_runtime_s": 3.3146317999926396
     },
     {
       "orbit": "gto",
@@ -331,16 +331,16 @@
       "forces": "L4 + SRP, conical shadow",
       "days": 1.0,
       "variant": "dop853",
-      "max_pos_err_m": 0.05492617033327319,
-      "final_pos_err_m": 0.02816406885997711,
-      "max_radial_m": 0.02275209311056503,
-      "max_intrack_m": 0.05478609317246961,
-      "max_crosstrack_m": 0.011388502326098438,
-      "max_vel_err_ms": 5.0086517996774124e-05,
+      "max_pos_err_m": 0.09915445471188535,
+      "final_pos_err_m": 0.03832360735498848,
+      "max_radial_m": 0.04152039188999544,
+      "max_intrack_m": 0.09893820434328239,
+      "max_crosstrack_m": 0.011412789956766218,
+      "max_vel_err_ms": 8.91983049124173e-05,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.45870279998052865,
-      "basilisk_runtime_s": 17.8189097000286
+      "astroflyer_runtime_s": 0.40977560001192614,
+      "basilisk_runtime_s": 17.9315092000179
     },
     {
       "orbit": "gto",
@@ -348,16 +348,16 @@
       "forces": "L5 + NRLMSISE-00 drag",
       "days": 1.0,
       "variant": "dop853",
-      "max_pos_err_m": 335.7796408930961,
-      "final_pos_err_m": 81.51384655395844,
-      "max_radial_m": 142.10181347920195,
-      "max_intrack_m": 335.0633067092188,
-      "max_crosstrack_m": 0.04277240289355433,
-      "max_vel_err_ms": 0.29704548311570317,
+      "max_pos_err_m": 312.5310669353295,
+      "final_pos_err_m": 76.2233223301587,
+      "max_radial_m": 132.27446166726799,
+      "max_intrack_m": 311.8644817397348,
+      "max_crosstrack_m": 0.04084918127936987,
+      "max_vel_err_ms": 0.2764948052242528,
       "threshold_m": 10.0,
       "passed": false,
-      "astroflyer_runtime_s": 0.9419732000096701,
-      "basilisk_runtime_s": 18.439252799958922
+      "astroflyer_runtime_s": 0.8195925999898463,
+      "basilisk_runtime_s": 18.35503500001505
     },
     {
       "orbit": "heo_stress",
@@ -373,8 +373,8 @@
       "max_vel_err_ms": 7.570198953558149e-08,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.0632947999984026,
-      "basilisk_runtime_s": 3.3093502999981865
+      "astroflyer_runtime_s": 0.06211619998794049,
+      "basilisk_runtime_s": 3.221205900015775
     },
     {
       "orbit": "heo_stress",
@@ -390,8 +390,8 @@
       "max_vel_err_ms": 3.052552284142417e-06,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.07626510004047304,
-      "basilisk_runtime_s": 3.3144375000265427
+      "astroflyer_runtime_s": 0.062023399979807436,
+      "basilisk_runtime_s": 3.2022276999778114
     },
     {
       "orbit": "heo_stress",
@@ -407,8 +407,8 @@
       "max_vel_err_ms": 2.986751716160519e-06,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.075373999949079,
-      "basilisk_runtime_s": 3.5098407000186853
+      "astroflyer_runtime_s": 0.06073580001248047,
+      "basilisk_runtime_s": 3.2919690999551676
     },
     {
       "orbit": "heo_stress",
@@ -424,8 +424,8 @@
       "max_vel_err_ms": 4.390284892618974e-06,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.08429979998618364,
-      "basilisk_runtime_s": 3.4182929000235163
+      "astroflyer_runtime_s": 0.06015919998753816,
+      "basilisk_runtime_s": 3.242777200008277
     },
     {
       "orbit": "heo_stress",
@@ -441,8 +441,8 @@
       "max_vel_err_ms": 4.374880200003409e-06,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.09336780000012368,
-      "basilisk_runtime_s": 3.5459696000325494
+      "astroflyer_runtime_s": 0.07844279997516423,
+      "basilisk_runtime_s": 3.350405999983195
     },
     {
       "orbit": "heo_stress",
@@ -450,16 +450,16 @@
       "forces": "L4 + SRP, conical shadow",
       "days": 1.0,
       "variant": "dop853",
-      "max_pos_err_m": 0.1264260314833664,
-      "final_pos_err_m": 0.1264260314833664,
-      "max_radial_m": 0.1097329754729572,
-      "max_intrack_m": 0.06231954338204132,
-      "max_crosstrack_m": 0.008403134944818133,
-      "max_vel_err_ms": 3.01614265569973e-06,
+      "max_pos_err_m": 0.14016884338080718,
+      "final_pos_err_m": 0.14016884338080718,
+      "max_radial_m": 0.12215928403047022,
+      "max_intrack_m": 0.06829817937308003,
+      "max_crosstrack_m": 0.008473736776133514,
+      "max_vel_err_ms": 3.3536179681892813e-06,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.20735749998129904,
-      "basilisk_runtime_s": 18.597205400001258
+      "astroflyer_runtime_s": 0.1642475000116974,
+      "basilisk_runtime_s": 18.49143130000448
     },
     {
       "orbit": "heo_stress",
@@ -467,16 +467,16 @@
       "forces": "L5 + NRLMSISE-00 drag",
       "days": 1.0,
       "variant": "dop853",
-      "max_pos_err_m": 0.1485253450346231,
-      "final_pos_err_m": 0.1485253450346231,
-      "max_radial_m": 0.12923391629083292,
-      "max_intrack_m": 0.07280291299539343,
-      "max_crosstrack_m": 0.008396803665690074,
-      "max_vel_err_ms": 3.5501410231996016e-06,
+      "max_pos_err_m": 0.15891071009588079,
+      "final_pos_err_m": 0.15891071009588079,
+      "max_radial_m": 0.13869859459597833,
+      "max_intrack_m": 0.07717468628018742,
+      "max_crosstrack_m": 0.00846675950865848,
+      "max_vel_err_ms": 3.806376778048706e-06,
       "threshold_m": 10.0,
       "passed": true,
-      "astroflyer_runtime_s": 0.24067979998653755,
-      "basilisk_runtime_s": 18.517546199960634
+      "astroflyer_runtime_s": 0.20669229998020455,
+      "basilisk_runtime_s": 19.041771699965466
     }
   ]
 }

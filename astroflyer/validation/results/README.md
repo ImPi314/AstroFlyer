@@ -112,10 +112,10 @@ L7 is not run. The SRP area is scaled so Basilisk's 1361 W/m² solar flux gives 
 
 | Run | Levels | Limit | Largest difference | Result |
 | --- | --- | --- | --- | --- |
-| [1 day](basilisk_1day/basilisk_crosscheck.md) | L0–L6, all four orbits | 10 m | 0.66 m through L5 (Molniya L5); L6 336 m (GTO) | 26/28 pass |
-| [7 days](basilisk_7day/basilisk_crosscheck.md) | L3–L6, all four orbits | 100 m | 28.5 m through L5 (Molniya L5); L6 16.8 km (GTO) | 14/16 pass |
+| [1 day](basilisk_1day/basilisk_crosscheck.md) | L0–L6, all four orbits | 10 m | 0.72 m through L5 (Molniya L5); L6 313 m (GTO) | 26/28 pass |
+| [7 days](basilisk_7day/basilisk_crosscheck.md) | L3–L6, all four orbits | 100 m | 30.3 m through L5 (Molniya L5); L6 16.6 km (GTO) | 14/16 pass |
 
-Two Basilisk behaviours are corrected in the runner, because they are numerical artefacts rather
+Three Basilisk behaviours are corrected in the runner, because they are numerical artefacts rather
 than modelling choices:
 
 - **Earth orientation within a task step.** Basilisk's gravity steps the Earth's orientation matrix
@@ -125,22 +125,27 @@ than modelling choices:
   two-body then agrees to 1.9 cm a day.
 - **Air co-rotation rate.** The rate `zeroWindModel` derives from SPICE made GTO drag 9% too strong;
   the runner sets the IERS rate about +z.
+- **Environment held over a task step.** Eclipse, atmosphere and wind are evaluated once per task
+  step, from the state at the step's start, and held while the spacecraft integrates across it.
+  The lag is first order: with AstroFlyer on spherical altitude, GTO drag differed by 23.8 m a day at
+  a 1 s step, 12 m at 0.5 s, 6.6 m at 0.25 s and 3.2 m at 0.1 s. The runner hands these modules the
+  state moved to mid-step, r + v·Δt/2 (`MidStepState`); at 1 s the difference is then 0.51 m.
 
-Eclipse and atmosphere update once per task step, so SRP and drag levels run with a 1 s step
-(gravity-only with 10 s).
+SRP and drag levels run with a 1 s task step, gravity-only levels with 10 s.
 
 What is left:
 
 - **Gravity, Sun and Moon (L0–L4)** agree to 2 cm (two-body) and 0.37 m (with J2 or 8×8) over a
   day. The 0.37 m on Molniya is not yet explained; it stays when Basilisk is fed AstroFlyer's own
   Earth orientation. (Basilisk's ITRF93 pole also differs from IERS 2010 by 0.30".)
-- **SRP (L5)** agrees to 0.66 m a day and 28.5 m over 7 days on Molniya. Basilisk's shadow is a
+- **SRP (L5)** agrees to 0.72 m a day and 30.3 m over 7 days on Molniya. Basilisk's shadow is a
   sphere of equatorial radius, like GMAT's, which gave GMAT the same Molniya difference (32.6 m).
 - **Drag (L6) fails on Molniya and GTO.** Basilisk's NRLMSISE-00 takes spherical altitude and
   geocentric latitude, not WGS-84 geodetic. With AstroFlyer switched to spherical altitude in an
-  experiment the 1-day difference falls from 336 m to 12 m (GTO) and from 33 m to 0.25 m
-  (Molniya). The remaining 12 m on GTO is not yet explained. The 7-day figures are the same
-  difference growing along track. Tundra and the stress orbit, whose perigees sit higher, pass.
+  experiment the 1-day difference falls from 313 m to 0.51 m (GTO) and from 33 m to 0.10 m
+  (Molniya); what is left is mostly Basilisk spinning the air about GCRF z rather than the true
+  pole (0.31 m and 0.06 m with that matched too). The 7-day figures are the same difference
+  growing along track. Tundra and the stress orbit, whose perigees sit higher, pass.
 
 To reproduce (Basilisk installed in ~/bsk-venv, GMAT installed for the kernels):
 

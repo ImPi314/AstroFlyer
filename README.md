@@ -95,8 +95,8 @@ own EGM2008 coefficients, so the comparison is of the propagators, not their inp
 | Orekit 13.1 | 7 days, L3–L7 | 6.1 m (GTO, full model) | 100 m | 20/20 pass |
 | NASA GMAT R2026a | 1 day, L0–L7 | 1.06 m (Molniya, SRP on) | 10 m | 32/32 pass |
 | NASA GMAT R2026a | 7 days, L3–L7 | 32.6 m (Molniya, SRP on) | 100 m | 20/20 pass |
-| Basilisk 2.11.1 | 1 day, L0–L6 | 0.66 m (Molniya, SRP on) through L5; drag 336 m (GTO) | 10 m | 26/28 pass |
-| Basilisk 2.11.1 | 7 days, L3–L6 | 28.5 m (Molniya, SRP on) through L5; drag 16.8 km (GTO) | 100 m | 14/16 pass |
+| Basilisk 2.11.1 | 1 day, L0–L6 | 0.72 m (Molniya, SRP on) through L5; drag 313 m (GTO) | 10 m | 26/28 pass |
+| Basilisk 2.11.1 | 7 days, L3–L6 | 30.3 m (Molniya, SRP on) through L5; drag 16.6 km (GTO) | 100 m | 14/16 pass |
 
 Gravity and Sun/Moon agree with both to a few centimetres over a day. The larger GMAT differences
 come from two documented modelling choices, each confirmed by changing AstroFlyer to match and
@@ -104,8 +104,8 @@ watching the difference vanish: GMAT casts the Earth's shadow from a sphere (Ast
 use the WGS-84 ellipsoid), and GMAT's NRLMSISE-00 leaves out anomalous oxygen (AstroFlyer uses the
 model's recommended drag density, which Orekit's results agree with). Basilisk has no relativity
 (L7 is not run) and fails at L6 on the two low-perigee orbits: its atmosphere takes altitude above a
-sphere, not the WGS-84 ellipsoid, which alone moves GTO drag by hundreds of metres a day; a 12 m/day
-GTO difference remains even when AstroFlyer uses a sphere too, and is not yet explained. Tables, method and how to rerun them are in
+sphere, not the WGS-84 ellipsoid. With AstroFlyer switched to a sphere in an experiment, drag agrees
+to 0.5 m a day on GTO and 0.1 m on Molniya. Tables, method and how to rerun them are in
 [astroflyer/validation/results](astroflyer/validation/results/README.md).
 
 ---

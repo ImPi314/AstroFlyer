@@ -12,6 +12,7 @@ import unittest
 import numpy as np
 
 from astroflyer.backend import forces
+from astroflyer.backend.astro_engine import keplerian_to_cartesian
 from astroflyer.validation import cases as C
 
 
@@ -87,6 +88,17 @@ class BasiliskEndToEndTest(unittest.TestCase):
             with self.subTest(level=level):
                 res = compare_case("molniya", C.LEVELS[level], 0.25)
                 self.assertLess(res["max_pos_err_m"], 1.0, res)
+
+    def test_drag_does_not_depend_on_the_task_step(self):
+        # Atmosphere, wind and shadow are evaluated once per task step; held at the step's start
+        # this cost GTO 24 m/day at 1 s (falling only linearly with the step).
+        from astroflyer.validation.basilisk_crosscheck import basilisk_run, find_bsk_python, find_kernels
+        a, e, i, raan, argp, nu = C.ORBITS["gto"]
+        r0, v0 = keplerian_to_cartesian(a, e, *np.radians([i, raan, argp, nu]), mu=forces.MU_EARTH)
+        state = np.concatenate([r0, v0])
+        runs = [basilisk_run(state, C.LEVELS["L6"], 43200.0, find_bsk_python(), find_kernels(), step)[1]
+                for step in (1.0, 0.25)]
+        self.assertLess(np.linalg.norm(runs[0] - runs[1], axis=1).max(), 0.3)
 
 
 if __name__ == "__main__":

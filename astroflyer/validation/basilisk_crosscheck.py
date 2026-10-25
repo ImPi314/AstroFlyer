@@ -157,21 +157,13 @@ def read_states(path):
     return rows[:, 0], rows[:, 1:4], rows[:, 4:7]
 
 
-def compare_case(orbit_name, level, days, bsk_python=None, kernels=None):
-    bsk_python = bsk_python or find_bsk_python()
-    kernels = kernels or find_kernels()
-    a, e, i, raan, argp, nu = C.ORBITS[orbit_name]
-    r0, v0 = keplerian_to_cartesian(a, e, math.radians(i), math.radians(raan), math.radians(argp),
-                                    math.radians(nu), mu=forces.MU_EARTH)
-    state = np.concatenate([r0, v0])
-    epoch = Epoch.from_iso(C.EPOCH_ISO_TT, scale="TT")
-    duration = days * 86400.0
-    n_points = int(round(duration / OUTPUT_STEP_S)) + 1
-    times, pos, vel, af_runtime = astroflyer_run(state, epoch, level, duration, n_points)
-
+def basilisk_run(state, level, duration, bsk_python, kernels, task_step_s=None):
+    """Basilisk's trajectory for one case: times, positions, velocities and its run time (s)."""
     with tempfile.TemporaryDirectory() as tmp:
         grav = os.path.join(tmp, "egm2008.txt").replace("\\", "/")
         job = job_for(state, level, duration, grav, kernels)
+        if task_step_s:
+            job["task_step_s"] = task_step_s
         if level.gravity_degree > 0:
             write_gravity_csv(grav, level.gravity_degree, zonal_only=job["zonal_only"])
         job_path = os.path.join(tmp, "job.json")
@@ -186,6 +178,22 @@ def compare_case(orbit_name, level, days, bsk_python=None, kernels=None):
             tail = (proc.stdout + proc.stderr).strip().splitlines()[-8:]
             raise RuntimeError("Basilisk run failed: " + " | ".join(tail))
         ref_t, ref_pos, ref_vel = read_states(out)
+    return ref_t, ref_pos, ref_vel, bsk_runtime
+
+
+def compare_case(orbit_name, level, days, bsk_python=None, kernels=None):
+    bsk_python = bsk_python or find_bsk_python()
+    kernels = kernels or find_kernels()
+    a, e, i, raan, argp, nu = C.ORBITS[orbit_name]
+    r0, v0 = keplerian_to_cartesian(a, e, math.radians(i), math.radians(raan), math.radians(argp),
+                                    math.radians(nu), mu=forces.MU_EARTH)
+    state = np.concatenate([r0, v0])
+    epoch = Epoch.from_iso(C.EPOCH_ISO_TT, scale="TT")
+    duration = days * 86400.0
+    n_points = int(round(duration / OUTPUT_STEP_S)) + 1
+    times, pos, vel, af_runtime = astroflyer_run(state, epoch, level, duration, n_points)
+
+    ref_t, ref_pos, ref_vel, bsk_runtime = basilisk_run(state, level, duration, bsk_python, kernels)
     if len(ref_t) != len(times) or np.abs(ref_t - np.asarray(times)).max() > 1e-3:
         raise RuntimeError(f"Basilisk output times differ from AstroFlyer's ({len(ref_t)} vs {len(times)} points)")
 

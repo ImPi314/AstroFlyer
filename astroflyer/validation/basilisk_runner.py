@@ -51,6 +51,26 @@ class HeldOrientation(sysModel.SysModel):
         self.outMsg.write(payload, current_nanos, self.moduleID)
 
 
+class MidStepState(sysModel.SysModel):
+    """Copy of the spacecraft state message moved to the middle of the coming task step
+    (r + v dt/2). Eclipse, atmosphere and wind are evaluated once per task step and held while the
+    spacecraft integrates across it; from the step's start that lag costs GTO drag 24 m/day at 1 s,
+    falling only linearly with the step. Held at mid-step the error falls as dt^2."""
+
+    def __init__(self, source, step_s):
+        super().__init__()
+        self.ModelTag = "midStepState"
+        self.step_s = step_s
+        self.reader = messaging.SCStatesMsgReader()
+        self.reader.subscribeTo(source)
+        self.outMsg = messaging.SCStatesMsg()
+
+    def UpdateState(self, current_nanos):
+        payload = self.reader()
+        payload.r_BN_N = (np.array(payload.r_BN_N) + np.array(payload.v_BN_N) * (0.5 * self.step_s)).tolist()
+        self.outMsg.write(payload, current_nanos, self.moduleID)
+
+
 def epoch_message(utc):
     """Epoch message from '2025 DECEMBER 31 23:58:50.816 (UTC)' (Basilisk's own helper needs pytest)."""
     year, month, day, clock = utc.replace("(UTC)", "").split()
@@ -110,12 +130,14 @@ def propagate(job):
 
     sim.AddModelToTask("task", spice, 100)
     sim.AddModelToTask("task", held, 95)
-    keep = [epoch_msg, held]
+    mid = MidStepState(sc.scStateOutMsg, job["task_step_s"])
+    sim.AddModelToTask("task", mid, 92)
+    keep = [epoch_msg, held, mid]
 
     if job["srp"]:
         shadow = eclipse.Eclipse()
         shadow.ModelTag = "eclipse"
-        shadow.addSpacecraftToModel(sc.scStateOutMsg)
+        shadow.addSpacecraftToModel(mid.outMsg)
         shadow.addPlanetToModel(earth_msg)
         shadow.sunInMsg.subscribeTo(sun_msg)
         srp = radiationPressure.RadiationPressure()
@@ -132,7 +154,7 @@ def propagate(job):
         atmo = msisAtmosphere.MsisAtmosphere()
         atmo.ModelTag = "msis"
         atmo.planetRadius = job["earth_radius_m"]
-        atmo.addSpacecraftToModel(sc.scStateOutMsg)
+        atmo.addSpacecraftToModel(mid.outMsg)
         atmo.planetPosInMsg.subscribeTo(earth_msg)
         atmo.epochInMsg.subscribeTo(epoch_msg)
         values = [job["ap"]] * N_AP + [job["f107a"], job["f107"]]
@@ -144,7 +166,7 @@ def propagate(job):
             keep.append(msg)
         wind = zeroWindModel.ZeroWindModel()   # air co-rotating with the Earth
         wind.ModelTag = "wind"
-        wind.addSpacecraftToModel(sc.scStateOutMsg)
+        wind.addSpacecraftToModel(mid.outMsg)
         wind.planetPosInMsg.subscribeTo(earth_msg)
         wind.setPlanetOmega_N(job["wind_omega_n"])   # SPICE-derived rate made GTO drag 9% too strong
         drag = dragDynamicEffector.DragDynamicEffector()
