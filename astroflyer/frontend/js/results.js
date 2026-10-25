@@ -22,7 +22,7 @@ function earthRotation(positions, fixedPositions, longitudesDeg) {
 }
 
 export function fromPayload(payload) {
-    const times = payload.times_sec;
+    const times = payload.times;
     const itrf = payload.position_itrf_m ?? null;
     const theta = earthRotation(payload.position_m, itrf, payload.longitude_deg);
     const inertialKm = new Float32Array(times.length * 3);

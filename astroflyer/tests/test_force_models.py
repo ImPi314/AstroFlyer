@@ -212,11 +212,11 @@ class TestSecularRates(unittest.TestCase):
         self.assertLess(abs(argp_rate), 0.01 * abs(argp_rate_60))
 
 
-class TestLegacyInterface(unittest.TestCase):
+class TestForceBreakdown(unittest.TestCase):
 
     def test_component_breakdown_sums(self):
         y0 = _state(GTO)
-        d = compute_acceleration_components(y0, 0.0)
+        d = compute_acceleration_components(y0, 0.0, forces.ForceModelConfig())
         parts = sum(d[k] for k in ("a_central", "a_j2", "a_j3", "a_j4", "a_tesseral", "a_sun", "a_moon",
                                    "a_drag", "a_srp", "a_relativity", "a_albedo"))
         np.testing.assert_allclose(parts, d["a_total"], rtol=1e-14)

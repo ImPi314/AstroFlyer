@@ -1,34 +1,26 @@
 """
-AstroCore Astrodynamics Engine - Third Review
+AstroFlyer HEO - Propagation engine
 =============================================================================
-Department of Aerospace Engineering, ACS College of Engineering
-Part of Major Project: Precise Trajectory Propagation & Events Prediction for HEOs
-Final Production Release: High-Fidelity Coupled Mechanics & V&V Certification
-
-Features:
-  - Coupled EOM: EGM2008 spherical-harmonic gravity (up to 70x70), see forces.py
-  - Third-Body Sun & Moon gravity from the bundled JPL DE440 ephemeris
-  - Atmospheric Drag with NRLMSISE-00 density and Earth co-rotation
-  - Solar Radiation Pressure (SRP) with conical umbra/penumbra shadow
-  - Instantaneous Perturbation Acceleration Decomposition
-  - Machine-Precision Stiff Radau-IIA & RK45 Numerical Integrators
-  - Energy Invariant Monitoring (|ΔE/E₀| ≤ 10⁻¹¹)
+ThirdReviewEngine.propagate: a trajectory from a GCRF state, by an analytic
+propagator (Kepler, J2 mean elements, SGP4) or by integration through
+backend/trajectory.py (force model in forces.py, restarts at shadow edges and
+drag-model jumps), and the products drawn from it at the output times:
+osculating elements, geodetic track, ITRF state, per-force accelerations,
+apsis and node events, and the Sun direction.
 =============================================================================
 """
 
 import math
 import numpy as np
-from scipy.integrate import solve_ivp
 
 from . import forces
-from .eclipse import drag_boundary_events, shadow_boundary_events, solve_ivp_segmented
 from .epoch import Epoch
 from .forces import ForceModelConfig, SimpleEarthRotation
 from .frames import EarthOrientation, FastEarthRotation, gcrf_to_geodetic, transform_state
 from . import analytic
-from .integrators import integrate
-from .covariance_engine import CovarianceEngine, CovarianceSteering
+from .covariance_engine import CovarianceSteering
 from .ecr_mf_controller import FidelitySchedule
+from .trajectory import integrate_trajectory
 
 # ==============================================================================
 # LAYER 1: MATH CORE
@@ -232,47 +224,18 @@ def eci_to_ecef_geodetic(r_eci, t_seconds, omega_e=OMEGA_EARTH, epoch=None):
 # ==============================================================================
 # DETAILED PERTURBATION ACCELERATION DECOMPOSITION
 # ==============================================================================
-def _legacy_force_config(j2, j3, j4, b_star, cr_area_over_m, enable_drag=True, enable_third_body=True,
-                         enable_srp=True, enable_tesseral=True, enable_relativity=True):
-    """Maps the older J2/J3/J4 + enable_* arguments onto a ForceModelConfig."""
-    cfg = ForceModelConfig(cd_area_over_m=b_star, cr_area_over_m=cr_area_over_m, drag=enable_drag,
-                           third_body=enable_third_body, srp=enable_srp, relativity=enable_relativity)
-    if j2 == 0:
-        cfg.gravity_degree, cfg.gravity_order = 0, 0
-    elif j3 == 0 and j4 == 0:
-        cfg.gravity_degree, cfg.gravity_order = 2, 0
-    elif not enable_tesseral:
-        cfg.gravity_order = 0
-    return cfg
-
-
 def _earth_rotation_at(t, epoch_tt_j2000_s, earth_rotation):
     rot = earth_rotation if earth_rotation is not None else SimpleEarthRotation(epoch_tt_j2000_s)
     return rot.matrix(t), rot.omega(t)
 
 
-def compute_acceleration_components(
-    state,
-    t,
-    mu=MU_EARTH,
-    r_e=R_EARTH,
-    j2=J2_EARTH,
-    j3=J3_EARTH,
-    j4=J4_EARTH,
-    b_star=0.015,
-    cr_area_over_m=0.02,
-    force_config=None,
-    epoch_tt_j2000_s=0.0,
-    earth_rotation=None
-):
+def compute_acceleration_components(state, t, force_config, epoch_tt_j2000_s=0.0, earth_rotation=None):
     """
-    Acceleration vectors and magnitudes for every force term (GCRF, m/s^2).
-    b_star is Cd*A/m (m^2/kg). The J2/J3/J4 terms are reported separately for
-    display; 'a_tesseral' is the rest of the spherical-harmonic field.
-    mu and r_e are kept for backward compatibility; the gravity model's own
-    GM and reference radius are always used.
+    Acceleration vectors and magnitudes for every force term (GCRF, m/s^2) under
+    force_config (a forces.ForceModelConfig). The J2/J3/J4 terms are reported
+    separately for display; 'a_tesseral' is the rest of the spherical-harmonic field.
     """
-    cfg = force_config or _legacy_force_config(j2, j3, j4, b_star, cr_area_over_m)
+    cfg = force_config
     r = np.asarray(state[0:3], dtype=float)
     v = np.asarray(state[3:6], dtype=float)
     rot, omega = _earth_rotation_at(t, epoch_tt_j2000_s, earth_rotation)
@@ -308,43 +271,6 @@ def compute_acceleration_components(
     out["shadow_factor"] = comps["shadow_factor"]
     out["density_kg_m3"] = comps["density"]
     return out
-
-
-def full_production_eom(
-    t,
-    state,
-    mu=MU_EARTH,
-    r_e=R_EARTH,
-    j2=J2_EARTH,
-    j3=J3_EARTH,
-    j4=J4_EARTH,
-    enable_drag=True,
-    enable_third_body=True,
-    enable_srp=True,
-    enable_tesseral=True,
-    enable_relativity=True,
-    b_star=0.015,
-    cr_area_over_m=0.02,
-    epoch_tt_j2000_s=0.0,
-    earth_rotation=None,
-    force_config=None
-):
-    """Full coupled equations of motion.
-
-    t is seconds after the initial epoch. epoch_tt_j2000_s is that epoch as TT
-    seconds past J2000.0, so the force model's TT time is epoch_tt_j2000_s + t.
-    earth_rotation is a frames.FastEarthRotation; earth_rotation.matrix(t) gives
-    the GCRF -> ITRF rotation for gravity harmonics and co-rotating drag.
-    force_config (a forces.ForceModelConfig) takes precedence over the legacy flags.
-    """
-    vx, vy, vz = state[3:6]
-
-    cfg = force_config or _legacy_force_config(j2, j3, j4, b_star, cr_area_over_m, enable_drag,
-                                               enable_third_body, enable_srp, enable_tesseral,
-                                               enable_relativity)
-    rot, omega = _earth_rotation_at(t, epoch_tt_j2000_s, earth_rotation)
-    acc = forces.total_acceleration(epoch_tt_j2000_s + t, state[0:3], state[3:6], cfg, rot, omega)
-    return [vx, vy, vz, acc[0], acc[1], acc[2]]
 
 
 # ==============================================================================
@@ -420,19 +346,6 @@ def sun_directions(times, epoch_tt_j2000_s):
 # ==============================================================================
 # Propagator names accepted by propagate(method=...), normalized: upper case, no spaces, dashes or underscores
 ANALYTIC_METHODS = {'KEPLER': 'kepler', 'TWOBODYANALYTIC': 'kepler', 'J2MEAN': 'j2_mean', 'SGP4': 'sgp4'}
-OWN_INTEGRATORS = {'RKF78': 'RKF78', 'RK78': 'RKF78', 'BS': 'BS', 'BULIRSCHSTOER': 'BS', 'RK4': 'RK4'}
-
-
-def _with_variational_equations(eom):
-    """Right-hand side for [r, v, Phi]: the orbit's own EOM plus dPhi/dt = A Phi, with
-    A = [[0, I], [G(r), 0]] and G the point-mass + J2 gravity gradient."""
-    gradient = CovarianceEngine().compute_gravity_gradient
-
-    def rhs(t, y):
-        phi = y[6:42].reshape(6, 6)
-        dphi = np.vstack([phi[3:6], gradient(y[0:3]) @ phi[0:3]])
-        return np.concatenate([eom(t, y[0:6]), dphi.ravel()])
-    return rhs
 
 
 class _AnalyticSolution:
@@ -557,70 +470,30 @@ class ThirdReviewEngine:
         # ECR-MF: the gravity degree follows the orbit's radius tier (backend/ecr_mf_controller.py)
         schedule = FidelitySchedule(cfg, epsilon=kwargs.get('ecr_epsilon', 1e-10))             if kwargs.get('fidelity') == 'ecr_mf' else None
         events = _ORBIT_EVENT_FUNCTIONS + (schedule.boundary_events() if schedule else [])
-        j2_v = J2_EARTH if cfg.gravity_degree >= 2 else 0.0
-        j3_v = J3_EARTH if cfg.gravity_degree >= 3 else 0.0
-        j4_v = J4_EARTH if cfg.gravity_degree >= 4 else 0.0
-        drag_v, third_b_v, srp_v = cfg.drag, cfg.third_body, cfg.srp
-
         epoch_tt = float(self.epoch - Epoch.j2000())     # TAI and TT differ by a constant
         earth_rotation = FastEarthRotation(self.epoch, t_span[0], t_span[1])
 
-        eom = lambda t, y: full_production_eom(
-            t, y,
-            j2=j2_v, j3=j3_v, j4=j4_v,
-            enable_drag=drag_v,
-            enable_third_body=third_b_v,
-            enable_srp=srp_v,
-            b_star=b_star,
-            cr_area_over_m=cr_area_over_m,
-            epoch_tt_j2000_s=epoch_tt,
-            earth_rotation=earth_rotation,
-            force_config=schedule.config_at(y[0:3]) if schedule else cfg
-        )
-
-        # Propagator: analytic (no integration), one of ours (exact outputs), or SciPy's
+        # Propagator: analytic (no integration), or integration through backend/trajectory.py
         method_key = str(method).replace(' ', '').replace('-', '').replace('_', '').upper()
         analytic_kind = ANALYTIC_METHODS.get(method_key)
-        own_integrator = OWN_INTEGRATORS.get(method_key)
         event_list = None
+        steerer = None
         if analytic_kind is not None:
             state_fn = self._analytic_state_function(analytic_kind)
             r_out, v_out = state_fn(t_eval)
             sol = _AnalyticSolution(t_eval, r_out, v_out)
             apsides = bool(cartesian_to_keplerian(self.y0[:3], self.y0[3:], mu=self.mu)['e'] > 1e-3)
             event_list = analytic.analytic_events(state_fn, t_eval, self.epoch, apsides=apsides)
-        elif steering is not None:
-            if steering != 'covariance' or own_integrator not in ('RKF78', 'BS'):
-                raise ValueError("steering='covariance' runs with method 'RKF78' or 'BS'")
-            # Variational equations dPhi/dt = A(t) Phi ride along; only the orbit sets the step size
-            steerer = CovarianceSteering(P0=kwargs.get('covariance0'), eta=kwargs.get('steering_eta', 0.02))
-            sol = integrate(_with_variational_equations(eom), t_span, np.concatenate([self.y0, np.eye(6).ravel()]),
-                            method=own_integrator, t_eval=t_eval, events=events,
-                            rtol=rtol, atol=atol, n_error=6, steering=steerer)
-        elif own_integrator is not None:
-            fixed_step = float(kwargs.get('fixed_step') or 10.0) if own_integrator == 'RK4' else None
-            sol = integrate(eom, t_span, self.y0, method=own_integrator, t_eval=t_eval,
-                            events=events, rtol=rtol, atol=atol, fixed_step=fixed_step)
         else:
-            solver_method = method
-            if solver_method in ('PD853', 'DOP853', 'RK89'):
-                solver_method = 'DOP853'
-            elif solver_method in ('Radau', 'RADAU', 'RadauIIA'):
-                solver_method = 'Radau'
-            # Restart at each shadow edge and atmosphere-model jump (see backend/eclipse.py)
-            boundaries = []
-            rotation_at = lambda t: _earth_rotation_at(t, epoch_tt, earth_rotation)[0]
-            if cfg.srp or cfg.albedo:
-                boundaries += shadow_boundary_events(epoch_tt, rotation_at=rotation_at)
-            if cfg.drag:
-                boundaries += drag_boundary_events(epoch_tt, rotation_at)
-            if boundaries:
-                sol = solve_ivp_segmented(eom, t_span, self.y0, boundaries,
-                                          method=solver_method, t_eval=t_eval, rtol=rtol, atol=atol,
-                                          events=events)
-            else:
-                sol = solve_ivp(eom, t_span, self.y0, method=solver_method, t_eval=t_eval, rtol=rtol, atol=atol,
-                                events=events)
+            if steering is not None:
+                if steering != 'covariance':
+                    raise ValueError("steering='covariance' runs with method 'RKF78' or 'BS'")
+                # Variational equations dPhi/dt = A(t) Phi ride along; only the orbit sets the step size
+                steerer = CovarianceSteering(P0=kwargs.get('covariance0'), eta=kwargs.get('steering_eta', 0.02))
+            sol = integrate_trajectory(self.y0, t_span, self.epoch, cfg, method=method,
+                                       rtol=rtol, atol=atol, t_eval=t_eval, events=events,
+                                       variational=steerer is not None, steering=steerer,
+                                       fixed_step=kwargs.get('fixed_step'), fidelity=schedule)
 
         keep = slice(None) if sampling == 'time' else _anomaly_spaced(sol.t, sol.y[0:3].T, num_points)
         times = sol.t[keep]
@@ -730,12 +603,8 @@ class ThirdReviewEngine:
             'model': model_clean,
             'method': method,
             'force_diagnostics': force_diag,
-            'stm': sol.y[6:42, keep].T.reshape(-1, 6, 6) if steering is not None else None,
-            'steps': steerer.record() if steering is not None else None,
+            'stm': sol.y[6:42, keep].T.reshape(-1, 6, 6) if steerer is not None else None,
+            'steps': steerer.record() if steerer is not None else None,
             'ecr_mf': schedule.report(sol.t_events[len(_ORBIT_EVENT_FUNCTIONS):]) if schedule else None,
         }
 
-# Aliases for backwards compatibility across tests and legacy scripts
-TrajectoryEngine = ThirdReviewEngine
-FirstReviewEngine = ThirdReviewEngine
-SecondReviewEngine = ThirdReviewEngine

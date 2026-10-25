@@ -96,6 +96,31 @@ class TestPropagator(unittest.TestCase):
         self.assertAlmostEqual(sc.epoch - molniya().epoch, period, places=6)
 
 
+    def test_coast_through_the_shadow_matches_the_validated_propagation(self):
+        # Mission scripts, targeting and burns propagate here; they must get the same dynamics as
+        # the cross-checked engine path (shadow and drag restarts). Before, RKF7(8) ended 24.8 m
+        # away over this week on Tundra, and DOP853 was refused.
+        from astroflyer.backend.astro_engine import ThirdReviewEngine
+        from astroflyer.backend.epoch import Epoch
+        from astroflyer.backend.forces import ForceModelConfig
+        from astroflyer.validation import cases as C
+        epoch = Epoch.from_iso(C.EPOCH_ISO_TT, scale="TT")
+        a, e, i, raan, argp, nu = C.ORBITS["tundra"]
+        sc = M.Spacecraft.from_keplerian(epoch, a, e, i, raan, argp, nu, dry_mass_kg=1000.0, fuel_mass_kg=0.0,
+                                         cd=1.0, drag_area_m2=10.0, cr=1.0, srp_area_m2=20.0)
+        week = 7 * 86400.0
+        reference = ThirdReviewEngine(np.concatenate([sc.r, sc.v]), epoch=epoch).propagate(
+            (0.0, week), num_points=2, model="coupled", gravity_degree=8, gravity_order=8,
+            enable_relativity=False, enable_albedo=False, b_star=0.01, cr_area_over_m=0.02,
+            rtol=1e-12, atol=1e-6, method="DOP853")["position_m"][-1]
+        model = ForceModelConfig.for_model("coupled", gravity_degree=8, gravity_order=8, relativity=False,
+                                           albedo=False)
+        for method in ("RKF78", "DOP853"):
+            with self.subTest(method=method):
+                end = M.Propagator(model, method=method, rtol=1e-12, atol=1e-6).step(sc.copy(), duration=week)
+                self.assertLess(np.linalg.norm(end.r - reference), 1.0)
+
+
 class TestDifferentialCorrector(unittest.TestCase):
 
     def test_solves_a_nonlinear_system(self):

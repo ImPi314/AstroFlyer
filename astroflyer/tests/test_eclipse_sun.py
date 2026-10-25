@@ -60,23 +60,6 @@ class TestEclipseSunDirection(unittest.TestCase):
         self.assertGreater(cylinder_pct, 1.0)   # this GTO does pass through the shadow
         self.assertAlmostEqual(engine_pct, cylinder_pct, delta=0.5)
 
-    def test_eclipses_endpoint_uses_the_real_sun(self):
-        # /api/events/eclipses runs its own propagation; its shadow fraction must follow the DE440 Sun
-        from astroflyer.backend.astro_engine import ThirdReviewEngine, keplerian_to_cartesian
-        server = create_server(port=0)
-        threading.Thread(target=server.serve_forever, daemon=True).start()
-        self.addCleanup(server.shutdown)
-        url = f"http://127.0.0.1:{server.server_address[1]}/api/events/eclipses?a=24389&e=0.728525&inc=28.5"
-        payload = json.load(urllib.request.urlopen(url, timeout=600))
-
-        r0, v0 = keplerian_to_cartesian(24389e3, 0.728525, np.radians(28.5), np.radians(45.0), np.radians(30.0), 0.0)
-        sol = ThirdReviewEngine(np.concatenate([r0, v0])).propagate((0.0, 37905.5), num_points=1000)
-        r, s = np.asarray(sol["position_m"]), np.asarray(sol["sun_direction_eci"])
-        along = np.sum(r * s, axis=1)
-        across = np.linalg.norm(r - along[:, None] * s, axis=1)
-        cylinder_pct = np.mean((along < 0) & (across < R_EQ)) * 100.0
-        self.assertAlmostEqual(payload["mission_eclipse_fraction_pct"], cylinder_pct, delta=0.5)
-
 
 if __name__ == "__main__":
     unittest.main()

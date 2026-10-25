@@ -32,10 +32,11 @@ is downloaded at runtime.
 * `Epoch` with UTC, TAI, TT, TDB, UT1 and GPS scales; IERS leap seconds and `finals2000A` EOP.
 * IAU 2006/2000A GCRF ↔ ITRF transformation with polar motion; RTN, VNC and LVLH local frames.
 
-### Propagators (`astro_engine.py`, `integrators.py`, `analytic.py`)
-* SciPy **DOP853** and **Radau** (implicit, for stiff arcs), restarted exactly at shadow edges and
-  drag-model discontinuities so step control never straddles them.
-* In-house **RKF7(8)**, **Bulirsch–Stoer** and fixed-step **RK4**.
+### Propagators (`astro_engine.py`, `trajectory.py`, `integrators.py`, `analytic.py`)
+* SciPy **DOP853** (default) and **Radau** (implicit, for stiff arcs); in-house **RKF7(8)**,
+  **Bulirsch–Stoer** and fixed-step **RK4**. Every one integrates through `trajectory.py` and is
+  restarted exactly at shadow edges and drag-model discontinuities, so step control never straddles
+  them — the propagate endpoint, mission scripts, targeting and finite burns alike.
 * Analytic **Kepler**, **J2 mean-element** and **SGP4** (from TLEs).
 * Closed orbits by element set or Cartesian GCRF state; escape trajectories (e ≥ 1) by duration.
 

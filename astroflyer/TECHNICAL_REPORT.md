@@ -35,9 +35,9 @@ orbits (Molniya, Tundra, GTO, high-apogee science orbits, lunar transfers) and p
 
 | Layer | What it is | Main files |
 | --- | --- | --- |
-| Engine | Force model, integrators, propagation, events | `backend/forces.py`, `astro_engine.py`, `integrators.py`, `event_predictor.py`, `eclipse.py`, `access.py` |
+| Engine | Force model, trajectory integration, propagation, events | `backend/forces.py`, `trajectory.py`, `astro_engine.py`, `integrators.py`, `event_predictor.py`, `eclipse.py`, `access.py` |
 | Time and frames | UTC/TAI/TT/TDB/UT1/GPS; IAU 2006/2000A GCRF↔ITRF with IERS EOP | `backend/epoch.py`, `frames.py`, `eop.py` |
-| Server | Local HTTP API (`/api/propagate`, events, access, mission script, export) | `backend/app_server.py` |
+| Server | Local HTTP adapters (`/api/propagate`, access, targeting, mission script) | `backend/app_server.py`, `propagation_run.py` |
 | Console | Mission / Analysis / Data workspaces; 3D view, ground track, plots, watch panel | `frontend/` |
 | Packaging | PyInstaller app + Inno Setup installer with bundled data and the WebView2 offline installer | `AstroFlyer.spec`, `build_release.py`, `installer/AstroFlyer_Installer.iss` |
 
@@ -49,9 +49,12 @@ were wrong (see §7).
 ## 3. Methods
 
 **Propagators.** DOP853 (default) and Radau from SciPy; in-house RKF7(8), Bulirsch–Stoer and fixed-step
-RK4; analytic Kepler, J2 mean-element and SGP4. The SciPy path stops and restarts at every
-umbra/penumbra edge and at the altitudes and times where NRLMSISE-00 itself is discontinuous, so step
-control never straddles a kink. DOP853 is 5–6× faster than Radau on the validation cases and agrees with
+RK4; analytic Kepler, J2 mean-element and SGP4. Every integrator runs through one trajectory
+integration module (`backend/trajectory.py`), used by the propagate endpoint and by mission scripts,
+targeting and finite burns alike. It stops and restarts at every umbra/penumbra edge and at the
+altitudes and times where NRLMSISE-00 itself is discontinuous, so step control never straddles a kink;
+RKF7(8) and DOP853 then agree to 1 cm over 7 days on Tundra with SRP (24.8 m apart before RKF7(8) got
+the restarts). DOP853 is 5–6× faster than Radau on the validation cases and agrees with
 it to 0.85 m over 32 days.
 
 **Output sampling.** For display the API samples the integrated trajectory evenly in eccentric anomaly,

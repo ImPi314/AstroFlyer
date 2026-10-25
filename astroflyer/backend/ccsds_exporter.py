@@ -111,7 +111,7 @@ class CCSDSExporter:
 
         lines = [
             "CCSDS_OEM_VERS = 2.0",
-            f"CREATION_DATE  = {datetime.datetime.utcnow().isoformat()}Z",
+            f"CREATION_DATE  = {datetime.datetime.now(datetime.UTC).replace(tzinfo=None).isoformat()}Z",
             "ORIGINATOR     = ASTROFLYER_HEO_STUDIO_ACS_CE",
             "",
             "META_START",
@@ -168,7 +168,7 @@ class CCSDSExporter:
         """
         lines = [
             "CCSDS_OPM_VERS = 2.0",
-            f"CREATION_DATE  = {datetime.datetime.utcnow().isoformat()}Z",
+            f"CREATION_DATE  = {datetime.datetime.now(datetime.UTC).replace(tzinfo=None).isoformat()}Z",
             "ORIGINATOR     = ASTROFLYER_HEO_STUDIO_ACS_CE",
             "",
             "% Spacecraft Metadata",

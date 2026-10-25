@@ -64,7 +64,8 @@ untracked `astroflyer/cpp_engine/` binaries are leftovers of a retired one and a
 | --- | --- |
 | Time & frames | `epoch.py` (Epoch, all scales), `eop.py` (leap seconds, finals2000A), `frames.py` (GCRF↔ITRF, RTN/VNC/LVLH) |
 | Forces | `forces.py` (EGM2008, third body, SRP + shadow, drag, relativity, albedo/IR; `ForceModelConfig`), `ephemeris.py` (DE440), `nrlmsise00.py` + `nrlmsise00_data.py` |
-| Propagation | `astro_engine.py` (`ThirdReviewEngine.propagate`, orbit events), `integrators.py` (RKF78, BS, RK4), `analytic.py` (Kepler, J2 mean, SGP4), `eclipse.py` (segmented `solve_ivp` restarts) |
+| Propagation | `trajectory.py` (`integrate_trajectory`: EOM, restarts, integrator choice — every propagation goes through it), `astro_engine.py` (`ThirdReviewEngine.propagate`, output products, orbit events), `integrators.py` (RKF78, BS, RK4), `analytic.py` (Kepler, J2 mean, SGP4), `eclipse.py` (restart loops) |
+| Propagation run | `propagation_run.py` (`run(request) -> report`, behind `/api/propagate`; refuses invalid input instead of clamping) |
 | Events & access | `event_predictor.py`, `access.py` (stations, masks, eclipses, beta angle, reports) |
 | Mission design | `mission.py` (Spacecraft, burns, Propagator, DifferentialCorrector, targeting), `script_runner.py` (mission-script interpreter), `differential_corrector.py` (B-plane, finite burn, perigee pumping) |
 | Innovations | `covariance_engine.py` (`CovarianceSteering`: STM + step limiter; dispersion), `ecr_mf_controller.py` (`FidelitySchedule`: gravity degree by radius tier with a certified omitted-acceleration bound) |
@@ -72,15 +73,16 @@ untracked `astroflyer/cpp_engine/` binaries are leftovers of a retired one and a
 | Data exchange | `ephemeris_io.py` (OEM/OPM/SP3), `ccsds_exporter.py` (TLE/OEM/OPM text) |
 | Legacy / thin | `trajectory_engine.py` |
 
-Propagator methods: `DOP853`/`PD853`, `Radau` (SciPy, with restarts), `RKF78`, `BS`, `RK4`, `KEPLER`, `J2MEAN`,
+Propagator methods (all integrators restart at shadow and drag boundaries): `DOP853`/`PD853`, `Radau`, `RKF78`, `BS`, `RK4`, `KEPLER`, `J2MEAN`,
 `SGP4`. Force-model presets: `two_body`, `j2`, `j2_j3_j4`, anything else = full model (8×8 default).
 Options: `steering="covariance"` (RKF78/BS; returns `stm`, `steps`), `fidelity="ecr_mf"` (returns `ecr_mf`);
 `/api/propagate` takes the same two and reports them under `innovations_suite`.
 
 **Endpoints the new frontend uses:** `/api/propagate`, `/api/script/propagate`, `/api/script/run`,
 `/api/analysis/access`, `/api/targeting/differential_corrector`, `/api/targeting/finite_burn`. The server
-also exposes `/api/manifest`, `/api/mission/target`, CCSDS TLE/OPM/OEM, `/api/covariance/propagate`,
-`/api/covariance/steered` and the eclipse and ground-station event endpoints (`ThirdReviewAppHandler.handle_api`).
+also exposes `/api/manifest`, `/api/script/generate` and `/api/covariance/steered`. The endpoints that
+each propagated a hard-coded GTO (CCSDS, events, covariance, mission/target) were removed: `/api/propagate`
+reports all of that for the requested orbit.
 
 ---
 
@@ -101,7 +103,7 @@ difference and how it was traced is in `astroflyer/validation/results/README.md`
 
 **Innovations re-measured** (`results/innovations/README.md`, `--variant`): covariance steering cuts plain RKF7(8)'s
 error on several cases (HEO stress L7, 7 days: 26.3 → 6.0 m) at ~4× the run time, but does not beat the DOP853
-baseline overall and made GTO L7 over 7 days worse (RKF7(8) has no shadow/drag restarts). ECR-MF is exact at 8×8
+baseline overall and made GTO L7 over 7 days worse (measured before RKF7(8) got shadow/drag restarts; rerun with `--variant`). ECR-MF is exact at 8×8
 (nothing to drop); at 70×70 its tiers are 70/58/8, it stays within mm over a day of the full model, and gives
 no speed-up — gravity is not the costly force. Present it as certified fidelity, not acceleration.
 
@@ -116,9 +118,7 @@ no speed-up — gravity is not the costly force. Present it as certified fidelit
   `scripts/generate_formal_abstract_docs.py` with measured results only.
 * **No FreeFlyer comparison.** Check FreeFlyer's licence before publishing any FreeFlyer numbers; never open
   `mp_archive/datasources/freeflyer_extracted` (clean-room rule).
-* `ccsds_exporter.py` uses deprecated `datetime.utcnow()`.
-* The RKF7(8)/BS path has no shadow-edge or drag-jump restarts (only the SciPy path does), which limits its
-  accuracy with SRP and drag on, steered or not.
+* `results/innovations/` predates the RKF7(8)/BS restarts (2026-10-25); its rkf78 rows would change on a rerun.
 * Unexplained: 0.37 m a day difference from Basilisk on Molniya with J2 or 8×8 gravity.
 * SPICE rejects the bundled DE440 subset (one segment ends a word short); jplephem reads it. GMAT and Basilisk
   use GMAT's DE424 instead.

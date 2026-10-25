@@ -171,12 +171,97 @@ def solve_ivp_segmented(fun, t_span, y0, boundaries, t_eval=None, events=None, *
     else:
         status, message = -1, "Too many shadow-boundary restarts."
 
+    return _result(ts, ys, len(y), events, t_events, y_events, boundary_times, status, message, counts)
+
+
+def integrate_segmented(fun, t_span, y0, boundaries, t_eval=None, events=None, steering=None, **options):
+    """
+    integrators.integrate (RKF78, BS, RK4) restarted at every zero of the `boundaries`, like
+    solve_ivp_segmented. These integrators locate an event by re-stepping from the start of the
+    step, so the state at a crossing never comes from a step across the kink and nothing is redone.
+    A steering controller is started once, for the whole run.
+    """
+    from .integrators import integrate
+
+    t0, t_end = float(t_span[0]), float(t_span[1])
+    sense = 1.0 if t_end >= t0 else -1.0
+    user = list(events) if events is not None else []
+    n_b = len(boundaries)
+    t_eval = None if t_eval is None else np.asarray(t_eval, dtype=float)
+    steer = None if steering is None else _StartedOnce(steering)
+
+    ts, ys = [], []
+    t_events = [[] for _ in user]
+    y_events = [[] for _ in user]
+    boundary_times = []
+    counts = {"nfev": 0}
+    start, y = t0, np.asarray(y0, dtype=float)
+    forced = {}
+    status, message = 0, "The solver successfully reached the end of the integration interval."
+
+    for _ in range(_MAX_SEGMENTS):
+        wrapped = [_boundary_event(g, start, forced.get(k)) for k, g in enumerate(boundaries)]
+        ahead = None if t_eval is None else t_eval[sense * (t_eval - start) >= 0.0]
+        if t_eval is not None and ts and len(ahead) and ahead[0] == start:
+            ahead = ahead[1:]          # emitted by the previous segment, which ended here
+        sol = integrate(fun, (start, t_end), y, t_eval=ahead, events=wrapped + user, steering=steer, **options)
+        counts["nfev"] += int(sol.nfev)
+        stopped = sol.message == "terminal event"
+        fired = [k for k in range(n_b) if stopped and len(sol.t_events[k])
+                 and sol.t_events[k][-1] == sol.t[-1]]
+        seg_end = float(sol.t[-1])
+
+        # Without t_eval keep the segment ends; with it, keep the requested times (the last
+        # output of a stopped segment is the stop state, not a requested time)
+        keep = slice(None)
+        if t_eval is None:
+            keep = slice(0 if not ts else 1, None)
+        elif stopped and not (len(ahead) and np.isclose(ahead, seg_end, rtol=0.0, atol=1e-9).any()):
+            keep = slice(0, -1)
+        ts.append(sol.t[keep])
+        ys.append(sol.y[:, keep])
+
+        for j in range(len(user)):
+            t_events[j].extend(sol.t_events[n_b + j])
+            y_events[j].extend(sol.y_events[n_b + j])
+        if not stopped:
+            break
+        if not fired:                      # a terminal user event
+            status, message = 1, "A termination event occurred."
+            break
+
+        k = fired[0]
+        boundary_times.append(seg_end)
+        forced = {k: -np.sign(wrapped[k](start, y)) or 1.0}
+        start, y = seg_end, sol.y[:, -1]
+    else:
+        status, message = -1, "Too many shadow-boundary restarts."
+
+    return _result(ts, ys, len(y), events, t_events, y_events, boundary_times, status, message, counts)
+
+
+class _StartedOnce:
+    """A steering controller whose start() takes effect only at the first segment."""
+
+    def __init__(self, steering):
+        self.steering, self.started = steering, False
+
+    def start(self, t, y):
+        if not self.started:
+            self.steering.start(t, y)
+            self.started = True
+
+    def __getattr__(self, name):
+        return getattr(self.steering, name)
+
+
+def _result(ts, ys, n_y, events, t_events, y_events, boundary_times, status, message, counts):
     t_out = np.concatenate(ts) if ts else np.array([])
-    y_out = np.concatenate(ys, axis=1) if ys else np.zeros((len(y), 0))
+    y_out = np.concatenate(ys, axis=1) if ys else np.zeros((n_y, 0))
     return OptimizeResult(
         t=t_out, y=y_out, sol=None,
         t_events=None if events is None else [np.asarray(v) for v in t_events],
-        y_events=None if events is None else [np.asarray(v).reshape(-1, len(y)) for v in y_events],
+        y_events=None if events is None else [np.asarray(v).reshape(-1, n_y) for v in y_events],
         boundary_times=np.asarray(boundary_times), status=status, message=message,
         success=status >= 0, **counts,
     )

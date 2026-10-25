@@ -12,6 +12,7 @@ from astroflyer.backend.radiation_belts import RadiationBeltModel
 from astroflyer.backend.differential_corrector import DifferentialCorrector
 from astroflyer.backend.covariance_engine import CovarianceEngine
 from astroflyer.backend.astro_engine import ThirdReviewEngine, compute_acceleration_components
+from astroflyer.backend.forces import ForceModelConfig
 
 
 class TestAstroFlyerInnovations(unittest.TestCase):
@@ -40,7 +41,7 @@ class TestAstroEnginePhysics(unittest.TestCase):
 
     def test_two_body_and_j2_acceleration(self):
         state = np.array([7000000.0, 0.0, 0.0, 0.0, 7500.0, 0.0])
-        acc_dict = compute_acceleration_components(state, 0.0)
+        acc_dict = compute_acceleration_components(state, 0.0, ForceModelConfig())
         self.assertIn("a_central", acc_dict)
         self.assertIn("a_j2", acc_dict)
         # Gravitational attraction directed inward (-X)

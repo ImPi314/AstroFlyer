@@ -34,11 +34,10 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from . import forces
 from .epoch import Epoch
 from .forces import MU_EARTH, R_EARTH_EQ, ForceModelConfig
-from .frames import FastEarthRotation, rtn_matrix, vnc_matrix
-from .integrators import integrate
+from .frames import rtn_matrix, vnc_matrix
+from .trajectory import integrate_trajectory
 
 G0 = 9.80665                     # standard gravity (m/s^2), defines Isp
 TWO_PI = 2.0 * math.pi
@@ -304,18 +303,6 @@ class Propagator:
         if span == 0.0:
             return sc
 
-        cfg = self._config_for(sc)
-        epoch_tt = float(sc.epoch - Epoch.j2000())
-        rotation = FastEarthRotation(sc.epoch, min(0.0, span), max(0.0, span))
-        mdot = burn.mass_flow_kg_s if burn is not None else 0.0
-
-        def rhs(t, y):
-            rot = rotation.matrix(t)
-            acc = forces.total_acceleration(epoch_tt + t, y[:3], y[3:6], cfg, rot, rotation.omega(t))
-            if burn is not None:
-                acc = acc + burn.acceleration(y[:3], y[3:6], y[6])
-            return np.concatenate([y[3:6], acc, [-mdot]])
-
         events = []
         if until is not None:
             g, direction = _EVENT_GUARDS[until]
@@ -324,14 +311,20 @@ class Propagator:
             stop.terminal = True
             events.append(stop)
 
-        y0 = np.concatenate([sc.r, sc.v, [sc.mass_kg]])
+        y0 = np.concatenate([sc.r, sc.v] + ([[sc.mass_kg]] if burn is not None else []))
         t_eval = None
         if record_step:
             t_eval = np.append(np.arange(0.0, abs(span), abs(float(record_step))), abs(span)) * np.sign(span)
-        res = integrate(rhs, (0.0, span), y0, method=self.method, t_eval=t_eval, events=events,
-                        rtol=self.rtol, atol=self.atol)
-        if until is not None and res.message != "terminal event":
+        res = integrate_trajectory(y0, (0.0, span), sc.epoch, self._config_for(sc), method=self.method,
+                                   rtol=self.rtol, atol=self.atol, t_eval=t_eval, events=events, burn=burn)
+        if until is not None and res.status != 1:
             raise RuntimeError(f"No {until} within {span:.0f} s")
+        if until is not None and record_step:
+            # The run stopped at the event: its state ends the record (t_eval points stop before it)
+            res.t = np.append(res.t, res.t_events[0][-1])
+            res.y = np.column_stack([res.y, res.y_events[0][-1]])
+        elif until is not None:
+            res.t, res.y = res.t_events[0][-1:], res.y_events[0][-1:].T
 
         y_end = res.y[:, -1]
         elapsed = float(res.t[-1])
@@ -342,7 +335,7 @@ class Propagator:
                 if sc.ephemeris and abs((sc.epoch + float(t_k)) - sc.ephemeris[-1][0]) < 1e-3:
                     sc.ephemeris.pop()  # a grid point within 1 ms of the stop event: keep the event state
                 sc.ephemeris.append((sc.epoch + float(t_k), y_k[:3].copy(), y_k[3:6].copy()))
-        fuel_used = sc.mass_kg - y_end[6]
+        fuel_used = sc.mass_kg - y_end[6] if burn is not None else 0.0
         if fuel_used > sc.fuel_mass_kg + 1e-9:
             raise ValueError(f"Finite burn needs {fuel_used:.1f} kg of fuel, {sc.fuel_mass_kg:.1f} kg left")
         sc.epoch = sc.epoch + elapsed

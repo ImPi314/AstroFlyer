@@ -39,9 +39,10 @@ Selected cases (max position difference from Orekit, AstroFlyer time):
 RKF7(8) it removes much of the error in several cases (HEO stress L7 over 7 days: 26.3 m → 6.0 m; Tundra:
 18.2 m → 9.0 m; GTO gravity-only: 0.52 m → 0.17 m), at about 4× the run time. It does not beat the
 DOP853 baseline overall, and it made some cases worse (GTO L7 over 7 days: 9.9 m → 17.4 m; Molniya L5:
-0.70 m → 3.9 m). The RKF7(8) path does not restart at shadow edges and drag-model jumps the way the
-DOP853 path does, so with SRP and drag on its error is dominated by those kinks, which steering does not
-address.
+0.70 m → 3.9 m). When these tables were made the RKF7(8) path did not restart at shadow edges and
+drag-model jumps the way the DOP853 path did, so with SRP and drag on its error was dominated by those
+kinks, which steering does not address. Since 2026-10-25 every integrator restarts there
+(`backend/trajectory.py`); the `rkf78` rows have not been rerun.
 
 **ECR-MF** at this cross-check's 8×8 gravity has nothing to drop (every tier keeps degree 8), so it
 matches `dop853` exactly. At 70×70 (`python -m astroflyer.validation.ecr_mf_benchmark [--days 7]`,
