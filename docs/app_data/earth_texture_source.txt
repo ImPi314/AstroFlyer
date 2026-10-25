@@ -7,4 +7,3 @@ recorded, so where this file came from is still unproven. If it is Blue Marble, 
 policy allows re-use (commercial included) with "NASA" as the only required credit
 (https://visibleearth.nasa.gov/image-use-policy; the Blue Marble Next Generation credit asked for is
 "NASA Goddard Space Flight Center / Reto Stockli, NASA Earth Observatory").
-To settle it, rebuild earth.png from an image downloaded from NASA Visible Earth and record its URL here.

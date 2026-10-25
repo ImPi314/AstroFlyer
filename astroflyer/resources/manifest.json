@@ -1,5 +1,5 @@
 {
-  "_comment": "Offline data shipped with AstroFlyer. Nothing here is downloaded at runtime. Refresh space weather with tools/fetch_offline_data.py on a machine with internet, then rebuild.",
+  "_comment": "Offline data shipped with AstroFlyer. Nothing here is downloaded at runtime.",
   "files": {
     "iers/Leap_Second.dat": {
       "owner": "backend/eop.py",
