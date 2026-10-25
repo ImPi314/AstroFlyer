@@ -314,6 +314,14 @@ class TestScriptLimits(unittest.TestCase):
         out = self.run_limited("Propagate Prop(Sat) {Sat.ElapsedDays = 1e9};\n")
         self.assertIn("30 days", out["error"]["message"])
 
+    def test_apsis_search_cannot_run_past_the_script_budget(self):
+        # With the year used up the search limit was 0, which step() read as "three orbits"
+        out = run_script(header(sma=42164.0, ecc=0.1) + "Create Variable I;\nBeginMissionSequence;\n"
+                         "For I = 1:12;\nPropagate Prop(Sat) {Sat.ElapsedDays = 30};\nEndFor;\n"
+                         "Propagate Prop(Sat) {Sat.ElapsedDays = 6};\nPropagate Prop(Sat) {Sat.Periapsis};\n")
+        self.assertIsNotNone(out["error"])
+        self.assertIn("a year", out["error"]["message"])
+
 
 class TestCrossSiteRequests(unittest.TestCase):
 

@@ -297,7 +297,9 @@ class Propagator:
         if until is not None:
             if until not in _EVENT_GUARDS:
                 raise ValueError(f"Unknown stop event {until!r}; choose from {sorted(_EVENT_GUARDS)}")
-            span = max_duration or 3.0 * max(sc.keplerian()["period"], 3600.0)
+            span = max_duration if max_duration is not None else 3.0 * max(sc.keplerian()["period"], 3600.0)
+            if not (math.isfinite(span) and span > 0.0):
+                raise ValueError(f"No finite time to search for {until} in (max_duration {max_duration!r})")
         else:
             span = float(duration)
         if span == 0.0:

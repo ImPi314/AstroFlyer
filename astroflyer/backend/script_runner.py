@@ -462,10 +462,13 @@ class Interpreter:
         period = sat.sc.keplerian()["period"]
         record = None if self.quiet else max(1.0, period / self.record_points_per_orbit)
         left = MAX_SCRIPT_PROPAGATION_S - self.propagated_s
-        if (abs(duration) if duration is not None else 0.0) > left:
+        if left <= 0.0 or (abs(duration) if duration is not None else 0.0) > left:
             raise ScriptError("The script has propagated a year in total, the most one run may", stmt.line)
         # A search for an apsis stops after three orbits, and never beyond the limits above
-        search = None if until is None else min(3.0 * max(period, 3600.0), MAX_PROPAGATE_S, left)
+        search = None
+        if until is not None:
+            orbits = 3.0 * max(period, 3600.0) if math.isfinite(period) else MAX_PROPAGATE_S
+            search = min(orbits, MAX_PROPAGATE_S, left)
         started = sat.sc.epoch
         try:
             propagator.step(sat.sc, duration=duration, until=until, burn=finite, record_step=record,
