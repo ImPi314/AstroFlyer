@@ -2,4 +2,4 @@
 AstroFlyer HEO - Flight Dynamics & Trajectory Analysis Studio
 Package initialization.
 """
-__version__ = "1.0.0"   # the one version number: the installer and releases take it from here
+__version__ = "1.0.1"   # the one version number: the installer and releases take it from here
