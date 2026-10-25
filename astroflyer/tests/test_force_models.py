@@ -179,6 +179,29 @@ class TestNonGravitational(unittest.TestCase):
         self.assertGreater(rho_p, 1e-12)
         self.assertLess(np.dot(accel, y0[3:]), 0.0)
 
+    def test_drag_uses_the_bundled_daily_space_weather(self):
+        # Without fixed values NRLMSISE-00 takes its inputs from the bundled CelesTrak history: the
+        # previous day's F10.7, the day's 81-day centred mean and the day's Ap (it used 150/150/15)
+        import csv
+        import datetime
+        from astroflyer.resource_paths import resource_path
+        with open(resource_path("resources", "spaceweather", "SW-All.csv"), newline="") as f:
+            rows = {row["DATE"]: row for row in csv.DictReader(f)}
+        days = (datetime.date(2026, 3, 15) - datetime.date(2000, 1, 1)).days
+        tt = days * 86400.0 + 69.184                     # 2026-03-15 12:00 UTC as TT seconds past J2000
+        y0 = _state(GTO)
+        rot = forces.SimpleEarthRotation(tt)
+
+        def density(cfg):
+            return forces.drag_acceleration(y0[:3], y0[3:], rot.matrix(0), rot.omega(0), tt, cfg)[1]
+
+        day = forces.ForceModelConfig(f107=float(rows["2026-03-14"]["F10.7_OBS"]),
+                                      f107a=float(rows["2026-03-15"]["F10.7_OBS_CENTER81"]),
+                                      ap=float(rows["2026-03-15"]["AP_AVG"]))
+        self.assertEqual(density(forces.ForceModelConfig()), density(day))
+        fixed = forces.ForceModelConfig(f107=150.0, f107a=150.0, ap=15.0)    # what the cross-checks give
+        self.assertNotAlmostEqual(density(forces.ForceModelConfig()) / density(fixed), 1.0, places=2)
+
     def test_drag_off_above_cutoff(self):
         cfg = forces.ForceModelConfig()
         r = np.array([3.0e7, 0, 0])

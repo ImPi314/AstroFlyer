@@ -7,7 +7,8 @@ All perturbing accelerations used by the propagator, computed in GCRF (m/s^2):
     (Montenbruck & Gill V/W recursion, evaluated in ITRF and rotated to GCRF)
   - Sun and Moon point-mass third-body gravity from the bundled JPL DE440
   - Solar radiation pressure, cannonball, with a conical (umbra/penumbra) Earth shadow
-  - Atmospheric drag with NRLMSISE-00 density (double-precision port) and a co-rotating atmosphere
+  - Atmospheric drag with NRLMSISE-00 density (double-precision port) and a co-rotating atmosphere,
+    its space weather from the bundled CelesTrak history unless fixed values are given
   - Schwarzschild general-relativity correction (IERS 2010)
   - Optional simplified Earth albedo + infrared pressure (radial, off by default)
 
@@ -19,6 +20,8 @@ without one, a z-axis GMST rotation is used, which is adequate only for tests.
 import math
 from dataclasses import dataclass
 from datetime import date as _date
+from functools import lru_cache
+from typing import Optional
 
 import numpy as np
 
@@ -186,9 +189,10 @@ class ForceModelConfig:
     albedo: bool = False
     cd_area_over_m: float = 0.01     # Cd*A/m (m^2/kg)
     cr_area_over_m: float = 0.02     # Cr*A/m (m^2/kg)
-    f107: float = 150.0              # daily F10.7 (sfu)
-    f107a: float = 150.0             # 81-day mean F10.7 (sfu)
-    ap: float = 15.0                 # daily Ap
+    # Space weather for drag: fixed values when given, else (None) the bundled CelesTrak history
+    f107: Optional[float] = None     # daily F10.7 (sfu), previous day's
+    f107a: Optional[float] = None    # 81-day centred mean F10.7 (sfu)
+    ap: Optional[float] = None       # daily Ap
 
     @classmethod
     def for_model(cls, model, **overrides):
@@ -342,9 +346,37 @@ def _utc_day_of_year_and_seconds(tt_seconds_j2000):
     return date.timetuple().tm_yday, sec
 
 
+def _utc_day_ordinal(tt_seconds_j2000):
+    return _DAYS_TO_2000 + 1 + math.floor((tt_seconds_j2000 - _UTC_MIDNIGHT_2000_IN_TT_J2000) / 86400.0)
+
+
+@lru_cache(maxsize=4096)
+def bundled_space_weather(day_ordinal):
+    """NRLMSISE-00 inputs (f107, f107a, ap) for a UTC day from the bundled CelesTrak file: the
+    previous day's F10.7, the day's 81-day centred mean and its Ap (offline_data.py; moderate
+    defaults 150/150/15 outside the file's coverage)."""
+    try:
+        from ..offline_data import space_weather
+    except ImportError:                 # backend/ imported as a top-level package (app_server)
+        from offline_data import space_weather
+    day = _date.fromordinal(day_ordinal)
+    today, yesterday = space_weather(day), space_weather(_date.fromordinal(day_ordinal - 1))
+    return yesterday["f107"], today["f107a"], today["ap"]
+
+
+def space_weather_inputs(cfg, tt_seconds_j2000):
+    """(f107, f107a, ap) the drag model uses at a TT time: cfg's fixed values where set, the
+    bundled daily history for the rest."""
+    if cfg.f107 is not None and cfg.f107a is not None and cfg.ap is not None:
+        return cfg.f107, cfg.f107a, cfg.ap
+    f107, f107a, ap = bundled_space_weather(_utc_day_ordinal(tt_seconds_j2000))
+    return (cfg.f107 if cfg.f107 is not None else f107, cfg.f107a if cfg.f107a is not None else f107a,
+            cfg.ap if cfg.ap is not None else ap)
+
+
 def atmospheric_density(tt_seconds_j2000, lat_rad, lon_rad, alt_m, f107, f107a, ap):
     """
-    NRLMSISE-00 total mass density (kg/m^3) with fixed space weather, from the
+    NRLMSISE-00 total mass density (kg/m^3) for the given space weather, from the
     double-precision port in nrlmsise00.py (gtd7d, daily Ap, local solar time
     UT + lon/15). pymsis gives the same model in single precision, whose ~1e-6
     jitter makes drag integration irreproducible.
@@ -360,7 +392,9 @@ def drag_acceleration(r, v, rot_gcrf2itrf, omega, tt_seconds_j2000, cfg):
     lat, lon, h = itrf_to_geodetic(r_itrf)
     if h > DRAG_CUTOFF_ALT_M or cfg.cd_area_over_m <= 0.0:
         return np.zeros(3), 0.0
-    rho = atmospheric_density(tt_seconds_j2000, lat, lon, max(h, 0.0), cfg.f107, cfg.f107a, cfg.ap)
+    # Space weather changes at UTC midnight, where the propagator restarts (eclipse.drag_boundary_events)
+    f107, f107a, ap = space_weather_inputs(cfg, tt_seconds_j2000)
+    rho = atmospheric_density(tt_seconds_j2000, lat, lon, max(h, 0.0), f107, f107a, ap)
     omega_gcrf = rot_gcrf2itrf.T @ np.array([0.0, 0.0, omega])
     v_rel = v - np.cross(omega_gcrf, r)
     return -0.5 * rho * cfg.cd_area_over_m * np.linalg.norm(v_rel) * v_rel, rho

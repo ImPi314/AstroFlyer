@@ -35,6 +35,13 @@ class PropagationRunTest(unittest.TestCase):
         self.assertAlmostEqual(report["active_orbit_config"]["semi_major_axis_km"],
                                6378.137 + (250.0 + 35786.0) / 2.0, places=3)
 
+    def test_report_states_the_space_weather_drag_used(self):
+        report = self.run_request(model="coupled", epoch="2026-03-15T00:00:00Z", num_points=200)
+        used = report["active_orbit_config"]["space_weather"]
+        self.assertEqual(used["source"], "CelesTrak SW-All.csv (bundled)")
+        self.assertEqual(used["kinds"], ["OBS"])        # observed values throughout March 2026
+        self.assertNotEqual(used["start"]["f107"], 150.0)
+
     def test_closed_orbit_report(self):
         report = self.run_request()
         period = 2.0 * math.pi * math.sqrt((26600e3) ** 3 / MU_EARTH)

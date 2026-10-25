@@ -63,7 +63,7 @@ def app_manifest() -> dict[str, Any]:
             "EGM2008 gravity up to degree and order 70 (8x8 by default)",
             "Sun and Moon from JPL DE440 (1990-2060)",
             "Solar radiation pressure with a conical shadow on the WGS-84 ellipsoid",
-            "NRLMSISE-00 drag with bundled space weather",
+            "NRLMSISE-00 drag driven by the bundled CelesTrak daily F10.7/Ap history (150/15 outside it)",
             "IERS relativity correction",
         ],
         "validation": "Cross-checked against Orekit, NASA GMAT and Basilisk on Molniya, Tundra, GTO and a "

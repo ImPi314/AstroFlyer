@@ -45,6 +45,17 @@ class OfflineDataTest(unittest.TestCase):
         self.assertAlmostEqual(sw["ap"], 5.0)
         self.assertEqual(len(sw["ap_3h"]), 8)
 
+    def test_monthly_prediction_covers_its_month(self):
+        # After the daily forecast CelesTrak predicts one row per month (dated the 1st, no Ap)
+        with open(os.path.join(self.tmp, "resources", "spaceweather", "SW-All.csv"), "a") as f:
+            f.write("2027-01-01,2637,14,,,,,,,,,,,,,,,,,,,,,73,118.6,114.7,PRM,115.3,108.3,111.8,105.9\n")
+        offline_data._load_space_weather.cache_clear()
+        sw = offline_data.space_weather(datetime.date(2027, 1, 17))
+        self.assertEqual((sw["source"], sw["kind"]), ("file", "PRM"))
+        self.assertAlmostEqual(sw["f107"], 118.6)
+        self.assertAlmostEqual(sw["f107a"], 115.3)
+        self.assertEqual(offline_data.space_weather(datetime.date(2027, 2, 5))["source"], "fallback")
+
     def test_falls_back_outside_coverage(self):
         sw = offline_data.space_weather(datetime.date(2040, 1, 1))
         self.assertEqual(sw["source"], "fallback")

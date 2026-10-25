@@ -20,7 +20,8 @@ orbits (Molniya, Tundra, GTO, high-apogee science orbits, lunar transfers) and p
 
 * **Engine:** Python, NumPy and SciPy (Numba optional, for gravity), Cowell formulation in GCRF.
 * **Force model:** EGM2008 gravity to 70×70, JPL DE440 Sun and Moon, solar radiation pressure with a
-  WGS-84 conical shadow, NRLMSISE-00 drag (double-precision port) and post-Newtonian relativity.
+  WGS-84 conical shadow, NRLMSISE-00 drag (double-precision port) driven by the bundled CelesTrak
+  daily F10.7/Ap history, and post-Newtonian relativity.
 * **Default integrator:** SciPy DOP853, restarted exactly at shadow edges and drag-model jumps.
 * **Validation:** the same 52 cases cross-checked against three independent propagators (§4).
   All pass against Orekit and NASA GMAT. Against Basilisk, 40 of 44 pass; the four that fail are drag

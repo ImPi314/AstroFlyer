@@ -25,10 +25,11 @@ never silently replaced:
 
 import math
 import time
+from datetime import date as _date
 
 import numpy as np
 
-from . import mission
+from . import forces, mission
 from .astro_engine import MU_EARTH, R_EARTH_EQ, ThirdReviewEngine, keplerian_to_cartesian
 from .ccsds_exporter import CCSDSExporter
 from .covariance_engine import CovarianceEngine
@@ -126,6 +127,9 @@ def run(request):
         "duration_s": float(run_s), "initial_state": initial_state, "model": model, "integrator": method,
         "num_points": num_points, **forces_on, "spacecraft_mass_kg": mass, "drag_area_m2": drag_area,
         "cd": cd, "srp_area_m2": srp_area, "cr": cr, "solve_time_sec": round(solve_s, 3),
+        "space_weather": (_space_weather_used(epoch, run_s)
+                          if forces_on["enable_drag"] and model.lower() not in ("two_body", "j2", "j2_j3_j4")
+                          else None),
     }
     report = _trajectory_report(sol, run_s, closed, config)
     if not closed:
@@ -134,6 +138,24 @@ def run(request):
         return report
     report.update(_closed_orbit_reports(sol, q, a_km, e, inc, raan, aop, ta, num_orbits))
     return report
+
+
+def _space_weather_used(epoch, run_s):
+    """Which space weather drag ran with: the bundled history's values at the start, and the kinds of
+    entry the run's UTC days drew on (OBS observed, PRD daily and PRM monthly predictions, or
+    'default' 150/150/15 where the file has nothing)."""
+    try:
+        from ..offline_data import space_weather
+    except ImportError:                 # backend/ imported as a top-level package (app_server)
+        from offline_data import space_weather
+    tt0 = float(epoch - Epoch.j2000())
+    first = forces._utc_day_ordinal(tt0)
+    days = range(first - 1, forces._utc_day_ordinal(tt0 + run_s) + 1)    # F10.7 is the previous day's
+    kinds = {(sw["kind"] or "OBS") if sw["source"] == "file" else "default"
+             for sw in (space_weather(_date.fromordinal(d)) for d in days)}
+    f107, f107a, ap = forces.bundled_space_weather(first)
+    return {"source": "CelesTrak SW-All.csv (bundled)", "kinds": sorted(kinds),
+            "start": {"f107": f107, "f107a": f107a, "ap": ap}}
 
 
 def _size_and_shape(q):

@@ -64,8 +64,14 @@ def space_weather(day: datetime.date) -> Dict[str, Any]:
     Uses the bundled CelesTrak file when it covers the date (source "file"); otherwise returns
     moderate-activity defaults (source "fallback") so propagation never fails on missing data.
     F10.7 for the model day is normally the previous day's value; callers pass the date they need.
+    Beyond the daily forecast CelesTrak gives one prediction per month (kind "PRM", dated the 1st,
+    without Ap), which stands for every day of its month.
     """
-    entry = _load_space_weather().get(day)
+    table = _load_space_weather()
+    entry = table.get(day)
+    if entry is None:
+        monthly = table.get(day.replace(day=1))
+        entry = monthly if monthly is not None and monthly["kind"] == "PRM" else None
     if entry is not None:
         return {**entry, "source": "file"}
     return {

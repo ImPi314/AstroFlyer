@@ -25,7 +25,10 @@ is downloaded at runtime.
 * **Third bodies:** Sun and Moon from JPL **DE440** (bundled subset, 1990–2060).
 * **Solar radiation pressure** with conical umbra/penumbra shadow from the Earth and the Moon;
   optional Earth albedo and infrared.
-* **Atmospheric drag:** double-precision **NRLMSISE-00** with bundled CelesTrak F10.7/Ap history.
+* **Atmospheric drag:** double-precision **NRLMSISE-00**, driven by the bundled CelesTrak space-weather
+  history (`SW-All.csv`): each UTC day's observed or predicted F10.7, 81-day mean and Ap, with
+  moderate defaults (150/150/15) outside the file's coverage. Fixed values can be given instead;
+  the cross-checks below use fixed F10.7 150, Ap 15.
 * **Relativity:** post-Newtonian Schwarzschild term.
 
 ### Time and reference frames
