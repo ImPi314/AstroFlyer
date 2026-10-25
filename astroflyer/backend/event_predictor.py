@@ -1,9 +1,8 @@
 """
-AstroCore Event Predictor & Mission Targeting Engine - Third Review
+AstroFlyer HEO - Event predictor
 =============================================================================
 Department of Aerospace Engineering, ACS College of Engineering
 Part of Major Project: Precise Trajectory Propagation & Events Prediction for HEOs
-Final Production & V&V Certification Release
 =============================================================================
 """
 

@@ -343,7 +343,7 @@ def run_server(port: int = 8003, host: str = "127.0.0.1", httpd: Optional[Thread
         httpd = create_server(port, host)
     port = httpd.server_address[1]
     print(f"==========================================================================")
-    print(f" ASTROFLYER HEO - THIRD REVIEW PRODUCTION FLIGHT DYNAMICS SERVER")
+    print(f" ASTROFLYER HEO - LOCAL ENGINE SERVER")
     print(f" High-Precision Trajectory Propagation & Mission Events Prediction")
     print(f" Serving AstroFlyer HEO Flight Operations Studio at: http://127.0.0.1:{port}")
     print(f"==========================================================================")

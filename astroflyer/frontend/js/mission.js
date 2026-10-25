@@ -98,7 +98,7 @@ export const schemas = {
             {
                 title: 'Integrator',
                 fields: [
-                    { key: 'method', label: 'Method', type: 'select', options: [['DOP853', 'Dormand-Prince 8(5,3)'], ['Radau', 'Radau IIA, implicit'], ['RK45', 'Runge-Kutta 4(5)']], hint: 'Dormand-Prince is the integrator checked against Orekit and the quickest for these orbits. Radau is implicit, for stiff problems; it is about ten times slower here.' },
+                    { key: 'method', label: 'Method', type: 'select', options: [['DOP853', 'Dormand-Prince 8(5,3)'], ['Radau', 'Radau IIA, implicit'], ['RKF78', 'Runge-Kutta-Fehlberg 7(8)'], ['BS', 'Bulirsch-Stoer'], ['RK4', 'Runge-Kutta 4, fixed 10 s step']], hint: 'Dormand-Prince is the integrator checked against Orekit and the quickest for these orbits. Radau is implicit, for stiff problems; it is about ten times slower here.' },
                     { key: 'tolerance', label: 'Tolerance', type: 'number', min: 1e-13, max: 1e-6, step: 'any', hint: 'Relative and absolute error per step, for example 1e-10.' },
                 ],
             },

@@ -1,5 +1,5 @@
 """
-AstroFlyer HEO - Third Review Standalone Offline Desktop Application Launcher
+AstroFlyer HEO - Offline desktop application launcher
 Part of Major Project: Precise Trajectory Propagation and Events Prediction for Highly Eccentric Orbits
 ACS College of Engineering - Aerospace Engineering Department
 """
@@ -76,7 +76,7 @@ def configure_offline_webview():
 
 def start_desktop_application(port=8003):
     print("=" * 80)
-    print("      ASTROFLYER HEO - PRODUCTION DESKTOP FLIGHT DYNAMICS STUDIO")
+    print("      ASTROFLYER HEO - FLIGHT DYNAMICS & TRAJECTORY ANALYSIS STUDIO")
     print("      ACS College of Engineering | Aerospace Engineering Major Project")
     print("=" * 80)
     server_thread, port = start_server_thread(port)
@@ -106,7 +106,7 @@ def start_desktop_application(port=8003):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="AstroFlyer HEO Third Review Desktop Launcher")
+    parser = argparse.ArgumentParser(description="AstroFlyer HEO desktop launcher")
     parser.add_argument('--port', type=int, default=8003, help="Internal port for offline daemon (falls back to a free port if busy)")
     parser.add_argument('--browser', action='store_true', help="Open in browser instead of desktop window")
     args = parser.parse_args()
