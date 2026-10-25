@@ -63,10 +63,9 @@ is downloaded at runtime.
 * GTO→GEO and perigee-raise targeting; multi-burn perigee pumping.
 
 ### Analysis modules
-* Van Allen belt L-shell, AP-8/AE-8-style dose and a radiation-vs-lifetime trade
+* Van Allen belt L-shell, magnetic field and belt crossings along the trajectory
   (`radiation_belts.py`).
-* Molniya constellation coverage (`constellation_engine.py`);
-  flight-software subsystems — MRP attitude, power, thermal, reaction wheels (`fsw_subsystems.py`).
+* Linear covariance propagation and dispersion (`covariance_engine.py`).
 
 ### Data exchange
 * CCSDS OEM / OPM read and write, SP3 read, NORAD TLE generation (`ephemeris_io.py`,
@@ -74,7 +73,7 @@ is downloaded at runtime.
 
 ### Operations console (`astroflyer/frontend/`)
 * Three workspaces: **Mission** (mission tree, inspector, tiled panes), **Analysis** (Events,
-  Access, Targeting, Lifetime, Radiation, Covariance) and **Data** (mission script, export).
+  Access, Targeting, Radiation, Covariance) and **Data** (mission script, export).
 * Linked 3D orbit view (Three.js), ground track with station contacts and shadow, parameter plots
   (uPlot) and a watch panel, all driven by one playback timeline.
 * Twelve sample orbits, from Molniya and Tundra to XMM-Newton, Chandra and a lunar transfer.
@@ -162,14 +161,12 @@ major_project_py/
 │   ├── backend/                # Astrodynamics engine and the HTTP API (app_server.py)
 │   ├── frontend/               # Operations console: index.html, css/, js/, vendor/
 │   ├── resources/              # Bundled DE440, EGM2008, IERS and space-weather data
-│   ├── validation/             # Orekit cross-check and its results
+│   ├── validation/             # Orekit, GMAT and Basilisk cross-checks and results
 │   ├── tests/                  # pytest suite and frontend/ (node:test)
-│   ├── cpp_engine/             # Retired C++ kernel, kept for reference
-│   └── scripts/, figures/, data/, docs/
-├── core/                       # Compatibility imports for older scripts
+│   └── figures/, data/, docs/
 ├── installer/                  # Inno Setup script
 ├── tools/fetch_offline_data.py # Refreshes bundled space weather
-├── docs/                       # Abstracts, review handbooks, reports
+├── docs/                       # Abstract, review handbooks (see TECHNICAL_REPORT §7)
 ├── literature_survey/          # Prior-art and benchmark surveys
 ├── requirements.txt, requirements-dev.txt
 └── build_release.py, AstroFlyer.spec

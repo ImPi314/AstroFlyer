@@ -1,74 +1,157 @@
-# MAJOR PROJECT THIRD REVIEW REPORT
-## Final Production Release, Flight Software Verification & Validation (V&V), and Operational Defense
+# AstroFlyer HEO — Technical Report
 
-**Department of Aerospace Engineering, ACS College of Engineering**  
-**Affiliated to Visvesvaraya Technological University (VTU), Belagavi**  
-**Project Title**: *Precise Trajectory Propagation and Events Prediction for Highly Eccentric Orbits (HEOs)*  
-**Date of Third Review**: September 2026  
+**Precise Trajectory Propagation and Events Prediction for Highly Eccentric Orbits (HEOs)**
 
----
+Department of Aerospace Engineering, ACS College of Engineering (affiliated to VTU, Belagavi)
 
-### Project Team & Supervision
-* **Candidates**:
-  1. Girish Gowda S (`1AH23AS019`)
-  2. Gowtham N (`1AH23AS020`)
-  3. Harshith S Purohith (`1AH23AS021`)
-* **Project Guides**:
-  * Mr. Vijay M (Assistant Professor, Dept. of Aerospace Engineering)
-  * Dr. Suresh C (Professor & Head of Department, Dept. of Aerospace Engineering)
+Candidates: Girish Gowda S (1AH23AS019), Gowtham N (1AH23AS020), Harshith S Purohith (1AH23AS021).
+Guides: Mr. Vijay M (Assistant Professor), Dr. Suresh C (Professor & Head of Department).
+
+Status as of October 2026 (branch `integration`). Every number below was produced by the code in this
+repository and can be regenerated with the commands given; nothing is quoted from elsewhere.
 
 ---
 
-## 1. Executive Summary & Final Milestone Achievement
-The **Third Review** represents the **Final Production & Defense Gate** of the undergraduate major project. It consolidates the foundational physics of the Zeroeth Review, the coupled environmental forces of the First Review, and the autonomous targeting algorithms of the Second Review into an **integrated, flight-certified desktop mission operations suite**:
+## 1. Summary
 
-1. **Production Architecture**: A compiled C++17 SIMD/AVX2 mathematical kernel interfacing with a native PyQt6 desktop mission control suite featuring dual 3D OpenGL celestial views, 2D continuous NASA Blue Marble equirectangular ground tracks, and a dynamic flight regime Watch Window.
-2. **Commercial Flight Software V&V**: Formal verification against **a.i. solutions FreeFlyer 8.0.1 (Engineer License)** and **NASA GMAT R2026a**, achieving a **$26.35\times$ computational speedup** over Runge-Kutta 8(9) truth while maintaining sub-meter trajectory consistency.
-3. **Complete Mission Operations Suite**:
-   * Conical Umbra & Penumbra solar eclipse duration and thermal shock predictor.
-   * Topocentric SEZ horizon tracking for ISRO (Bengaluru, Hassan) and NASA DSN stations.
-   * Optimal vectorial apogee boost and plane-change burn planner ($18.9\%$ fuel savings).
-   * Hyperbolic B-plane LGA trajectory targeter with $1\sigma$ dispersion ellipses.
-   * 25-Year Space Debris Mitigation (IADC/NASA/VTU) semi-analytical lifetime predictor.
-4. **End-to-End System Error Budget**: Total RSS trajectory uncertainty bounded to **$< 9.0\text{ meters}$** across 5 GTO orbits.
+AstroFlyer HEO is an offline Windows desktop application for propagating spacecraft in highly eccentric
+orbits (Molniya, Tundra, GTO, high-apogee science orbits, lunar transfers) and predicting their events
+(apsides, nodes, eclipses, ground-station contacts).
 
----
-
-## 2. Commercial Flight Software Benchmark Matrix (FreeFlyer 8 & NASA GMAT)
-
-| Evaluation Metric | FreeFlyer 8.0.1 (Truth Standard) | NASA GMAT R2026a (PD853) | AstroFlyer HEO Studio (C++17 Radau-IIA) | Verification Assessment |
-| :--- | :--- | :--- | :--- | :--- |
-| **Numerical Scheme** | Runge-Kutta 8(9) (Fehlberg/Verner) | Prince-Dormand 8(5,3) | 5th-Order Stiff Radau-IIA | Implicit Stiff Stability |
-| **Tolerance Constraint** | $\text{Tol} = 10^{-11}$ | $\text{Tol} = 10^{-11}$ | $\text{Tol} = 10^{-11}$ | Matched Accuracy |
-| **Wall-Clock Runtime** | **$11.721\text{ seconds}$** | **$4.180\text{ seconds}$** | **$0.445\text{ seconds}$** | **$26.35\times$ Faster than FreeFlyer** |
-| **Energy Drift Bound ($|\Delta E/E_0|$)**| Machine Drift ($\sim 10^{-11}$) | $3.45 \times 10^{-10}$ | **$1.12 \times 10^{-11}$** | Preserves Physical Invariants |
-| **Perigee Step Adaptation** | Steps cut to $< 0.1\text{ s}$ | Adaptive Step Throttling | Continuous Sundman Regularization | Eliminates Trial Step Rejections |
-| **Mission Plan Interop** | Schema XML `.MissionPlan` | GMAT Script Syntax | **Bidirectional `.MissionPlan` Exporter** | Verified 0 Errors with `ff-cli.exe` |
+* **Engine:** Python, NumPy and SciPy (Numba optional, for gravity), Cowell formulation in GCRF.
+* **Force model:** EGM2008 gravity to 70×70, JPL DE440 Sun and Moon, solar radiation pressure with a
+  WGS-84 conical shadow, NRLMSISE-00 drag (double-precision port) and post-Newtonian relativity.
+* **Default integrator:** SciPy DOP853, restarted exactly at shadow edges and drag-model jumps.
+* **Validation:** the same 52 cases cross-checked against three independent propagators (§4).
+  All pass against Orekit and NASA GMAT. Against Basilisk, 40 of 44 pass; the four that fail are drag
+  cases, from a documented difference in how Basilisk's atmosphere computes altitude.
+* **Application:** a local Python server (127.0.0.1) and a browser console (Three.js 3D view, ground
+  track, uPlot plots) in a native window through pywebview / Edge WebView2. All data ships with the
+  installer; nothing is downloaded at runtime.
 
 ---
 
-## 3. End-to-End Error Budget Allocation
+## 2. Architecture
 
-| Uncertainty Source | Error Mechanism | 1-Sigma Position Error Contribution | Mitigation Strategy |
-| :--- | :--- | :--- | :--- |
-| **Radau-IIA Truncation** | Local truncation per integration step | **$0.85\text{ m}$** | Adaptive local error control ($\text{Tol} = 10^{-11}$) |
-| **Geopotential Truncation** | $J_2\text{--}J_4$ zonal vs $4\times 4$ full field | **$2.40\text{ m}$** | Vectorized spherical harmonic potential |
-| **Lunisolar Ephemerides** | Analytical mean anomaly vs DE440 Chebyshev | **$1.15\text{ m}$** | High-order secular ephemeris corrections |
-| **Atmospheric Density Variance** | Diurnal solar flux & scale-height variation | **$8.50\text{ m}$** | Dynamic scale-height and perigee gating |
-| **SRP Flux Variation** | Spacecraft solar array attitude fluctuations | **$0.45\text{ m}$** | Cannonball $C_R A/m$ cross-sectional average |
-| **Root-Sum-Square (RSS) Total**| **Total Mission Uncertainty** | **$8.98\text{ meters}$** | **Certified for Flight Operations** |
+| Layer | What it is | Main files |
+| --- | --- | --- |
+| Engine | Force model, integrators, propagation, events | `backend/forces.py`, `astro_engine.py`, `integrators.py`, `event_predictor.py`, `eclipse.py`, `access.py` |
+| Time and frames | UTC/TAI/TT/TDB/UT1/GPS; IAU 2006/2000A GCRF↔ITRF with IERS EOP | `backend/epoch.py`, `frames.py`, `eop.py` |
+| Server | Local HTTP API (`/api/propagate`, events, access, mission script, export) | `backend/app_server.py` |
+| Console | Mission / Analysis / Data workspaces; 3D view, ground track, plots, watch panel | `frontend/` |
+| Packaging | PyInstaller app + Inno Setup installer with bundled data and the WebView2 offline installer | `AstroFlyer.spec`, `build_release.py`, `installer/AstroFlyer_Installer.iss` |
+
+There is no C++ kernel and no PyQt or OpenGL desktop code; earlier review documents that describe them
+were wrong (see §7).
 
 ---
 
-## 4. Final Review Deliverable Artifacts
+## 3. Methods
 
-1. **Final Production Engine**: [`third review/backend/astro_engine.py`](file:///c:/Users/Harshith/OneDrive/Desktop/major_project_py/third%20review/backend/astro_engine.py)
-2. **Benchmark Engine**: [`third review/backend/benchmark_comparison.py`](file:///c:/Users/Harshith/OneDrive/Desktop/major_project_py/third%20review/backend/benchmark_comparison.py)
-3. **REST Microservice**: [`third review/backend/app_server.py`](file:///c:/Users/Harshith/OneDrive/Desktop/major_project_py/third%20review/backend/app_server.py) (Serves port 8003)
-4. **Verification Driver**: [`third review/scripts/demo_third_review.py`](file:///c:/Users/Harshith/OneDrive/Desktop/major_project_py/third%20review/scripts/demo_third_review.py)
-5. **Technical Handbook & Defense Guide PDF**: [`third review/THIRD_REVIEW_COMPLETE_PROJECT_GUIDE.pdf`](file:///c:/Users/Harshith/OneDrive/Desktop/major_project_py/third%20review/THIRD_REVIEW_COMPLETE_PROJECT_GUIDE.pdf)
-6. **Publication Figures**:
-   - `figures/mission_operations_console_dashboard.png`
-   - `figures/truth_benchmarks_freeflyer_gmat.png`
-   - `figures/computational_speedup_profiling.png`
-   - `figures/end_to_end_error_budget.png`
+**Propagators.** DOP853 (default) and Radau from SciPy; in-house RKF7(8), Bulirsch–Stoer and fixed-step
+RK4; analytic Kepler, J2 mean-element and SGP4. The SciPy path stops and restarts at every
+umbra/penumbra edge and at the altitudes and times where NRLMSISE-00 itself is discontinuous, so step
+control never straddles a kink. DOP853 is 5–6× faster than Radau on the validation cases and agrees with
+it to 0.85 m over 32 days.
+
+**Output sampling.** For display the API samples the integrated trajectory evenly in eccentric anomaly,
+so perigee passes are drawn with as many points as apogee dwells. Validation uses uniform time.
+
+**Events.** Apsides and nodes are located by root-finding on the dense output during integration;
+eclipses from the conical umbra/penumbra model; ground-station AOS/LOS with elevation masks.
+
+**Two propagation experiments**, measured against Orekit
+([validation/results/innovations](validation/results/innovations/README.md)):
+
+* *Covariance-steered stepping* (`steering="covariance"`): the state transition matrix is integrated
+  with the orbit and each step is capped so the 1-σ position uncertainty grows by at most η. Against
+  plain RKF7(8) it removes much of the error on several 7-day cases (HEO stress, full model:
+  26.3 m → 6.0 m) at about 4× the run time; it makes some worse and does not beat DOP853 overall.
+* *ECR-MF fidelity tiers* (`fidelity="ecr_mf"`): above 2,000 km and 20,000 km altitude, gravity is cut
+  to the lowest degree whose omitted acceleration is below 10⁻¹⁰ m/s². At 70×70 it stays within
+  0.0032 m of the full model over a day, but gives no speed-up: gravity is not the costly force.
+
+---
+
+## 4. Validation
+
+Four orbits (Molniya, Tundra, GTO, and an e = 0.88 stress orbit), epoch 2026-01-01 00:00 TT, the
+same Cartesian start state, the force model built up one level at a time: L0 two-body, L1 J2,
+L2 J2–J4, L3 8×8, L4 + Sun/Moon, L5 + SRP, L6 + drag, L7 + relativity. Every tool is given AstroFlyer's
+own EGM2008 coefficients, spacecraft (Cr·A/m 0.02, Cd·A/m 0.01 m²/kg) and constant space weather
+(F10.7 150, Ap 15). Limits: 10 m after 1 day, 100 m after 7 days.
+
+| Reference | Run | Largest position difference | Result |
+| --- | --- | --- | --- |
+| Orekit 13.1 | 1 day, L0–L7 | 0.63 m (GTO, drag on) | 32/32 pass |
+| Orekit 13.1 | 7 days, L3–L7 | 6.1 m (GTO, full model) | 20/20 pass |
+| NASA GMAT R2026a | 1 day, L0–L7 | 1.06 m (Molniya, SRP on) | 32/32 pass |
+| NASA GMAT R2026a | 7 days, L3–L7 | 32.6 m (Molniya, SRP on) | 20/20 pass |
+| Basilisk 2.11.1 | 1 day, L0–L6 | 0.72 m through L5; drag 313 m (GTO) | 26/28 pass |
+| Basilisk 2.11.1 | 7 days, L3–L6 | 30.3 m through L5; drag 16.6 km (GTO) | 14/16 pass |
+
+Through L4 (gravity, Sun and Moon) AstroFlyer agrees with all three to centimetres over a day. Each
+larger difference was traced by an experiment that changed one side to match the other and watched the
+difference vanish:
+
+* **Shadow shape.** GMAT and Basilisk cast the Earth's shadow from a sphere; AstroFlyer and Orekit use
+  the WGS-84 ellipsoid. This is GMAT's and Basilisk's Molniya SRP difference (32.6 m and 30.3 m over
+  7 days).
+* **Anomalous oxygen.** GMAT's NRLMSISE-00 uses `gtd7`; AstroFlyer uses `gtd7d`, the model authors'
+  recommendation for drag, which Orekit agrees with. It matters above ~500 km (Molniya, 1.1 m a day).
+* **Spherical altitude.** Basilisk's atmosphere takes altitude above a sphere, not the ellipsoid. That
+  alone is its Molniya and GTO drag failure; with AstroFlyer switched to a sphere, drag agrees to
+  0.5 m a day (GTO) and 0.1 m (Molniya).
+* **Basilisk numerical artefacts**, corrected in the cross-check runner: its gravity steps the Earth's
+  orientation linearly within a task step (204 m on Molniya in 6 h at a 60 s step), its environment
+  modules are evaluated from the step-start state (24 m a day on GTO drag at a 1 s step), and its
+  SPICE-derived air co-rotation rate made GTO drag 9% too strong.
+* **Not yet explained:** a 0.37 m a day difference from Basilisk on Molniya with J2 or 8×8 gravity.
+
+Also fixed in AstroFlyer by these comparisons: restarts at shadow edges (Molniya, 7.5 m a day), the
+WGS-84 shadow (Molniya L5 over 7 days, 31.7 m → 1.7 m against Orekit) and a double-precision
+NRLMSISE-00 (single precision made GTO drag differ by metres between computers).
+
+Tables, method and rerun commands: [validation/results](validation/results/README.md).
+
+**Run time.** Over the 32 one-day cases AstroFlyer takes 16 s in total, against Orekit's 19 s and GMAT's
+21 s. These are wall-clock times that include process and JVM start-up, so they show the tools are
+comparable, not that one is faster.
+
+---
+
+## 5. Application
+
+* Mission workspace: mission tree, inspector, tiled panes; linked 3D orbit view, ground track with
+  station contacts and shadow, parameter plots and a watch panel on one playback timeline.
+* Analysis workspace: events, access, targeting (differential corrector, impulsive and finite burns),
+  Van Allen belt crossings, covariance.
+* Data workspace: mission script (Create / Propagate / Maneuver / Target / If / While / For / Report),
+  CCSDS OEM/OPM and SP3 exchange, TLE generation.
+* Twelve sample orbits, each checked against its cited source.
+* Runs report only what the engine computed; there are no canned or demo figures.
+
+---
+
+## 6. Testing
+
+184 Python tests (`python -m pytest astroflyer/tests`; the Orekit tests need `JAVA_HOME` set, the GMAT
+and Basilisk tests skip when those tools are not installed) and 44 frontend `node:test` tests. New
+behaviour was written test-first.
+
+---
+
+## 7. Corrections to earlier review documents
+
+The Third Review report (September 2026), the review handbooks and the first abstract stated things this
+project did not build or measure. They are corrected here:
+
+| Earlier claim | What is true |
+| --- | --- |
+| Compiled C++17 SIMD/AVX-2 kernel; PyQt6/OpenGL desktop | Python/NumPy/SciPy engine; browser console in pywebview/WebView2 |
+| Verified against FreeFlyer 8.0.1; "26.35× faster than FreeFlyer"; 15–28× speed-up | No FreeFlyer comparison has been run. Run times are comparable to Orekit and GMAT (§4) |
+| Sundman time regularisation and Kustaanheimo–Stiefel coordinates | Not implemented; Cowell formulation with adaptive step control |
+| Radau-IIA as the main integrator | DOP853 is the default; Radau remains a choice |
+| Energy drift 1.12 × 10⁻¹¹; RSS error budget of 8.98 m | Not measured. Measured accuracy is the §4 cross-checks |
+| Bidirectional `.MissionPlan` exporter verified with FreeFlyer | Removed (clean-room rule); export is CCSDS OEM/OPM |
+| 18.9% fuel saving; 25-year debris lifetime predictor | Not measured; the lifetime model was removed |

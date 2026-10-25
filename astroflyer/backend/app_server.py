@@ -374,7 +374,7 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
 
 
         # =====================================================================
-        # FLIGHT SOFTWARE (FSW) REST ENDPOINTS
+        # EVENT ENDPOINTS
         # =====================================================================
         elif path == "/api/events/eclipses":
             a_km = _get_float_param(params, 'a', 24389.0)

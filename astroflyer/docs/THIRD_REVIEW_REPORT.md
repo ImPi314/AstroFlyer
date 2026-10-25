@@ -1,3 +1,10 @@
+> **Correction (October 2026).** This is the Third Review report as submitted in September 2026. Its
+> technical claims were not built or measured: there is no C++17 kernel or PyQt6/OpenGL console, no
+> Sundman regularisation, no FreeFlyer comparison (so no "26.35×" speed-up), no `.MissionPlan` exporter,
+> and the error budget and energy-drift figures were never computed. What the project actually is, and its
+> measured accuracy against Orekit, NASA GMAT and Basilisk, are in
+> [TECHNICAL_REPORT.md](../TECHNICAL_REPORT.md) (§7 lists each correction).
+
 # MAJOR PROJECT THIRD REVIEW REPORT
 ## Final Production Release, Flight Software Verification & Validation (V&V), and Operational Defense
 

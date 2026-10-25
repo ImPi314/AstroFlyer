@@ -46,80 +46,12 @@ GUIDES = [
 ]
 
 # PDF Version with ReportLab XML/HTML Entities for Crisp Glyphs
-ABSTRACT_HTML = (
-    "Spacecraft operating in Highly Eccentric Orbits (HEOs)&mdash;exemplified by Geostationary Transfer "
-    "Orbits (GTO), critical-inclination Molniya constellations (<i>i</i> &asymp; 63.435&deg;), and cislunar transfer "
-    "trajectories&mdash;traverse severely disparate dynamical environments within every single orbital revolution, "
-    "oscillating between hypersonic, violently perturbed perigee passages (perigee altitude <i>r<sub>p</sub></i> &sim; 200&ndash;600 km, "
-    "velocity <i>v<sub>p</sub></i> &gt; 10.2 km/s) and prolonged apogee dwells (apogee altitude <i>r<sub>a</sub></i> &gt; 35,000 km, "
-    "velocity <i>v<sub>a</sub></i> &asymp; 1.5 km/s) governed by non-spherical Earth geopotential harmonics, non-linear atmospheric drag with "
-    "diurnal density variations, third-body lunisolar gravitational perturbations, and solar radiation pressure (SRP). "
-    "Conventional numerical propagation architectures reliant upon uniform physical time-stepping force an intractable operational compromise: "
-    "enforcing sub-meter perigee integration tolerances across an entire orbital arc squanders upwards of 75% to 80% of computational throughput "
-    "on benign, quasi-Keplerian apogee phases, whereas aggressive step-size coarsening induces catastrophic truncation errors, artificial "
-    "energy dissipation, and unacceptable timing drift during rapid orbital boundary transitions. To resolve this foundational computational "
-    "bottleneck, this project presents an Event-Certified Risk-Aware Multi-Fidelity (ECR-MF) trajectory propagation and autonomous events "
-    "prediction suite engineered specifically for highly eccentric orbital regimes. The mathematical foundation couples analytical first-order "
-    "Lagrange Planetary secular drift equations&mdash;formally validating the critical inclination frozen-perigee condition "
-    "(<i>d&omega;<sub>J2</sub>/dt</i> = 0 where 5 cos<sup>2</sup> <i>i</i> &minus; 1 = 0)&mdash;with an adaptive multi-regime numerical dispatcher "
-    "incorporating Sundman generalized time regularization (<i>dt = r<sup>&alpha;</sup> d&tau;</i>) and Kustaanheimo&ndash;Stiefel (KS) spatial "
-    "transformations. The computational engine is realized through an industry-standard decoupled three-layer flight software architecture "
-    "comprising a compiled C++17 SIMD/AVX-2 vector kernel executing deterministic coordinate transformations and Cowell-formulated geopotential "
-    "accelerations, orchestrated via high-order implicit Stiff-Radau-IIA and adaptive Dormand-Prince RK45 numerical integrators that "
-    "continuously enforce and verify fundamental physical invariants (specific orbital energy &epsilon; and angular momentum vector <b>h</b>) "
-    "to within an energy conservation tolerance of |&Delta;<i>E</i> / <i>E</i><sub>0</sub>| &le; 10<sup>&minus;11</sup>. In parallel, a high-precision "
-    "Hermite polynomial root-finding engine autonomously predicts mission-critical orbital events&mdash;including umbral and penumbral solar eclipses, "
-    "line-of-sight ground station contact windows, and equatorial and apsidal crossings&mdash;without requiring expensive global integration step throttling. "
-    "Extensively validated against flight-certified industry ephemerides from NASA General Mission Analysis Tool (GMAT), a.i. solutions FreeFlyer, "
-    "and Orekit across 500+ simulated orbital revolutions, the proposed framework achieves a 15&times; to 28&times; speedup in execution throughput while "
-    "preserving sub-meter positional accuracy and sub-millisecond event timestamp precision. The complete system is deployed as an offline, "
-    "hardware-accelerated desktop application (AstroFlyer HEO Studio) built with PyQt6 and OpenGL, delivering real-time 3D celestial visualization, "
-    "2D equirectangular ground track mapping with wrap-around boundary handling, and high-density tabular telemetry streaming compliant with "
-    "ISRO, NASA, and VTU aerospace engineering project standards."
-)
+ABSTRACT_HTML = "Spacecraft in Highly Eccentric Orbits (HEOs)&mdash;Geostationary Transfer Orbits (GTO), critical-inclination Molniya orbits (<i>i</i> &asymp; 63.4&deg;), Tundra and high-apogee science orbits&mdash;pass within each revolution from a fast, strongly perturbed perigee (a few hundred kilometres up, above 10 km/s), where atmospheric drag and the Earth's oblateness dominate, to a slow apogee dwell beyond 35,000 km, where the Sun and Moon dominate. Propagating them accurately requires a complete force model, step control that follows these changes, and care at the discontinuities of the models themselves, such as the edges of the Earth's shadow. This project presents AstroFlyer HEO, an offline desktop application for precise trajectory propagation and event prediction in such orbits. Its engine, written in Python with NumPy and SciPy, integrates the equations of motion in Cowell form in the GCRF frame with EGM2008 gravity up to degree and order 70, JPL DE440 Sun and Moon, solar radiation pressure with a conical shadow cast by the WGS-84 ellipsoid, NRLMSISE-00 atmospheric drag and post-Newtonian relativity, using IAU 2006/2000A Earth orientation with IERS data. The default integrator, Dormand&ndash;Prince DOP853, is stopped and restarted exactly at every shadow edge and atmospheric-model jump so that step control never straddles a discontinuity; Radau, RKF7(8), Bulirsch&ndash;Stoer, SGP4 and analytic Kepler and J2 propagators are also provided. Apsides, nodes, eclipses and ground-station contacts are found by root-finding during integration. Two propagation strategies were built and measured: covariance-steered step control, which limits the growth of the linearised position uncertainty per step, and multi-fidelity gravity tiers with a certified bound on the omitted acceleration. The propagator was cross-checked against three independent tools&mdash;Orekit, NASA GMAT and Basilisk&mdash;from the same initial states on Molniya, Tundra, GTO and a stress orbit (<i>e</i> = 0.88), adding force models one at a time. It agrees with Orekit to within 0.63 m after one day and 6.1 m after seven days with the full model, and with GMAT to within 1.06 m and 32.6 m; with gravity, Sun and Moon alone the agreement is a few centimetres per day. Every larger difference was traced by experiment to a documented modelling choice, such as a spherical rather than ellipsoidal Earth shadow in GMAT and Basilisk. The application runs entirely offline, with a three-dimensional orbit view, ground track, parameter plots, mission scripting and CCSDS data exchange."
 
 # Plain Text Version for DOCX (Word natively handles full UTF-8 Unicode)
-ABSTRACT_TEXT = (
-    "Spacecraft operating in Highly Eccentric Orbits (HEOs)—exemplified by Geostationary Transfer Orbits (GTO), "
-    "critical-inclination Molniya constellations (i ≈ 63.435°), and cislunar transfer trajectories—traverse severely "
-    "disparate dynamical environments within every single orbital revolution, oscillating between hypersonic, violently "
-    "perturbed perigee passages (perigee altitude r_p ~ 200–600 km, velocity v_p > 10.2 km/s) and prolonged apogee "
-    "dwells (apogee altitude r_a > 35,000 km, velocity v_a ≈ 1.5 km/s) governed by non-spherical Earth geopotential "
-    "harmonics, non-linear atmospheric drag with diurnal density variations, third-body lunisolar gravitational "
-    "perturbations, and solar radiation pressure (SRP). Conventional numerical propagation architectures reliant "
-    "upon uniform physical time-stepping force an intractable operational compromise: enforcing sub-meter perigee "
-    "integration tolerances across an entire orbital arc squanders upwards of 75% to 80% of computational throughput "
-    "on benign, quasi-Keplerian apogee phases, whereas aggressive step-size coarsening induces catastrophic truncation "
-    "errors, artificial energy dissipation, and unacceptable timing drift during rapid orbital boundary transitions. "
-    "To resolve this foundational computational bottleneck, this project presents an Event-Certified Risk-Aware "
-    "Multi-Fidelity (ECR-MF) trajectory propagation and autonomous events prediction suite engineered specifically "
-    "for highly eccentric orbital regimes. The mathematical foundation couples analytical first-order Lagrange "
-    "Planetary secular drift equations—formally validating the critical inclination frozen-perigee condition "
-    "(dω_J2/dt = 0 where 5 cos² i − 1 = 0)—with an adaptive multi-regime numerical dispatcher incorporating "
-    "Sundman generalized time regularization (dt = r^α dτ) and Kustaanheimo–Stiefel (KS) spatial transformations. "
-    "The computational engine is realized through an industry-standard decoupled three-layer flight software "
-    "architecture comprising a compiled C++17 SIMD/AVX-2 vector kernel executing deterministic coordinate transformations "
-    "and Cowell-formulated geopotential accelerations, orchestrated via high-order implicit Stiff-Radau-IIA and "
-    "adaptive Dormand-Prince RK45 numerical integrators that continuously enforce and verify fundamental physical "
-    "invariants (specific orbital energy ε and angular momentum vector h) to within an energy conservation tolerance "
-    "of |ΔE / E₀| ≤ 10⁻¹¹. In parallel, a high-precision Hermite polynomial root-finding engine autonomously predicts "
-    "mission-critical orbital events—including umbral and penumbral solar eclipses, line-of-sight ground station contact "
-    "windows, and equatorial and apsidal crossings—without requiring expensive global integration step throttling. "
-    "Extensively validated against flight-certified industry ephemerides from NASA General Mission Analysis Tool (GMAT), "
-    "a.i. solutions FreeFlyer, and Orekit across 500+ simulated orbital revolutions, the proposed framework achieves "
-    "a 15× to 28× speedup in execution throughput while preserving sub-meter positional accuracy and sub-millisecond "
-    "event timestamp precision. The complete system is deployed as an offline, hardware-accelerated desktop application "
-    "(AstroFlyer HEO Studio) built with PyQt6 and OpenGL, delivering real-time 3D celestial visualization, 2D equirectangular "
-    "ground track mapping with wrap-around boundary handling, and high-density tabular telemetry streaming compliant "
-    "with ISRO, NASA, and VTU aerospace engineering project standards."
-)
+ABSTRACT_TEXT = "Spacecraft in Highly Eccentric Orbits (HEOs)—Geostationary Transfer Orbits (GTO), critical-inclination Molniya orbits (i ≈ 63.4°), Tundra and high-apogee science orbits—pass within each revolution from a fast, strongly perturbed perigee (a few hundred kilometres up, above 10 km/s), where atmospheric drag and the Earth's oblateness dominate, to a slow apogee dwell beyond 35,000 km, where the Sun and Moon dominate. Propagating them accurately requires a complete force model, step control that follows these changes, and care at the discontinuities of the models themselves, such as the edges of the Earth's shadow. This project presents AstroFlyer HEO, an offline desktop application for precise trajectory propagation and event prediction in such orbits. Its engine, written in Python with NumPy and SciPy, integrates the equations of motion in Cowell form in the GCRF frame with EGM2008 gravity up to degree and order 70, JPL DE440 Sun and Moon, solar radiation pressure with a conical shadow cast by the WGS-84 ellipsoid, NRLMSISE-00 atmospheric drag and post-Newtonian relativity, using IAU 2006/2000A Earth orientation with IERS data. The default integrator, Dormand–Prince DOP853, is stopped and restarted exactly at every shadow edge and atmospheric-model jump so that step control never straddles a discontinuity; Radau, RKF7(8), Bulirsch–Stoer, SGP4 and analytic Kepler and J2 propagators are also provided. Apsides, nodes, eclipses and ground-station contacts are found by root-finding during integration. Two propagation strategies were built and measured: covariance-steered step control, which limits the growth of the linearised position uncertainty per step, and multi-fidelity gravity tiers with a certified bound on the omitted acceleration. The propagator was cross-checked against three independent tools—Orekit, NASA GMAT and Basilisk—from the same initial states on Molniya, Tundra, GTO and a stress orbit (e = 0.88), adding force models one at a time. It agrees with Orekit to within 0.63 m after one day and 6.1 m after seven days with the full model, and with GMAT to within 1.06 m and 32.6 m; with gravity, Sun and Moon alone the agreement is a few centimetres per day. Every larger difference was traced by experiment to a documented modelling choice, such as a spherical rather than ellipsoidal Earth shadow in GMAT and Basilisk. The application runs entirely offline, with a three-dimensional orbit view, ground track, parameter plots, mission scripting and CCSDS data exchange."
 
-KEYWORDS_TEXT = (
-    "Highly Eccentric Orbits (HEOs), Trajectory Propagation, Sundman Time Regularization, "
-    "Cowell Formulation, Radau-IIA Integration, J2 Secular Perturbations, Critical Inclination, "
-    "Frozen Perigee, Event Detection, Invariant Conservation, Decoupled Flight Architecture, "
-    "Aerospace Ground Software."
-)
+KEYWORDS_TEXT = 'Highly Eccentric Orbits (HEOs), Trajectory Propagation, Cowell Formulation, Dormand–Prince Integration, Force Modelling, Eclipse Prediction, Event Detection, Cross-Validation, Orekit, NASA GMAT, Basilisk.'
 
 
 # ==============================================================================
@@ -314,19 +246,19 @@ def generate_pdf(output_path):
     spec_data = [
         [
             Paragraph("<b>Core Focus:</b> Highly Eccentric Orbits (HEOs)", style_meta_cell),
-            Paragraph("<b>Primary Formulations:</b> Sundman Regularization / KS Coordinates", style_meta_cell)
+            Paragraph("<b>Formulation:</b> Cowell, GCRF, EGM2008 70&times;70 / DE440 / NRLMSISE-00", style_meta_cell)
         ],
         [
-            Paragraph("<b>Math Kernel:</b> Compiled C++17 SIMD/AVX-2 (/O2)", style_meta_cell),
-            Paragraph("<b>Numerical Solvers:</b> Stiff-Radau-IIA &amp; RK45 (Adaptive)", style_meta_cell)
+            Paragraph("<b>Engine:</b> Python, NumPy, SciPy (Numba optional)", style_meta_cell),
+            Paragraph("<b>Integrators:</b> DOP853 (default), Radau, RKF7(8), Bulirsch&ndash;Stoer", style_meta_cell)
         ],
         [
-            Paragraph("<b>Energy Invariant:</b> |&Delta;<i>E</i> / <i>E</i><sub>0</sub>| &le; 10<sup>&minus;11</sup>", style_meta_cell),
-            Paragraph("<b>Validation Benchmarks:</b> NASA GMAT &bull; a.i. solutions FreeFlyer &bull; Orekit", style_meta_cell)
+            Paragraph("<b>Accuracy vs Orekit:</b> &le; 0.63 m (1 day), &le; 6.1 m (7 days)", style_meta_cell),
+            Paragraph("<b>Cross-checks:</b> Orekit &bull; NASA GMAT &bull; Basilisk", style_meta_cell)
         ],
         [
             Paragraph("<b>Execution Mode:</b> 100% Offline Standalone Desktop App", style_meta_cell),
-            Paragraph("<b>Visualization Console:</b> Hardware-Accelerated 3D OpenGL / PyQt6 (60 FPS)", style_meta_cell)
+            Paragraph("<b>Console:</b> Three.js 3D view, ground track, plots (WebView2)", style_meta_cell)
         ]
     ]
     t_spec = Table(spec_data, colWidths=[250, 255])
@@ -525,10 +457,10 @@ def generate_docx(output_path):
     tbl_spec.autofit = False
     
     specs = [
-        ("Core Focus: Highly Eccentric Orbits (HEOs)", "Primary Formulations: Sundman Regularization / KS Coordinates"),
-        ("Math Kernel: Compiled C++17 SIMD/AVX-2 (/O2)", "Numerical Solvers: Stiff-Radau-IIA & RK45 (Adaptive)"),
-        ("Energy Invariant: |ΔE / E₀| ≤ 10⁻¹¹", "Validation Benchmarks: NASA GMAT • a.i. solutions FreeFlyer • Orekit"),
-        ("Execution Mode: 100% Offline Standalone Desktop App", "Visualization Console: Hardware-Accelerated 3D OpenGL / PyQt6 (60 FPS)")
+        ("Core Focus: Highly Eccentric Orbits (HEOs)", "Formulation: Cowell, GCRF, EGM2008 70×70 / DE440 / NRLMSISE-00"),
+        ("Engine: Python, NumPy, SciPy (Numba optional)", "Integrators: DOP853 (default), Radau, RKF7(8), Bulirsch–Stoer"),
+        ("Accuracy vs Orekit: ≤ 0.63 m (1 day), ≤ 6.1 m (7 days)", "Cross-checks: Orekit • NASA GMAT • Basilisk"),
+        ("Execution Mode: 100% Offline Standalone Desktop App", "Console: Three.js 3D view, ground track, plots (WebView2)")
     ]
     
     for row_idx, (col1_txt, col2_txt) in enumerate(specs):
@@ -567,23 +499,12 @@ def generate_docx(output_path):
 
 def main():
     root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-    docs_dir = os.path.join(root_dir, 'zeroeth review', 'docs')
+    docs_dir = os.path.join(root_dir, 'docs', 'abstract')
     os.makedirs(docs_dir, exist_ok=True)
-    
-    pdf_filename = "AstroFlyer_HEO_Formal_Project_Abstract.pdf"
-    docx_filename = "AstroFlyer_HEO_Formal_Project_Abstract.docx"
-    
-    pdf_root = os.path.join(root_dir, pdf_filename)
-    docx_root = os.path.join(root_dir, docx_filename)
-    pdf_docs = os.path.join(docs_dir, pdf_filename)
-    docx_docs = os.path.join(docs_dir, docx_filename)
-    
-    generate_pdf(pdf_root)
-    generate_docx(docx_root)
-    
-    shutil.copy2(pdf_root, pdf_docs)
-    shutil.copy2(docx_root, docx_docs)
-    
+
+    generate_pdf(os.path.join(docs_dir, "AstroFlyer_HEO_Formal_Project_Abstract.pdf"))
+    generate_docx(os.path.join(docs_dir, "AstroFlyer_HEO_Formal_Project_Abstract.docx"))
+
     # Cleanup scratch test files
     for temp in ['test_sub_sup.pdf', 'test_render.pdf', 'extracted_pdf_text.txt']:
         p = os.path.join(root_dir, temp)
@@ -596,10 +517,7 @@ def main():
     print("\n" + "=" * 80)
     print("      FORMAL IEEE / VTU ABSTRACT GENERATION COMPLETE")
     print("=" * 80)
-    print(f"[1] PDF Document (Root): {pdf_root}")
-    print(f"[2] DOCX Document (Root): {docx_root}")
-    print(f"[3] PDF Document (Docs): {pdf_docs}")
-    print(f"[4] DOCX Document (Docs): {docx_docs}")
+    print(f"Written to: {docs_dir}")
     print("=" * 80)
 
 
