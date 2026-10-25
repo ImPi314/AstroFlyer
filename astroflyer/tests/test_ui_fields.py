@@ -29,6 +29,17 @@ def run(y0, t_end, epoch=EPOCH, points=200):
 
 class TestOrbitEvents(unittest.TestCase):
 
+    def test_analytic_kepler_over_whole_orbits_from_perigee(self):
+        """A run that starts and ends at perigee has r.v = 0 to rounding at both ends; the
+        analytic propagator must still find its events instead of failing in the root finder."""
+        from astroflyer.backend.propagation_run import run as run_propagation
+        for orbits in (1, 2, 3):
+            out = run_propagation({"hp": 1000, "ha": 39350, "inc": 63.4, "raan": 45, "aop": 270, "ta": 0,
+                                   "method": "KEPLER", "model": "two_body", "num_orbits": orbits,
+                                   "epoch": "2026-01-01T00:00:00"})
+            kinds = [ev["type"] for ev in out["events"]]
+            self.assertEqual((kinds.count("perigee"), kinds.count("apogee")), (orbits, orbits))
+
     def test_apsides_and_nodes_on_a_kepler_orbit(self):
         period = 2.0 * math.pi * math.sqrt(A_MOLNIYA ** 3 / MU_EARTH)
         # Start a little after perigee so the first perigee is not at t = 0

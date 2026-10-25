@@ -180,7 +180,14 @@ def analytic_events(state_fn, times, epoch, apsides=True):
                 events.append(_event(kind, times[0], epoch))
             if g0 * g1 < 0 and np.sign(g1 - g0) == direction:
                 f = lambda t: g(*(x[0] for x in state_fn(np.array([t]))))
-                events.append(_event(kind, brentq(f, times[i], times[i + 1], xtol=1e-9, rtol=1e-14), epoch))
+                fa, fb = f(times[i]), f(times[i + 1])
+                # A crossing on a grid point is zero only to rounding there, so the exact state may
+                # not change sign across this interval: take the nearer end instead of refining
+                t = (brentq(f, times[i], times[i + 1], xtol=1e-9, rtol=1e-14) if fa * fb < 0
+                     else times[i] if abs(fa) <= abs(fb) else times[i + 1])
+                # As with the integrators, an event at the run's end is left out
+                if t < times[-1] - 1e-6:
+                    events.append(_event(kind, t, epoch))
     events.sort(key=lambda ev: ev["t_s"])
     return events
 

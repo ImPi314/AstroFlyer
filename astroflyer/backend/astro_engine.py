@@ -342,7 +342,7 @@ def sun_directions(times, epoch_tt_j2000_s):
 
 
 # ==============================================================================
-# THIRD REVIEW UNIFIED PRODUCTION PROPAGATOR
+# PROPAGATOR
 # ==============================================================================
 # Propagator names accepted by propagate(method=...), normalized: upper case, no spaces, dashes or underscores
 ANALYTIC_METHODS = {'KEPLER': 'kepler', 'TWOBODYANALYTIC': 'kepler', 'J2MEAN': 'j2_mean', 'SGP4': 'sgp4'}
@@ -388,7 +388,7 @@ def _anomaly_spaced(times, pos, num_points):
 
 class ThirdReviewEngine:
     """
-    Final Production Propagator & Mission Analysis Engine for the Third Review.
+    The propagator: numerical or analytic propagation of one spacecraft, with its events.
     """
     def __init__(self, initial_state, mu=MU_EARTH, r_e=R_EARTH, epoch=None):
         """initial_state is a GCRF state [m, m/s] at `epoch` (Epoch, ISO string, or None for J2000.0)."""

@@ -63,6 +63,18 @@ class TestFrontendOffline(unittest.TestCase):
         self.assertEqual(sorted(used - sprite_ids), [])
 
 
+class TestIntegratorChoices(unittest.TestCase):
+
+    def test_every_offered_integrator_runs_on_the_engine(self):
+        """The Propagator panel must only offer methods backend/trajectory.py accepts."""
+        from astroflyer.backend.trajectory import method_key
+        with open(os.path.join(FRONTEND, "js", "mission.js"), encoding="utf-8") as f:
+            field = re.search(r"key: 'method'.*?options: \[(.*?)\]\]", f.read()).group(1)
+        offered = re.findall(r"\['([^']+)', '", field)
+        self.assertIn("DOP853", offered)
+        self.assertEqual([m for m in offered if method_key(m) is None], [])
+
+
 class TestFrontendNoEmoji(unittest.TestCase):
 
     def test_no_emoji(self):
