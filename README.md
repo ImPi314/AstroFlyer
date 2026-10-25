@@ -112,9 +112,10 @@ to 0.5 m a day on GTO and 0.1 m on Molniya. Tables, method and how to rerun them
 
 ## Installing
 
-Download `AstroFlyer_HEO_v1.0_Setup.exe` from the
-[v1.0 release](https://github.com/ImPi314/AstroFlyer/releases/tag/v1.0) and run it (Windows 10/11,
-64-bit). It installs the app with its data and, if missing, the Edge WebView2 runtime.
+Download `AstroFlyer_HEO_v<version>_Setup.exe` from the
+[latest release](https://github.com/ImPi314/AstroFlyer/releases/latest) and run it (Windows 10/11,
+64-bit). It installs the app with its data and, if missing, the Edge WebView2 runtime. A newer
+installer run over an older one upgrades it in place.
 
 ## Running locally
 
@@ -153,8 +154,20 @@ python build_release.py
 ```
 
 builds `dist/AstroFlyer_HEO/AstroFlyer.exe` with PyInstaller (`AstroFlyer.spec`) and, if Inno
-Setup 6 is installed, `dist_installer/AstroFlyer_HEO_v1.0_Setup.exe`. Refresh the bundled space
-weather first with `python tools/fetch_offline_data.py`.
+Setup 6 is installed, `dist_installer/AstroFlyer_HEO_v<version>_Setup.exe`. The version is
+`__version__` in `astroflyer/__init__.py`, the only place it is written.
+
+### Releasing an update
+
+1. Make and test the change (`python -m pytest astroflyer/tests` and the frontend tests).
+2. Raise `__version__` in `astroflyer/__init__.py` (1.0.1 for fixes, 1.1.0 for features),
+   commit and push `main`.
+3. Run `python build_release.py --publish` (or `--publish --notes notes.md`). It refuses to start
+   unless `main` is pushed, nothing is uncommitted and the version is not released yet, then builds
+   and publishes GitHub release `v<version>` with the installer (needs the GitHub CLI, logged in).
+
+Every few months, refresh the bundled data with `python tools/fetch_offline_data.py` (needs
+internet) and release it the same way.
 
 ---
 

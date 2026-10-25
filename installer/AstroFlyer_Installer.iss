@@ -2,7 +2,10 @@
 ; Department of Aerospace Engineering, ACS College of Engineering
 
 #define MyAppName "AstroFlyer HEO"
-#define MyAppVersion "1.0.0"
+; The version comes from astroflyer/__init__.py: build with build_release.py, which passes /DMyAppVersion
+#ifndef MyAppVersion
+  #error Build with build_release.py, which passes the app version (/DMyAppVersion=...)
+#endif
 #define MyAppPublisher "ACS College of Engineering"
 #define MyAppURL "https://github.com/ImPi314/AstroFlyer"
 #define MyAppExeName "AstroFlyer.exe"
@@ -20,7 +23,7 @@ DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 OutputDir=..\dist_installer
-OutputBaseFilename=AstroFlyer_HEO_v1.0_Setup
+OutputBaseFilename=AstroFlyer_HEO_v{#MyAppVersion}_Setup
 SetupIconFile=..\astroflyer\icon.ico
 Compression=lzma2/ultra64
 SolidCompression=yes
@@ -28,7 +31,7 @@ WizardStyle=modern
 PrivilegesRequired=lowest
 ArchitecturesInstallIn64BitMode=x64compatible
 UninstallDisplayIcon={app}\{#MyAppExeName}
-VersionInfoVersion=1.0.0.0
+VersionInfoVersion={#MyAppVersion}
 VersionInfoCompany={#MyAppPublisher}
 VersionInfoDescription=AstroFlyer HEO - Autonomous Flight Dynamics & Mission Planning Studio
 

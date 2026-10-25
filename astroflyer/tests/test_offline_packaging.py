@@ -116,6 +116,38 @@ class BuildPreflightTest(unittest.TestCase):
         self.assertTrue(build_release.python_supported((3, 12, 0)))
         self.assertTrue(build_release.python_supported((3, 14, 4)))  # verified Windows build, 2026-10-24
 
+    def test_version_has_one_source(self):
+        # astroflyer/__init__.py holds the version; the build passes it to the installer, whose
+        # recipe states none of its own (five hand-kept copies had drifted to 3.0.0 vs 1.0.0)
+        build_release = self._build_release()
+        import astroflyer
+        self.assertEqual(build_release.app_version(), astroflyer.__version__)
+        self.assertRegex(astroflyer.__version__, r"^\d+\.\d+\.\d+$")
+        root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        with open(os.path.join(root, "installer", "AstroFlyer_Installer.iss"), encoding="utf-8") as f:
+            recipe = f.read()
+        self.assertNotIn("#define MyAppVersion", recipe)
+        for key in ("AppVersion=", "OutputBaseFilename=", "VersionInfoVersion="):
+            line = next(l for l in recipe.splitlines() if l.startswith(key))
+            self.assertIn("{#MyAppVersion}", line)
+        self.assertIn("/DMyAppVersion=2.5.1", build_release.iscc_command("x.iss", "2.5.1"))
+        self.assertEqual(build_release.installer_name("2.5.1"), "AstroFlyer_HEO_v2.5.1_Setup.exe")
+
+    def test_publishing_needs_a_pushed_clean_main_and_a_new_tag(self):
+        build_release = self._build_release()
+
+        def git(dirty="", head="abc", remote="abc", tags=""):
+            answers = {("status", "--porcelain"): dirty, ("rev-parse", "HEAD"): head,
+                       ("rev-parse", "origin/main"): remote, ("ls-remote", "--tags", "origin"): tags}
+            return lambda *args: answers[args]
+
+        self.assertEqual(build_release.release_blockers("1.0.1", git()), [])
+        self.assertIn("uncommitted", " ".join(build_release.release_blockers("1.0.1", git(dirty=" M x.py"))))
+        self.assertIn("origin/main", " ".join(build_release.release_blockers("1.0.1", git(head="def"))))
+        tags = "abc\trefs/tags/v1.0.1\n"
+        self.assertIn("v1.0.1", " ".join(build_release.release_blockers("1.0.1", git(tags=tags))))
+        self.assertEqual(build_release.release_blockers("1.0.2", git(tags=tags)), [])
+
 
 def _load_launcher():
     import importlib.util
