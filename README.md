@@ -53,7 +53,7 @@ is downloaded at runtime.
   ε = 10⁻¹⁰ m/s²; the run reports each tier's degree, its certified bound and every switch time.
 * Measured against Orekit in
   [validation/results/innovations](astroflyer/validation/results/innovations/README.md): steering improves
-  a few cases (gravity-only GTO over 7 days 0.52 → 0.17 m), makes others worse and costs ~3× the run
+  a few cases (gravity-only GTO over 7 days 0.52 → 0.16 m), makes others worse and costs ~3× the run
   time, so it does not beat DOP853 overall; ECR-MF keeps the full model's accuracy
   but gives no speed-up, because gravity is not the costly force.
 

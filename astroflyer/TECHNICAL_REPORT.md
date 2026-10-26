@@ -74,7 +74,7 @@ same way.
 * *Covariance-steered stepping* (`steering="covariance"`): the state transition matrix is integrated
   with the orbit and each step is capped so the 1-σ position uncertainty grows by at most η. Against
   plain RKF7(8) (both restarting at shadow and drag boundaries) it improves a few 7-day cases
-  (gravity-only GTO: 0.52 m → 0.17 m) at about 3× the run time; it makes some worse (GTO, full model:
+  (gravity-only GTO: 0.52 m → 0.17 m, and 0.16 m after the gravity-gradient fix of §7) at about 3× the run time; it makes some worse (GTO, full model:
   7.04 m → 7.78 m) and does not beat DOP853 overall.
 * *ECR-MF fidelity tiers* (`fidelity="ecr_mf"`): above 2,000 km and 20,000 km altitude, gravity is cut
   to the lowest degree whose omitted acceleration is below 10⁻¹⁰ m/s². At 70×70 it stays within
@@ -150,8 +150,8 @@ comparable, not that one is faster.
 
 ## 6. Testing
 
-184 Python tests (`python -m pytest astroflyer/tests`; the Orekit tests need `JAVA_HOME` set, the GMAT
-and Basilisk tests skip when those tools are not installed) and 44 frontend `node:test` tests. New
+220 Python tests (`python -m pytest astroflyer/tests`; the Orekit tests need `JAVA_HOME` set, the GMAT
+and Basilisk tests skip when those tools are not installed) and 45 frontend `node:test` tests. New
 behaviour was written test-first.
 
 ---
@@ -179,7 +179,7 @@ propagated trajectories and the §4 validation were never affected.
 
 | What was wrong | Effect | Now |
 | --- | --- | --- |
-| One J2 entry of the gravity gradient used for covariance, ∂a_z/∂z, had 15 z²/r² where 30 z²/r² is right | The Covariance tab and covariance-steered stepping used a slightly wrong sensitivity (1-σ over-predicted by 13 % on GTO and 43 % on Molniya over two J2-only orbits) | Corrected; every entry is checked against finite differences |
+| One J2 entry of the gravity gradient used for covariance, ∂a_z/∂z, had 15 z²/r² where 30 z²/r² is right | The Covariance tab and covariance-steered stepping used a slightly wrong sensitivity (1-σ over-predicted by 13 % on GTO and 43 % on Molniya over two J2-only orbits) | Corrected; every entry is checked against finite differences. Steering re-measured against Orekit on L0–L3: gravity-only GTO over 7 days 0.165 m → 0.160 m, others within 1 cm ([innovations](validation/results/innovations/README.md)) |
 | A run's quick-look station contacts rotated the Earth by ω·t from zero at the run start and put the stations on a 6,371 km sphere; the radiation dipole rotated the same way | Contacts in Events and on the timeline, and belt L-shells, were for the wrong Earth orientation (the Earth Rotation Angle at the epoch was missing) | The real GCRF→ITRF transformation at the run's epoch and WGS-84 stations (as Analysis › Access) |
 | TLE, OPM and generated mission script carried a fixed epoch of 24 Sep 2026; the OPM a placeholder state; the TLE osculating elements | Exports did not describe the run | The run's epoch and initial state; the TLE holds fitted SGP4 mean elements |
 | The Targeting tab's apogee raise was vis-viva (two-body) and its finite burn used a fixed 0.35° flight-path angle for gravity losses | Answers ignored the force model | Solved and integrated on the run's force model from its first perigee |

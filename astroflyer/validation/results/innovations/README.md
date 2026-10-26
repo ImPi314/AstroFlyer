@@ -55,3 +55,23 @@ full model, DOP853) the tiers become
 day, and within 0.04–2.8 m over seven days (GTO the largest), as expected from epsilon = 1e-10 m/s².
 Run time is unchanged within timing noise (0.9–1.5× across repeated sub-second runs): gravity is not where the time goes (most of it is SciPy's step loop and
 the Sun/Moon/drag evaluations), so ECR-MF is a certified-accuracy fidelity schedule, not a speed-up.
+
+## Steering after the gravity-gradient fix (2026-10-26)
+
+The steered runs above used a gravity gradient whose J2 ∂a_z/∂z entry was wrong (15 z²/r² instead of
+30 z²/r²; fixed in `backend/covariance_engine.py`). The trajectory does not depend on the gradient, but
+steering chooses its steps from it, so `rkf78_steered` was rerun on the cases that need no planetary
+ephemeris in Orekit (L0–L3; the run had Orekit 13.1 with the bundled IERS files only, so L4–L7 were not
+rerun): [1 day](rkf78_steered_fixed_gradient_1day/orekit_crosscheck.md),
+[7 days](rkf78_steered_fixed_gradient_7day/orekit_crosscheck.md). Plain `rkf78` was rerun alongside and
+reproduced the stored results to 0.3 mm.
+
+| Case (gravity only, L3) | `rkf78` | `rkf78_steered`, old gradient | `rkf78_steered`, fixed gradient |
+| --- | --- | --- | --- |
+| GTO, 7 days | 0.519 m | 0.165 m | 0.160 m |
+| HEO stress, 7 days | 0.299 m | 0.201 m | 0.209 m |
+| Molniya, 7 days | 0.264 m | 0.309 m | 0.307 m |
+| Tundra, 7 days | 0.0174 m | 0.0141 m | 0.0141 m |
+
+The one-day L0–L3 results are unchanged to 0.1 mm. The conclusions above stand: the clear gain is on
+gravity-only GTO over 7 days (now 0.52 m → 0.16 m).
