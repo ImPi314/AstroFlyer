@@ -295,5 +295,12 @@ class NoDocumentationTest(unittest.TestCase):
         self.assertNotIn(".pdf", self._read("installer", "AstroFlyer_Installer.iss"))
         self.assertNotIn("--pdf", self._read("build_release.py"))
 
+class BundledEphemerisTest(unittest.TestCase):
+    def test_spk_is_whole_daf_records(self):
+        # SPICE reads DAF files in 1024-byte records and fails on a short last record; jplephem does not.
+        path = offline_data.resource_path("resources", "ephemeris", "de440_1990_2060.bsp")
+        self.assertEqual(os.path.getsize(path) % 1024, 0)
+
+
 if __name__ == "__main__":
     unittest.main()

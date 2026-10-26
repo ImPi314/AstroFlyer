@@ -9,9 +9,9 @@ in-track / cross-track frame every 600 s.
 GMAT is given AstroFlyer's inputs wherever it can take them, so the comparison is of the propagators,
 not their data: the bundled EGM2008 coefficients (written as a GMAT .cof file), the same spacecraft
 (Cd*A/m, Cr*A/m), constant space weather (F10.7 = 150, Kp 3 = Ap 15), ICRF axes and a TT epoch.
-Sun and Moon come from GMAT's own DE424 SPK file: SPICE refuses AstroFlyer's DE440 subset (one
-segment ends a word short; jplephem reads it), and DE424 and DE440 differ by metres at most there,
-about 1e-13 m/s^2 at the spacecraft. GMAT keeps its own Earth orientation, leap-second and shadow models.
+Sun and Moon come from GMAT's own DE424 SPK file: these results were made when SPICE refused
+AstroFlyer's DE440 subset (its last 1024-byte record was short; fixed 2026-10-26), and DE424 and
+DE440 differ by metres at most there, about 1e-13 m/s^2 at the spacecraft. GMAT keeps its own Earth orientation, leap-second and shadow models.
 
 Requirements (developer machine only, never shipped): a GMAT install. GmatConsole.exe is found from
 the GMAT_CONSOLE environment variable, or under ~/GMAT/*/bin or C:/GMAT/*/bin.

@@ -90,9 +90,10 @@ match GMAT and watched the difference vanish:
   At L6–L7 this partly offsets the shadow difference on Molniya, so 16 m there is not closer
   agreement, just two differences of opposite sign.
 
-GMAT reads Sun and Moon from its own DE424 file: SPICE refuses AstroFlyer's bundled DE440 subset
-(one segment ends a word short; jplephem, which AstroFlyer uses, reads it). DE424 and DE440 differ
-by metres at most for the Sun and Moon in 2026, about 1e-13 m/s² at the spacecraft.
+GMAT reads Sun and Moon from its own DE424 file: when these runs were made SPICE refused AstroFlyer's
+bundled DE440 subset (the file's last 1024-byte record was short; jplephem, which AstroFlyer uses, read
+it; padded to whole records on 2026-10-26). DE424 and DE440 differ by metres at most for the Sun
+and Moon in 2026, about 1e-13 m/s² at the spacecraft.
 
 To reproduce (GMAT installed; set GMAT_CONSOLE to GmatConsole.exe if it is not found):
 
@@ -136,8 +137,13 @@ SRP and drag levels run with a 1 s task step, gravity-only levels with 10 s.
 What is left:
 
 - **Gravity, Sun and Moon (L0–L4)** agree to 2 cm (two-body) and 0.37 m (with J2 or 8×8) over a
-  day. The 0.37 m on Molniya is not yet explained; it stays when Basilisk is fed AstroFlyer's own
-  Earth orientation. (Basilisk's ITRF93 pole also differs from IERS 2010 by 0.30".)
+  day. The 0.37 m on Molniya is not explained. Checked on 2026-10-26 and ruled out: the gravity field
+  (Basilisk's own `computeField` on the same file matches AstroFlyer's J2 acceleration to 1e-12
+  relative), Earth orientation (SPICE ITRF93 from the high-precision PCK and AstroFlyer's IAU 2006/2000A
+  ITRF differ by 0.009" over the day, pole included), GM and reference radius (identical), and
+  integration (the same 0.3721 m with a 1 s or 10 s task step and with tolerances from 1e-10 to 1e-13).
+  The difference grows steadily from the start (0.02 m after 6 h), as from a slightly different
+  period; Orekit and GMAT agree with AstroFlyer on the same case to 0.008 m and 0.066 m.
 - **SRP (L5)** agrees to 0.72 m a day and 30.3 m over 7 days on Molniya. Basilisk's shadow is a
   sphere of equatorial radius, like GMAT's, which gave GMAT the same Molniya difference (32.6 m).
 - **Drag (L6) fails on Molniya and GTO.** Basilisk's NRLMSISE-00 takes spherical altitude and
