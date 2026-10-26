@@ -47,7 +47,7 @@ from backend.trajectory_engine import MissionScriptWorkbench
 from backend.epoch import Epoch
 from backend import access as access_analysis
 from backend.script_runner import run_script
-from backend.differential_corrector import DifferentialCorrector, FiniteBurnEngine
+from backend.differential_corrector import simulate_finite_burn, solve_apogee_raise
 from backend.propagation_run import run as run_propagation, steering_summary
 
 
@@ -210,9 +210,10 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
             aop = _get_float_param(params, 'aop', 30.0)
             ta = _get_float_param(params, 'ta', 0.0)
             num_orbits = int(_get_float_param(params, 'num_orbits', 3.0))
+            epoch = _get_str_param(params, 'epoch', '') or None     # ISO 8601; none is J2000, as in a run
 
             script_text: str = str(MissionScriptWorkbench.generate_mission_script(
-                sma_km=sma, ecc=ecc, inc_deg=inc, raan_deg=raan, aop_deg=aop, ta_deg=ta, num_orbits=num_orbits
+                epoch=epoch, sma_km=sma, ecc=ecc, inc_deg=inc, raan_deg=raan, aop_deg=aop, ta_deg=ta, num_orbits=num_orbits
             ))
             self.send_json({
                 "status": "SUCCESS",
@@ -221,13 +222,18 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
                 "script_filename": "AstroFlyer_HEO_Mission.script"
             })
 
-        elif path == "/api/targeting/differential_corrector":
-            r0 = _get_float_param(params, 'r0', 6628.0)
-            v0 = _get_float_param(params, 'v0', 10.23)
-            target_ra = _get_float_param(params, 'target_ra', 42164.0)
-            dc = DifferentialCorrector()
-            res_dc = dc.solve_apogee_raise(r0_km=r0, v0_kms=v0, target_ra_km=target_ra)
-            self.send_json(res_dc)
+        elif path in ("/api/targeting/differential_corrector", "/api/targeting/finite_burn"):
+            # The run's /api/propagate request plus the targeting inputs; solved on the run's force model
+            request = _propagation_request(params, getattr(self, 'json_body', None))
+            try:
+                if path == "/api/targeting/differential_corrector":
+                    self.send_json(solve_apogee_raise(request, request.pop('target_ra_km', 42164.0)))
+                else:
+                    self.send_json(simulate_finite_burn(
+                        request, request.pop('delta_v_ms', 1000.0), thrust_n=request.pop('thrust_n', 450.0),
+                        isp_s=request.pop('isp_s', 315.0), mass_kg=request.pop('mass_kg', None)))
+            except (ValueError, RuntimeError) as exc:
+                self.send_json({"error": str(exc)}, 400)
 
         elif path == "/api/script/run":
             # Runs a full mission script (Create ... BeginMissionSequence ...) on the AstroFlyer engine
@@ -236,15 +242,6 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
         elif path == "/api/analysis/access":
             # Ground-station passes, eclipses, beta angle and a report for one propagated orbit
             self.send_json(_analysis_access(getattr(self, 'json_body', {}) or {}))
-
-        elif path == "/api/targeting/finite_burn":
-            dv_req = _get_float_param(params, 'deltav', 1478.0)
-            m0 = _get_float_param(params, 'mass', 1500.0)
-            thrust = _get_float_param(params, 'thrust', 450.0)
-            isp = _get_float_param(params, 'isp', 315.0)
-            fb = FiniteBurnEngine(thrust_newtons=thrust, isp_sec=isp)
-            res_fb = fb.execute_finite_burn(target_deltav_ms=dv_req, initial_mass_kg=m0)
-            self.send_json(res_fb)
 
         elif path in ("/api/covariance/steered", "/api/covariance/step_factor"):
             # One covariance-steered orbit of the given elements (see /api/propagate steering=covariance)

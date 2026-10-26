@@ -9,13 +9,15 @@ Part of Major Project: Precise Trajectory Propagation & Events Prediction for HE
 import math
 import numpy as np
 
+from .access import GroundStation, station_passes
+from .epoch import Epoch
+
 # Astrodynamical Constants (WGS-84 / NASA JPL DE440 Standards)
 MU_EARTH = 3.986004418e14          # Earth gravitational parameter (m^3/s^2)
 R_EARTH = 6371000.0                # Mean Earth radius (m)
 R_EARTH_EQ = 6378137.0             # Equatorial radius (m)
 R_SUN = 696340000.0                # Mean Solar radius (m)
 AU_METERS = 149597870700.0         # Astronomical Unit (m)
-OMEGA_EARTH = 7.2921159e-5         # Earth rotation rate (rad/s)
 MU_MOON = 4.9048695e12             # Lunar gravitational parameter (m^3/s^2)
 R_MOON = 1737400.0                 # Mean Lunar radius (m)
 G0 = 9.80665                       # Standard gravity (m/s^2)
@@ -181,106 +183,39 @@ class EventPredictor:
             "mission_eclipse_fraction_pct": round(eclipse_fraction_pct, 2)
         }
 
-    def predict_ground_station_passes(self, times, positions, omega_e=OMEGA_EARTH):
-        """Calculates SEZ Azimuth, Elevation, Slant Range, AOS, and LOS across stations."""
+    def predict_ground_station_passes(self, times, positions, epoch, velocities=None):
+        """Elevation, azimuth, slant range and passes (AOS, LOS, maximum elevation) of each station.
+
+        times are seconds after `epoch`, positions (and velocities) GCRF. The stations are on the
+        WGS-84 ellipsoid and the trajectory is turned into ITRF with the IAU 2006/2000A chain at
+        the real epoch, as in Analysis > Access (access.py), which also finds the passes: AOS and
+        LOS are refined between samples, so they do not depend on the output step.
+        """
+        epoch = Epoch.coerce(epoch)
+        times = np.asarray(times, dtype=float)
+        positions = np.asarray(positions, dtype=float)
+        if velocities is None:
+            velocities = np.gradient(positions, times, axis=0)
         station_results = {}
-        n_pts = len(times)
-
         for st in self.ground_stations:
-            st_name = st["name"]
-            st_lat = math.radians(st["lat_deg"])
-            st_lon = math.radians(st["lon_deg"])
-            st_alt = st["alt_m"]
-            min_el = st["min_el_deg"]
-
-            r_st_mag = R_EARTH + st_alt
-            x_st_ecef = r_st_mag * math.cos(st_lat) * math.cos(st_lon)
-            y_st_ecef = r_st_mag * math.cos(st_lat) * math.sin(st_lon)
-            z_st_ecef = r_st_mag * math.sin(st_lat)
-            r_st_ecef = np.array([x_st_ecef, y_st_ecef, z_st_ecef])
-
-            sin_lat = math.sin(st_lat)
-            cos_lat = math.cos(st_lat)
-            sin_lon = math.sin(st_lon)
-            cos_lon = math.cos(st_lon)
-
-            el_arr = np.zeros(n_pts)
-            az_arr = np.zeros(n_pts)
-            slant_km_arr = np.zeros(n_pts)
-
-            passes = []
-            in_pass = False
-            aos_time = 0.0
-            max_el = 0.0
-            max_el_time = 0.0
-
-            for i in range(n_pts):
-                t = times[i]
-                theta = (omega_e * t) % (2.0 * math.pi)
-                cos_t, sin_t = math.cos(theta), math.sin(theta)
-
-                r_eci = positions[i]
-                x_ecef =  cos_t * r_eci[0] + sin_t * r_eci[1]
-                y_ecef = -sin_t * r_eci[0] + cos_t * r_eci[1]
-                z_ecef = r_eci[2]
-                r_ecef = np.array([x_ecef, y_ecef, z_ecef])
-
-                rho_ecef = r_ecef - r_st_ecef
-                rho_mag = np.linalg.norm(rho_ecef)
-                slant_km_arr[i] = rho_mag / 1000.0
-
-                rho_s =  sin_lat * cos_lon * rho_ecef[0] + sin_lat * sin_lon * rho_ecef[1] - cos_lat * rho_ecef[2]
-                rho_e = -sin_lon * rho_ecef[0]           + cos_lon * rho_ecef[1]
-                rho_z =  cos_lat * cos_lon * rho_ecef[0] + cos_lat * sin_lon * rho_ecef[1] + sin_lat * rho_ecef[2]
-
-                el_deg = math.degrees(math.asin(max(-1.0, min(1.0, rho_z / rho_mag))))
-                el_arr[i] = el_deg
-                az_deg = (math.degrees(math.atan2(rho_e, -rho_s)) + 360.0) % 360.0
-                az_arr[i] = az_deg
-
-                if el_deg >= min_el:
-                    if not in_pass:
-                        in_pass = True
-                        aos_time = t
-                        max_el = el_deg
-                        max_el_time = t
-                    else:
-                        if el_deg > max_el:
-                            max_el = el_deg
-                            max_el_time = t
-                else:
-                    if in_pass:
-                        in_pass = False
-                        dur_s = t - aos_time
-                        passes.append({
-                            "station": st_name,
-                            "aos_epoch_s": round(aos_time, 2),
-                            "los_epoch_s": round(t, 2),
-                            "duration_min": round(dur_s / 60.0, 2),
-                            "max_elevation_deg": round(max_el, 2)
-                        })
-
-            if in_pass:
-                dur_s = times[-1] - aos_time
-                passes.append({
-                    "station": st_name,
-                    "aos_epoch_s": round(aos_time, 2),
-                    "los_epoch_s": round(times[-1], 2),
-                    "duration_min": round(dur_s / 60.0, 2),
-                    "max_elevation_deg": round(max_el, 2)
-                })
-
-            total_contact_s = sum(p["duration_min"] * 60.0 for p in passes)
-            station_results[st_name] = {
+            site = GroundStation(st["name"], st["lat_deg"], st["lon_deg"], st["alt_m"], st["min_el_deg"])
+            look = site.look_angles(epoch, times, positions)
+            passes = [{
+                "station": st["name"],
+                "aos_epoch_s": round(float(p["aos"] - epoch), 2),
+                "los_epoch_s": round(float(p["los"] - epoch), 2),
+                "duration_min": round(float(p["duration_s"]) / 60.0, 2),
+                "max_elevation_deg": round(float(p["max_elevation_deg"]), 2),
+            } for p in station_passes(site, epoch, times, positions, velocities)]
+            station_results[st["name"]] = {
                 "station_metadata": st,
                 "passes": passes,
                 "total_passes_count": len(passes),
-                "total_contact_min": round(total_contact_s / 60.0, 2),
-                "elevation_series_deg": el_arr,
-                "azimuth_series_deg": az_arr,
-                "slant_range_km": slant_km_arr
+                "total_contact_min": round(sum(p["duration_min"] for p in passes), 2),
+                "elevation_series_deg": look["elevation_deg"],
+                "azimuth_series_deg": look["azimuth_deg"],
+                "slant_range_km": look["range_m"] / 1000.0,
             }
-
         return station_results
 
     def predict_apsidal_events(self, times, positions, velocities):

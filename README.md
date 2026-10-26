@@ -59,13 +59,15 @@ is downloaded at runtime.
 
 ### Events and access (`event_predictor.py`, `access.py`, `eclipse.py`)
 * Apsides and nodes located by root-finding during integration.
-* Ground-station AOS/LOS with elevation masks, look angles and peak elevation.
+* Ground-station AOS/LOS with elevation masks, look angles and peak elevation, with the real Earth
+  orientation at the run's epoch (IAU 2006/2000A) and WGS-84 station positions.
 * Earth and Moon eclipses (umbra/penumbra), beta angle, CSV reports.
 
 ### Mission design (`mission.py`, `script_runner.py`, `differential_corrector.py`)
 * Impulsive and finite burns with mass flow; differential corrector (vary/achieve).
 * A mission-script interpreter (Create/Propagate/Maneuver/Target/If/While/For/Report).
 * GTO→GEO and perigee-raise targeting; multi-burn perigee pumping.
+* Targeting tab: apogee raise and finite burn from the run's first perigee, on the run's force model.
 
 ### Analysis modules
 * Van Allen belt L-shell, magnetic field and belt crossings along the trajectory
@@ -74,7 +76,8 @@ is downloaded at runtime.
 
 ### Data exchange
 * CCSDS OEM / OPM read and write, SP3 read, NORAD TLE generation (`ephemeris_io.py`,
-  `ccsds_exporter.py`).
+  `ccsds_exporter.py`). A run's OPM, TLE and mission script are for its own epoch and initial state;
+  the TLE holds SGP4 mean elements fitted to reproduce that state (no drag term).
 
 ### Operations console (`astroflyer/frontend/`)
 * Three workspaces: **Mission** (mission tree, inspector, tiled panes), **Analysis** (Events,

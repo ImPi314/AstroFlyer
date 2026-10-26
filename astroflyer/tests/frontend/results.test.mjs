@@ -60,3 +60,22 @@ test('a run with other forces reports energy change, not error', () => {
     assert.deepEqual(energySummary({ model: 'coupled', max_energy_error: 9.31e-3 }), ['Largest energy change', 9.31e-3]);
     assert.deepEqual(energySummary({ model: 'j2', max_energy_error: 1e-4 }), ['Largest energy change', 1e-4]);
 });
+
+// ---------- Targeting starts where the run did ----------
+
+import { targetingRequest } from '../../frontend/js/results.js';
+
+test('the targeting request is the run request with the run initial state and epoch as the orbit', () => {
+    const result = {
+        ...fromPayload(escape),
+        request: { hp: 250, ha: 35786, inc: 28.5, model: 'coupled', mass: 1200, enable_drag: true, epoch: '2030-01-01T00:00:00Z' },
+    };
+    const req = targetingRequest(result);
+    for (const field of ['hp', 'ha', 'inc']) assert.equal(req[field], undefined);
+    assert.equal(req.model, 'coupled');
+    assert.equal(req.mass, 1200);
+    assert.equal(req.enable_drag, true);
+    assert.deepEqual(req.position_km, escape.position_m[0].map((v) => v / 1000));
+    assert.deepEqual(req.velocity_kms, escape.velocity_ms[0].map((v) => v / 1000));
+    assert.equal(req.epoch, escape.epoch.utc);
+});

@@ -13,7 +13,30 @@ Official Spaceflight Data Standards (CCSDS 502.0-B-2 & NASA/NORAD):
 import math
 import datetime
 
+import numpy as np
+
+from .epoch import Epoch
+from .frames import transform_state
+from .mission import keplerian_from_state
+
 MU_EARTH_KM = 398600.4418  # km^3/s^2
+_MU_WGS72 = 398600.8e9      # m^3/s^2, the constant SGP4 is defined with
+
+
+def _nonsingular(r, v):
+    """a, e cos w, e sin w, i, RAAN, w + M from a state (WGS-72 GM)."""
+    k = keplerian_from_state(r, v, _MU_WGS72)
+    e, nu = k["e"], k["ta"]
+    ecc_anom = math.atan2(math.sqrt(1.0 - e * e) * math.sin(nu), e + math.cos(nu))
+    ma = ecc_anom - e * math.sin(ecc_anom)
+    return np.array([k["a"], e * math.cos(k["argp"]), e * math.sin(k["argp"]), k["inc"], k["raan"],
+                     k["argp"] + ma])
+
+
+def _from_nonsingular(q):
+    a, ek, eh, inc, raan, lam = q
+    argp = math.atan2(eh, ek)
+    return a, math.hypot(ek, eh), inc, raan % (2.0 * math.pi), argp % (2.0 * math.pi), (lam - argp) % (2.0 * math.pi)
 
 
 class CCSDSExporter:
@@ -31,81 +54,96 @@ class CCSDSExporter:
                 csum += 1
         return csum % 10
 
+    @staticmethod
+    def _tle_epoch(epoch):
+        """The TLE epoch field YYDDD.DDDDDDDD (UTC) and the Epoch it stands for."""
+        year = int(epoch.iso("UTC")[:4])
+        jan1 = Epoch.from_calendar(year, 1, 1, 0, 0, 0.0, "UTC")
+        day = round((epoch.jd_value("UTC") - jan1.jd_value("UTC")) + 1.0, 8)
+        printed = jan1 + (day - 1.0) * 86400.0
+        return f"{year % 100:02d}{day:012.8f}", printed
+
     @classmethod
-    def generate_tle(
-        cls,
-        sat_name="ASTROFLYER-1",
-        sat_num=99881,
-        epoch_dt=None,
-        sma_km=24389.0,
-        ecc=0.728525,
-        inc_deg=28.5,
-        raan_deg=45.0,
-        aop_deg=30.0,
-        ta_deg=0.0,
-        b_star=0.00015
-    ):
-        """
-        Synthesizes a valid NORAD Two-Line Element Set (TLE) with compliant checksums.
-        """
-        if epoch_dt is None:
-            epoch_dt = datetime.datetime(2026, 9, 24, 0, 0, 0)
-
-        # Day of year fraction
-        doy = epoch_dt.timetuple().tm_yday
-        fraction_of_day = (epoch_dt.hour * 3600 + epoch_dt.minute * 60 + epoch_dt.second) / 86400.0
-        epoch_str = f"{epoch_dt.year % 100:02d}{doy + fraction_of_day:012.8f}"
-
-        # Mean Motion (revolutions per day)
-        period_sec = 2.0 * math.pi * math.sqrt((sma_km**3) / MU_EARTH_KM)
-        mean_motion_rev_day = 86400.0 / period_sec
-
-        # Mean Anomaly from True Anomaly
-        ta_rad = math.radians(ta_deg)
-        cos_e = (ecc + math.cos(ta_rad)) / (1.0 + ecc * math.cos(ta_rad))
-        sin_e = (math.sqrt(max(0.0, 1.0 - ecc**2)) * math.sin(ta_rad)) / (1.0 + ecc * math.cos(ta_rad))
-        E_rad = math.atan2(sin_e, cos_e)
-        M_rad = E_rad - ecc * math.sin(E_rad)
-        M_deg = (math.degrees(M_rad) + 360.0) % 360.0
-
-        # Eccentricity without decimal point (7 digits)
-        ecc_str = f"{int(ecc * 1e7):07d}"
-
-        # B* drag term formatting
-        b_star_val = b_star
-        b_star_exp = 0
-        if b_star_val > 0:
-            b_star_exp = int(math.floor(math.log10(b_star_val))) + 1
-            b_star_mant = int(round(b_star_val / (10**b_star_exp) * 100000.0))
-            b_star_str = f" {b_star_mant:05d}{b_star_exp:+1d}"
-        else:
-            b_star_str = " 00000-0"
-
-        # Line 1:
-        line1_raw = f"1 {sat_num:05d}U 26999A   {epoch_str}  .00000100  00000-0 {b_star_str} 0  999"
-        csum1 = cls._tle_checksum(line1_raw)
-        line1 = f"{line1_raw}{csum1}"
-
-        # Line 2:
-        line2_raw = f"2 {sat_num:05d} {inc_deg:8.4f} {raan_deg:8.4f} {ecc_str} {aop_deg:8.4f} {M_deg:8.4f} {mean_motion_rev_day:11.8f}    1"
-        csum2 = cls._tle_checksum(line2_raw)
-        line2 = f"{line2_raw}{csum2}"
-
+    def format_tle(cls, sat_name, sat_num, epoch_field, inc_deg, raan_deg, ecc, aop_deg, ma_deg,
+                   mean_motion_rev_day, intl_designator=""):
+        """Two-line element set text (fixed columns, modulo-10 checksums), B* and its derivatives zero."""
+        line1_raw = f"1 {sat_num:05d}U {intl_designator:<8s} {epoch_field}  .00000000  00000-0  00000-0 0  999"
+        line2_raw = (f"2 {sat_num:05d} {inc_deg:8.4f} {raan_deg % 360.0:8.4f} {round(ecc * 1e7):07d} "
+                     f"{aop_deg % 360.0:8.4f} {ma_deg % 360.0:8.4f} {mean_motion_rev_day:11.8f}    1")
+        line1 = f"{line1_raw}{cls._tle_checksum(line1_raw)}"
+        line2 = f"{line2_raw}{cls._tle_checksum(line2_raw)}"
         return f"{sat_name}\n{line1}\n{line2}\n"
+
+    @classmethod
+    def generate_tle(cls, epoch, r_gcrf_m, v_gcrf_ms, sat_name="ASTROFLYER-1", sat_num=99881):
+        """
+        A TLE whose SGP4 state at `epoch` is the given GCRF state.
+
+        SGP4 works with its own mean elements (WGS-72, TEME frame), not osculating ones, so they are
+        fitted: starting from the osculating elements of the TEME state, the elements are corrected
+        by the difference between the target's osculating elements and those of SGP4's state until
+        SGP4 reproduces the state. The iteration runs on nonsingular elements (a, e cos w, e sin w,
+        i, RAAN, w + M) so near-circular orbits converge too. B* is zero: the TLE carries no drag.
+        Returns {"tle": text, "position_error_m", "velocity_error_ms"}, the errors of the printed TLE
+        (rounded to its columns) at `epoch`.
+        """
+        from sgp4.api import WGS72, Satrec
+
+        epoch = Epoch.coerce(epoch)
+        epoch_field, printed = cls._tle_epoch(epoch)
+        r_teme, v_teme = transform_state(np.asarray(r_gcrf_m, dtype=float), np.asarray(v_gcrf_ms, dtype=float),
+                                         epoch, "GCRF", "TEME")
+        jd1, jd2 = printed.jd("UTC")
+        offset_days = (epoch.jd_value("UTC") - printed.jd_value("UTC"))
+
+        def satrec(q):
+            a, e, inc, raan, argp, ma = _from_nonsingular(q)
+            sat = Satrec()
+            sat.sgp4init(WGS72, "i", sat_num, (jd1 - 2433281.5) + jd2, 0.0, 0.0, 0.0, e, argp, inc, ma,
+                         math.sqrt(_MU_WGS72 / a ** 3) * 60.0, raan)
+            return sat
+
+        def sgp4_state(sat):
+            err, r_km, v_kms = sat.sgp4(jd1, jd2 + offset_days)
+            if err:
+                raise ValueError(f"SGP4 cannot represent this orbit (error {err})")
+            return np.array(r_km) * 1e3, np.array(v_kms) * 1e3
+
+        target = _nonsingular(r_teme, v_teme)
+        q = target.copy()
+        for _ in range(100):
+            d = target - _nonsingular(*sgp4_state(satrec(q)))
+            d[3:] = (d[3:] + math.pi) % (2.0 * math.pi) - math.pi
+            q = q + d
+            if abs(d[0]) < 1e-6 and np.max(np.abs(d[1:])) < 1e-13:
+                break
+        else:
+            raise ValueError("The SGP4 mean elements did not converge for this orbit")
+
+        a, e, inc, raan, argp, ma = _from_nonsingular(q)
+        text = cls.format_tle(sat_name, sat_num, epoch_field, math.degrees(inc), math.degrees(raan), e,
+                              math.degrees(argp), math.degrees(ma),
+                              86400.0 / (2.0 * math.pi * math.sqrt(a ** 3 / _MU_WGS72)),
+                              intl_designator=f"{epoch_field[:2]}999A")
+        line1, line2 = text.splitlines()[1:3]
+        r_tle, v_tle = sgp4_state(Satrec.twoline2rv(line1, line2, WGS72))
+        return {"tle": text, "position_error_m": float(np.linalg.norm(r_tle - r_teme)),
+                "velocity_error_ms": float(np.linalg.norm(v_tle - v_teme))}
 
     @staticmethod
     def generate_ccsds_oem(
         times_sec,
         positions_m,
         velocities_ms,
+        epoch_str,
         sat_name="ASTROFLYER-1",
         sat_id="2026-999A",
-        epoch_str="2026-09-24T00:00:00.000",
         step_interval_s=60.0
     ):
         """
         Generates standard CCSDS OEM (Orbit Ephemeris Message, V2.0 KVN format).
-        State coordinates in km and km/s in J2000 (EME2000) frame.
+        State coordinates in km and km/s in the engine's GCRF frame; epoch_str is the UTC epoch of
+        times_sec = 0.
         """
         t0_dt = datetime.datetime.fromisoformat(epoch_str.replace("Z", ""))
 
@@ -118,7 +156,7 @@ class CCSDSExporter:
             f"OBJECT_NAME          = {sat_name}",
             f"OBJECT_ID            = {sat_id}",
             "CENTER_NAME          = EARTH",
-            "REF_FRAME            = EME2000",
+            "REF_FRAME            = GCRF",
             "TIME_SYSTEM          = UTC",
             f"START_TIME           = {epoch_str}",
             f"STOP_TIME            = {(t0_dt + datetime.timedelta(seconds=float(times_sec[-1]))).isoformat()}Z",
@@ -146,17 +184,18 @@ class CCSDSExporter:
 
     @staticmethod
     def generate_ccsds_opm(
-        sma_km=24389.0,
-        ecc=0.728525,
-        inc_deg=28.5,
-        raan_deg=45.0,
-        aop_deg=30.0,
-        ta_deg=0.0,
-        r_vec_km=(6628.0, 0.0, 0.0),
-        v_vec_kms=(0.0, 10.23, 0.0),
+        epoch,
+        r_vec_km,
+        v_vec_kms,
+        sma_km,
+        ecc,
+        inc_deg,
+        raan_deg,
+        aop_deg,
+        ta_deg,
+        gm_km3s2=MU_EARTH_KM,
         sat_name="ASTROFLYER-1",
         sat_id="2026-999A",
-        epoch_str="2026-09-24T00:00:00.000",
         mass_kg=1500.0,
         cd=2.2,
         cr=1.2,
@@ -164,8 +203,10 @@ class CCSDSExporter:
         srp_area_m2=15.0
     ):
         """
-        Generates standard CCSDS OPM (Orbit Parameter Message, V2.0 KVN format).
+        Generates a CCSDS OPM (Orbit Parameter Message, V2.0 KVN format) for the state at `epoch`
+        (GCRF, km and km/s) with its osculating elements for the given GM.
         """
+        epoch_str = Epoch.coerce(epoch).iso("UTC", 3).rstrip("Z")
         lines = [
             "CCSDS_OPM_VERS = 2.0",
             f"CREATION_DATE  = {datetime.datetime.now(datetime.UTC).replace(tzinfo=None).isoformat()}Z",
@@ -175,7 +216,7 @@ class CCSDSExporter:
             f"OBJECT_NAME          = {sat_name}",
             f"OBJECT_ID            = {sat_id}",
             "CENTER_NAME          = EARTH",
-            "REF_FRAME            = EME2000",
+            "REF_FRAME            = GCRF",
             "TIME_SYSTEM          = UTC",
             "",
             "% Spacecraft Physical Parameters",
@@ -189,12 +230,12 @@ class CCSDSExporter:
             f"EPOCH                = {epoch_str}",
             "",
             "% Cartesian State Vector (km, km/s)",
-            f"X                    = {r_vec_km[0]:14.6f} [km]",
-            f"Y                    = {r_vec_km[1]:14.6f} [km]",
-            f"Z                    = {r_vec_km[2]:14.6f} [km]",
-            f"X_DOT                = {v_vec_kms[0]:12.8f} [km/s]",
-            f"Y_DOT                = {v_vec_kms[1]:12.8f} [km/s]",
-            f"Z_DOT                = {v_vec_kms[2]:12.8f} [km/s]",
+            f"X                    = {r_vec_km[0]:17.9f} [km]",
+            f"Y                    = {r_vec_km[1]:17.9f} [km]",
+            f"Z                    = {r_vec_km[2]:17.9f} [km]",
+            f"X_DOT                = {v_vec_kms[0]:15.12f} [km/s]",
+            f"Y_DOT                = {v_vec_kms[1]:15.12f} [km/s]",
+            f"Z_DOT                = {v_vec_kms[2]:15.12f} [km/s]",
             "",
             "% Osculating Keplerian Elements",
             f"SEMI_MAJOR_AXIS      = {sma_km:14.6f} [km]",
@@ -203,7 +244,7 @@ class CCSDSExporter:
             f"RA_OF_ASC_NODE       = {raan_deg:10.5f} [deg]",
             f"ARG_OF_PERICENTER    = {aop_deg:10.5f} [deg]",
             f"TRUE_ANOMALY         = {ta_deg:10.5f} [deg]",
-            f"GM                   = {MU_EARTH_KM:.4f} [km**3/s**2]",
+            f"GM                   = {gm_km3s2:.4f} [km**3/s**2]",
             ""
         ]
         return "\n".join(lines) + "\n"

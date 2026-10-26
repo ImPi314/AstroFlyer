@@ -7,7 +7,7 @@ Department of Aerospace Engineering, ACS College of Engineering (affiliated to V
 Candidates: Girish Gowda S (1AH23AS019), Gowtham N (1AH23AS020), Harshith S Purohith (1AH23AS021).
 Guides: Mr. Vijay M (Assistant Professor), Dr. Suresh C (Professor & Head of Department).
 
-Status as of October 2026 (branch `integration`). Every number below was produced by the code in this
+Status as of October 2026 (branch `main`). Every number below was produced by the code in this
 repository and can be regenerated with the commands given; nothing is quoted from elsewhere.
 
 ---
@@ -62,7 +62,11 @@ it to 0.85 m over 32 days.
 so perigee passes are drawn with as many points as apogee dwells. Validation uses uniform time.
 
 **Events.** Apsides and nodes are located by root-finding on the dense output during integration;
-eclipses from the conical umbra/penumbra model; ground-station AOS/LOS with elevation masks.
+eclipses from the conical umbra/penumbra model; ground-station AOS/LOS with elevation masks. Station
+contacts, in a run's Events and timeline as in Analysis › Access, turn the trajectory into ITRF with the
+IAU 2006/2000A chain at the run's real epoch, place the stations on the WGS-84 ellipsoid and refine AOS
+and LOS between output samples with Brent's method. The radiation-belt dipole is fixed in ITRF in the
+same way.
 
 **Two propagation experiments**, measured against Orekit
 ([validation/results/innovations](validation/results/innovations/README.md)):
@@ -129,10 +133,16 @@ comparable, not that one is faster.
 
 * Mission workspace: mission tree, inspector, tiled panes; linked 3D orbit view, ground track with
   station contacts and shadow, parameter plots and a watch panel on one playback timeline.
-* Analysis workspace: events, access, targeting (differential corrector, impulsive and finite burns),
-  Van Allen belt crossings, covariance.
+* Analysis workspace: events, access, targeting, Van Allen belt crossings, covariance. Targeting starts
+  from the run's first perigee and propagates with the run's force model and spacecraft: the apogee
+  raise is a differential corrector on the propagated apogee (the two-body vis-viva answer is shown
+  beside it), and the finite burn is integrated with mass flow and compared with the impulsive burn of
+  the same velocity change.
 * Data workspace: mission script (Create / Propagate / Maneuver / Target / If / While / For / Report),
-  CCSDS OEM/OPM and SP3 exchange, TLE generation.
+  CCSDS OEM/OPM and SP3 exchange, TLE generation. A run's OPM holds its initial GCRF state at its epoch;
+  its TLE holds SGP4 mean elements fitted so that SGP4 reproduces that state at the epoch (B* = 0, so no
+  drag; SGP4 is analytic and drifts from the precise trajectory afterwards); its generated script starts
+  at the run's epoch.
 * Twelve sample orbits, each checked against its cited source.
 * Runs report only what the engine computed; there are no canned or demo figures.
 
@@ -160,3 +170,16 @@ project did not build or measure. They are corrected here:
 | Energy drift 1.12 × 10⁻¹¹; RSS error budget of 8.98 m | Not measured. Measured accuracy is the §4 cross-checks |
 | Bidirectional `.MissionPlan` exporter verified with FreeFlyer | Removed (clean-room rule); export is CCSDS OEM/OPM |
 | 18.9% fuel saving; 25-year debris lifetime predictor | Not measured; the lifetime model was removed |
+
+### Defects found in October 2026 and fixed
+
+These were found while checking the code for the final review, and are fixed and covered by tests
+(`test_covariance_engine.py`, `test_event_predictor.py`, `test_exports.py`, `test_targeting.py`). The
+propagated trajectories and the §4 validation were never affected.
+
+| What was wrong | Effect | Now |
+| --- | --- | --- |
+| One J2 entry of the gravity gradient used for covariance, ∂a_z/∂z, had 15 z²/r² where 30 z²/r² is right | The Covariance tab and covariance-steered stepping used a slightly wrong sensitivity (1-σ over-predicted by 13 % on GTO and 43 % on Molniya over two J2-only orbits) | Corrected; every entry is checked against finite differences |
+| A run's quick-look station contacts rotated the Earth by ω·t from zero at the run start and put the stations on a 6,371 km sphere; the radiation dipole rotated the same way | Contacts in Events and on the timeline, and belt L-shells, were for the wrong Earth orientation (the Earth Rotation Angle at the epoch was missing) | The real GCRF→ITRF transformation at the run's epoch and WGS-84 stations (as Analysis › Access) |
+| TLE, OPM and generated mission script carried a fixed epoch of 24 Sep 2026; the OPM a placeholder state; the TLE osculating elements | Exports did not describe the run | The run's epoch and initial state; the TLE holds fitted SGP4 mean elements |
+| The Targeting tab's apogee raise was vis-viva (two-body) and its finite burn used a fixed 0.35° flight-path angle for gravity losses | Answers ignored the force model | Solved and integrated on the run's force model from its first perigee |

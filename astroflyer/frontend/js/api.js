@@ -83,12 +83,15 @@ export async function analyzeAccess(body, signal) {
     }
 }
 
-export function solveApogeeRaise({ perigeeRadiusKm, perigeeSpeedKms, targetApogeeKm }) {
-    const query = new URLSearchParams({ r0: perigeeRadiusKm, v0: perigeeSpeedKms, target_ra: targetApogeeKm });
-    return request(`/api/targeting/differential_corrector?${query}`);
+// Both take the run's request (results.targetingRequest) and solve on the run's force model.
+function postJson(path, body) {
+    return request(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 }
 
-export function simulateFiniteBurn({ deltaVms, massKg, thrustN, ispS }) {
-    const query = new URLSearchParams({ deltav: deltaVms, mass: massKg, thrust: thrustN, isp: ispS });
-    return request(`/api/targeting/finite_burn?${query}`);
+export function solveApogeeRaise(runRequest, targetApogeeKm) {
+    return postJson('/api/targeting/differential_corrector', { ...runRequest, target_ra_km: targetApogeeKm });
+}
+
+export function simulateFiniteBurn(runRequest, { deltaVms, massKg, thrustN, ispS }) {
+    return postJson('/api/targeting/finite_burn', { ...runRequest, delta_v_ms: deltaVms, mass_kg: massKg, thrust_n: thrustN, isp_s: ispS });
 }

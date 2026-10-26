@@ -61,21 +61,7 @@ def run(request):
     if duration_s is None and not 0.5 <= num_orbits <= 20.0:
         raise ValueError("num_orbits must be between 0.5 and 20")
 
-    # Initial state: a Cartesian GCRF state when given, else Keplerian elements
-    r_cart, v_cart = q.vector("position_km"), q.vector("velocity_kms")
-    if (r_cart is None) != (v_cart is None):
-        raise ValueError("Give both position_km and velocity_kms for a Cartesian initial state")
-    if r_cart is not None:
-        initial_state = "cartesian"
-        r0, v0 = r_cart * 1000.0, v_cart * 1000.0
-        kep = mission.keplerian_from_state(r0, v0, MU_EARTH)
-        a_km, e = float(kep["a"]) / 1000.0, float(kep["e"])
-        inc, raan, aop, ta = (float(np.degrees(kep[k])) for k in ("inc", "raan", "argp", "ta"))
-    else:
-        initial_state = "keplerian"
-        a_km, e = _size_and_shape(q)
-        inc, raan, aop, ta = (q.number(k) for k in ("inc", "raan", "aop", "ta"))
-        r0, v0 = keplerian_to_cartesian(a_km * 1000.0, e, *(math.radians(x) for x in (inc, raan, aop, ta)))
+    initial_state, r0, v0, (a_km, e, inc, raan, aop, ta) = initial_conditions(q)
     closed = a_km > 0.0 and e < 1.0
     if not closed and duration_s is None:
         raise ValueError("The initial state is an escape trajectory (e >= 1), which has no period, "
@@ -136,8 +122,26 @@ def run(request):
         report["notes"] = ["Escape trajectory (e >= 1): closed-orbit reports (events, radiation, "
                            "covariance, mission script, TLE/OPM export) are not produced."]
         return report
-    report.update(_closed_orbit_reports(sol, q, a_km, e, inc, raan, aop, ta, num_orbits))
+    report.update(_closed_orbit_reports(sol, q, epoch, a_km, e, inc, raan, aop, ta, num_orbits))
     return report
+
+
+def initial_conditions(q):
+    """The initial GCRF state of a request: (kind, r0 m, v0 m/s, (a km, e, inc, raan, aop, ta deg)),
+    from position_km + velocity_kms when given, else from Keplerian elements."""
+    r_cart, v_cart = q.vector("position_km"), q.vector("velocity_kms")
+    if (r_cart is None) != (v_cart is None):
+        raise ValueError("Give both position_km and velocity_kms for a Cartesian initial state")
+    if r_cart is not None:
+        r0, v0 = r_cart * 1000.0, v_cart * 1000.0
+        kep = mission.keplerian_from_state(r0, v0, MU_EARTH)
+        a_km, e = float(kep["a"]) / 1000.0, float(kep["e"])
+        inc, raan, aop, ta = (float(np.degrees(kep[k])) for k in ("inc", "raan", "argp", "ta"))
+        return "cartesian", r0, v0, (a_km, e, inc, raan, aop, ta)
+    a_km, e = _size_and_shape(q)
+    inc, raan, aop, ta = (q.number(k) for k in ("inc", "raan", "aop", "ta"))
+    r0, v0 = keplerian_to_cartesian(a_km * 1000.0, e, *(math.radians(x) for x in (inc, raan, aop, ta)))
+    return "keplerian", r0, v0, (a_km, e, inc, raan, aop, ta)
 
 
 def _space_weather_used(epoch, run_s):
@@ -199,15 +203,19 @@ def _trajectory_report(sol, run_s, closed, config):
     return report
 
 
-def _closed_orbit_reports(sol, q, a_km, e, inc, raan, aop, ta, num_orbits):
+def _closed_orbit_reports(sol, q, epoch, a_km, e, inc, raan, aop, ta, num_orbits):
     """Events, analysis and exports that assume a closed orbit."""
     times, pos, vel = (np.asarray(sol[k]) for k in ("times", "position_m", "velocity_ms"))
     predictor = EventPredictor()
-    passes = predictor.predict_ground_station_passes(times, pos)
+    passes = predictor.predict_ground_station_passes(times, pos, epoch, vel)
     cov = CovarianceEngine()
     elements = dict(sma_km=a_km, ecc=e, inc_deg=inc, raan_deg=raan, aop_deg=aop, ta_deg=ta)
+    tle = CCSDSExporter.generate_tle(epoch, pos[0], vel[0])
+    opm = CCSDSExporter.generate_ccsds_opm(
+        epoch, pos[0] / 1000.0, vel[0] / 1000.0, **elements, gm_km3s2=MU_EARTH / 1e9, mass_kg=q.number("mass"),
+        cd=q.number("cd"), cr=q.number("cr"), drag_area_m2=q.number("drag_area"), srp_area_m2=q.number("srp_area"))
     script = MissionScriptWorkbench.generate_mission_script(
-        **elements, dry_mass_kg=q.number("dry_mass"), fuel_mass_kg=q.number("fuel_mass"),
+        epoch=epoch, **elements, dry_mass_kg=q.number("dry_mass"), fuel_mass_kg=q.number("fuel_mass"),
         drag_area_m2=q.number("drag_area"), srp_area_m2=q.number("srp_area"), cd=q.number("cd"),
         cr=q.number("cr"), num_orbits=int(num_orbits))
     return {
@@ -221,14 +229,14 @@ def _closed_orbit_reports(sol, q, a_km, e, inc, raan, aop, ta, num_orbits):
             "exact_apsidal_events": predictor.predict_apsidal_events(times, pos, vel),
             "exact_nodal_events": predictor.predict_orbital_nodes(times, pos, vel),
         },
-        "radiation_belts": RadiationBeltModel().evaluate_trajectory_radiation(times, pos),
+        "radiation_belts": RadiationBeltModel().evaluate_trajectory_radiation(times, np.asarray(sol["position_itrf_m"])),
         # The run's own variational equations when it integrated them, else along the trajectory
         "covariance_dispersion": (cov.dispersion_from_stm(pos, vel, np.asarray(sol["stm"]))
                                   if sol.get("stm") is not None
                                   else cov.propagate_stm_and_covariance(times, pos, vel)),
         "force_diagnostics": sol.get("force_diagnostics", {}),
-        "ccsds_interoperability": {"tle_string": CCSDSExporter.generate_tle(**elements),
-                                   "opm_string": CCSDSExporter.generate_ccsds_opm(**elements)},
+        "ccsds_interoperability": {"tle_string": tle["tle"], "opm_string": opm,
+                                   "tle_fit": {k: tle[k] for k in ("position_error_m", "velocity_error_ms")}},
         "innovations_suite": {"ecr_mf": sol.get("ecr_mf"),
                               "covariance_steered_stepping": steering_summary(sol.get("steps"))},
         "script_workbench": {"script_content": str(script)},

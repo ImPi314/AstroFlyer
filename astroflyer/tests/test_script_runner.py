@@ -65,7 +65,8 @@ def kepler_period(sma_km):
 class TestEditorScriptsStillRun(unittest.TestCase):
 
     def test_workbench_script_runs_end_to_end(self):
-        text = MissionScriptWorkbench.generate_mission_script(num_orbits=1, enable_bplane_target=False)
+        text = MissionScriptWorkbench.generate_mission_script(epoch="2026-09-24T00:00:00Z", num_orbits=1,
+                                                              enable_bplane_target=False)
         out = run_script(text)
         self.assertIsNone(out["error"], out["error"])
         sat = out["spacecraft"]["AstroFlyer_HEO_SC"]

@@ -21,6 +21,22 @@ function earthRotation(positions, fixedPositions, longitudesDeg) {
     return theta;
 }
 
+// Request fields that describe the orbit; a script run takes these from the script instead.
+export const ORBIT_FIELDS = ['hp', 'ha', 'a', 'e', 'inc', 'raan', 'aop', 'ta', 'position_km', 'velocity_kms'];
+
+// The run's request (result.request, set when the run finished) with the orbit replaced by the run's
+// own initial state and epoch, so the Targeting solvers start where the run did, script runs included.
+export function targetingRequest(result) {
+    const request = { ...(result.request ?? {}) };
+    for (const field of ORBIT_FIELDS) delete request[field];
+    return {
+        ...request,
+        epoch: result.epoch?.utc ?? request.epoch,
+        position_km: result.start.position_km,
+        velocity_kms: result.start.velocity_kms,
+    };
+}
+
 export function fromPayload(payload) {
     const times = payload.times;
     const itrf = payload.position_itrf_m ?? null;
@@ -81,6 +97,11 @@ export function fromPayload(payload) {
         inertialKm,
         fixedKm,
         velocityKms,
+        // The run's initial GCRF state at full precision (inertialKm is single precision).
+        start: {
+            position_km: payload.position_m[0].map((v) => v / 1000),
+            velocity_kms: payload.velocity_ms[0].map((v) => v / 1000),
+        },
         // Sun direction in the inertial frame, per sample or for the whole run. Older engines use
         // a fixed Sun on +X, so the night side drawn here matches their shadow events.
         sun: sunDirections(payload.sun_direction_eci, times.length),

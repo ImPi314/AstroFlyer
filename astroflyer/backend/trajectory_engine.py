@@ -6,7 +6,11 @@ runs. The propagation itself is done by backend/astro_engine.py.
 """
 
 import math
+from datetime import datetime
+
 import numpy as np
+
+from .epoch import Epoch
 
 # ==============================================================================
 # PHYSICAL & ASTRONOMICAL CONSTANTS
@@ -58,7 +62,7 @@ class MissionScriptWorkbench:
     @staticmethod
     def generate_mission_script(
         spacecraft_name="AstroFlyer_HEO_SC",
-        epoch_str="24 Sep 2026 00:00:00.000",
+        epoch=None,
         sma_km=24389.0,
         ecc=0.728525,
         inc_deg=28.5,
@@ -74,7 +78,10 @@ class MissionScriptWorkbench:
         num_orbits=3,
         enable_bplane_target=False
     ):
-        """Generates complete, compliant mission .script code."""
+        """Generates complete, compliant mission .script code for the state at `epoch`
+        (an Epoch or ISO text; None is J2000, the run's default)."""
+        iso = Epoch.coerce(epoch).iso("UTC", 3)
+        epoch_str = datetime.strptime(iso[:19], "%Y-%m-%dT%H:%M:%S").strftime("%d %b %Y %H:%M:%S") + iso[19:23]
         period_sec = 2.0 * math.pi * math.sqrt((sma_km * 1000.0)**3 / MU_EARTH)
         sim_duration_days = (num_orbits * period_sec) / 86400.0
 

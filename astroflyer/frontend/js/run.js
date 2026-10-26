@@ -3,12 +3,9 @@
 import * as store from './store.js';
 import { propagate, propagateScript, EngineError } from './api.js';
 import { toPropagateRequest } from './mission.js';
-import { fromPayload, ignoredInputs } from './results.js';
+import { fromPayload, ignoredInputs, ORBIT_FIELDS } from './results.js';
 import { log } from './messages.js';
 import { num } from './format.js';
-
-// Request fields that describe the orbit; a script run takes these from the script instead.
-const ORBIT_FIELDS = ['hp', 'ha', 'a', 'e', 'inc', 'raan', 'aop', 'ta', 'position_km', 'velocity_kms'];
 
 let controller = null;
 
@@ -46,7 +43,7 @@ async function execute(startMessage, body, call) {
     log('info', startMessage);
 
     try {
-        const result = fromPayload(await call(mine.signal));
+        const result = { ...fromPayload(await call(mine.signal)), request: body };
         const ignored = ignoredInputs(body, result.summary);
         if (ignored.length) {
             throw new EngineError(`This engine does not support ${ignored.join(' or ')} and would have run a different orbit. Update AstroFlyer, or enter the orbit as elements and the run length in orbits.`);

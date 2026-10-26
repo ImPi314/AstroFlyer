@@ -36,25 +36,22 @@ class RadiationBeltModel:
         self.L_OUTER_MIN = 3.00
         self.L_OUTER_MAX = 7.00
 
-    def compute_magnetic_coordinates(self, r_eci, t_sec=0.0):
+    def compute_magnetic_coordinates(self, r_itrf):
         """
         Computes Geomagnetic Latitude (lambda_m), McIlwain L-shell,
-        and Dipole Magnetic Field B (Tesla) for an ECI position vector.
+        and Dipole Magnetic Field B (Tesla) for an Earth-fixed (ITRF) position vector.
         """
-        r_mag = float(np.linalg.norm(r_eci))
+        r_mag = float(np.linalg.norm(r_itrf))
         if r_mag < 1000.0:
             return {"L_shell": 1.0, "mag_lat_deg": 0.0, "B_field_tesla": B0_EARTH_TESLA, "altitude_km": 0.0}
 
         alt_km = (r_mag - R_EARTH_M) / 1000.0
-        r_unit = r_eci / r_mag
+        r_unit = r_itrf / r_mag
 
-        # Dipole unit vector in rotating Earth frame
-        # Approximated in inertial space with Earth rotation
-        omega_e = 7.292115e-5
-        phi_d = DIPOLE_LON_RAD + omega_e * t_sec
+        # Dipole unit vector, fixed in the rotating Earth (ITRF)
         d_hat = np.array([
-            math.sin(DIPOLE_TILT_RAD) * math.cos(phi_d),
-            math.sin(DIPOLE_TILT_RAD) * math.sin(phi_d),
+            math.sin(DIPOLE_TILT_RAD) * math.cos(DIPOLE_LON_RAD),
+            math.sin(DIPOLE_TILT_RAD) * math.sin(DIPOLE_LON_RAD),
             math.cos(DIPOLE_TILT_RAD)
         ])
 
@@ -78,9 +75,10 @@ class RadiationBeltModel:
             "altitude_km": round(float(alt_km), 2)
         }
 
-    def evaluate_trajectory_radiation(self, times, positions):
+    def evaluate_trajectory_radiation(self, times, positions_itrf):
         """
-        Evaluates full radiation profile across an orbital trajectory:
+        Evaluates full radiation profile across an orbital trajectory given in Earth-fixed
+        (ITRF) positions, so the dipole sits where it is on the Earth at each time:
         - L-shell timeseries
         - Ingress and Egress events for Inner and Outer Belts (dipole L-shell and altitude bands)
         No dose is estimated: that needs a trapped-particle model (AE9/AP9), which this is not.
@@ -100,8 +98,7 @@ class RadiationBeltModel:
 
         for i in range(n_pts):
             t = float(times[i])
-            r = positions[i]
-            mag_info = self.compute_magnetic_coordinates(r, t)
+            mag_info = self.compute_magnetic_coordinates(np.asarray(positions_itrf[i], dtype=float))
             L = mag_info["L_shell"]
             alt_km = mag_info["altitude_km"]
             l_series[i] = L

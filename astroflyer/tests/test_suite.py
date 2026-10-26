@@ -9,7 +9,6 @@ import os
 import json
 
 from astroflyer.backend.radiation_belts import RadiationBeltModel
-from astroflyer.backend.differential_corrector import DifferentialCorrector
 from astroflyer.backend.covariance_engine import CovarianceEngine
 from astroflyer.backend.astro_engine import ThirdReviewEngine, compute_acceleration_components
 from astroflyer.backend.forces import ForceModelConfig

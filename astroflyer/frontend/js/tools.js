@@ -3,7 +3,7 @@
 
 import * as store from './store.js';
 import { solveApogeeRaise, simulateFiniteBurn, runScript, analyzeAccess, EngineError } from './api.js';
-import { sampleIndex, closedOrbitTools } from './results.js';
+import { sampleIndex, closedOrbitTools, targetingRequest } from './results.js';
 import { fromScriptRun } from './scriptrun.js';
 import { toAccessRequest, fromAccess } from './access.js';
 import { startScriptRun } from './run.js';
@@ -221,13 +221,14 @@ function perigeeState(result) {
 function targeting(result) {
     const { perigeeRadiusKm, perigeeSpeedKms } = perigeeState(result);
     const { apogee, burn, busy } = targetingState;
-    const mass = store.get('mission').spacecraft.mass;
+    const mass = result.request?.mass ?? store.get('mission').spacecraft.mass;
+    const model = result.request?.model ?? store.get('mission').propagator.model;
     const dvDefault = apogee ? Math.abs(apogee.optimal_delta_v_ms) : 1000;
     return `
         <header class="tool-head">
             <div>
                 <h2 class="tool-title">Targeting</h2>
-                <p class="tool-lead">Both solvers start from this run's first perigee: radius ${num(perigeeRadiusKm, 1)} km, speed ${num(perigeeSpeedKms, 3)} km/s.</p>
+                <p class="tool-lead">Both solvers start from this run's first perigee (radius about ${num(perigeeRadiusKm, 1)} km, speed ${num(perigeeSpeedKms, 3)} km/s) and propagate with the run's force model (${escapeHtml(model)}) and spacecraft.</p>
             </div>
         </header>
         <section class="tool-section">
@@ -239,8 +240,10 @@ function targeting(result) {
             ${apogee ? `
                 ${facts([
                     ['Result', apogee.converged ? 'Converged' : 'Did not converge'],
-                    ['Burn at perigee', `${num(apogee.optimal_delta_v_ms, 2)} m/s`],
-                    ['Apogee radius reached', `${num(apogee.achieved_apogee_km, 1)} km`],
+                    ['Burn at perigee', `${num(apogee.optimal_delta_v_ms, 3)} m/s`],
+                    ['Two-body (vis-viva) answer', `${num(apogee.two_body_delta_v_ms, 3)} m/s`],
+                    ['Perigee (burn) epoch', `${escapeHtml(apogee.perigee_epoch_utc)} UTC`],
+                    ['Apogee radius reached', `${num(apogee.achieved_apogee_km, 3)} km`],
                     ['Iterations', num(apogee.total_iterations)],
                 ])}
                 <table class="data-table compact">
@@ -250,6 +253,7 @@ function targeting(result) {
         </section>
         <section class="tool-section">
             <h3 class="section-title">Finite burn with mass loss</h3>
+            <p class="field-hint">The burn is centred on the perigee with thrust along the velocity. Its loss is the requested velocity change minus the impulsive burn at the perigee that reaches the same apogee.</p>
             <form class="tool-form" data-form="burn" novalidate>
                 ${inputField('dv', 'Velocity change', 'm/s', Math.round(dvDefault * 100) / 100)}
                 ${inputField('mass', 'Starting mass', 'kg', mass)}
@@ -262,8 +266,10 @@ function targeting(result) {
                 ['Propellant used', `${num(burn.propellant_consumed_kg, 1)} kg`],
                 ['Final mass', `${num(burn.final_mass_kg, 1)} kg`],
                 ['Ideal velocity change', `${num(burn.ideal_delta_v_ms, 1)} m/s`],
-                ['Gravity losses', `${num(burn.gravity_losses_ms, 1)} m/s`],
-                ['Effective velocity change', `${num(burn.actual_effective_delta_v_ms, 1)} m/s`],
+                ['Apogee radius, finite burn', `${num(burn.apogee_after_finite_km, 1)} km`],
+                ['Apogee radius, impulsive burn', `${num(burn.apogee_after_impulsive_km, 1)} km`],
+                ['Finite-burn loss', `${num(burn.gravity_losses_ms, 2)} m/s`],
+                ['Effective velocity change', `${num(burn.actual_effective_delta_v_ms, 2)} m/s`],
             ]) : ''}
         </section>`;
 }
@@ -288,11 +294,11 @@ async function submitTargeting(form) {
     render();
     try {
         if (form.dataset.form === 'apogee') {
-            const apogee = await solveApogeeRaise({ ...perigeeState(result), targetApogeeKm: values.target });
+            const apogee = await solveApogeeRaise(targetingRequest(result), values.target);
             targetingState = { ...targetingState, apogee };
             log('info', `Apogee raise ${apogee.converged ? 'converged' : 'did not converge'}: ${num(apogee.optimal_delta_v_ms, 2)} m/s at perigee.`);
         } else {
-            const burn = await simulateFiniteBurn({ deltaVms: values.dv, massKg: values.mass, thrustN: values.thrust, ispS: values.isp });
+            const burn = await simulateFiniteBurn(targetingRequest(result), { deltaVms: values.dv, massKg: values.mass, thrustN: values.thrust, ispS: values.isp });
             targetingState = { ...targetingState, burn };
             log('info', `Finite burn: ${num(burn.burn_duration_min, 1)} min, ${num(burn.propellant_consumed_kg, 1)} kg of propellant.`);
         }
