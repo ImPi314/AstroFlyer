@@ -300,6 +300,7 @@ async function submitTargeting(form) {
         } else {
             const burn = await simulateFiniteBurn(targetingRequest(result), { deltaVms: values.dv, massKg: values.mass, thrustN: values.thrust, ispS: values.isp });
             targetingState = { ...targetingState, burn };
+            if (burn.note) log('info', burn.note);
             log('info', `Finite burn: ${num(burn.burn_duration_min, 1)} min, ${num(burn.propellant_consumed_kg, 1)} kg of propellant.`);
         }
     } catch (err) {

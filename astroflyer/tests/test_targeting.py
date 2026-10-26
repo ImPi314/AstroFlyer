@@ -87,6 +87,15 @@ class FiniteBurnTest(unittest.TestCase):
         out = simulate_finite_burn({**GTO, "model": "two_body"}, 5.0, thrust_n=4000.0, isp_s=315.0)
         self.assertLess(out["gravity_losses_ms"], 0.01)
 
+    def test_a_burn_to_escape_reports_mass_and_duration_without_an_apogee(self):
+        # 1,478 m/s at a 250 km GTO perigee exceeds escape speed: there is no apogee to compare
+        out = simulate_finite_burn({**GTO, "model": "two_body"}, 1478.0, thrust_n=450.0, isp_s=315.0)
+        self.assertIsNone(out["apogee_after_impulsive_km"])
+        self.assertIsNone(out["gravity_losses_ms"])
+        self.assertIn("escape", out["note"])
+        self.assertAlmostEqual(out["propellant_consumed_kg"], 1500.0 * (1.0 - math.exp(-1478.0 / (315.0 * G0))),
+                               delta=0.01)
+
     def test_a_spacecraft_without_mass_the_spacecraft_holds_is_refused(self):
         with self.assertRaisesRegex(ValueError, "mass"):
             simulate_finite_burn({**GTO, "model": "two_body"}, 5.0, thrust_n=450.0, isp_s=315.0, mass_kg=0.0)

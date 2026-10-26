@@ -128,15 +128,21 @@ def simulate_finite_burn(request, delta_v_ms, thrust_n=450.0, isp_s=315.0, mass_
     start = prop.step(perigee.copy(), duration=-duration / 2.0) if duration > 0.0 else perigee.copy()
     burn_start_epoch = start.epoch
     after = prop.step(start, duration=duration, burn=burn)
-    ra_finite, _ = _apogee_after(prop, after)
-    ra_impulsive, _ = _apogee_after(prop, _impulsive(perigee, delta_v_ms))
-
-    # The impulsive velocity change at the perigee that reaches the finite burn's apogee
-    dc = M.DifferentialCorrector().vary("dv", delta_v_ms, perturbation=0.01, max_step=500.0)
-    dc.achieve("apogee_km", ra_finite, _APOGEE_TOL_KM)
-    effective = dc.solve(lambda v: {"apogee_km": _apogee_after(prop, _impulsive(perigee, v["dv"]))[0]})
-    dv_effective = float(effective.values["dv"])
-    loss = delta_v_ms - dv_effective
+    impulsive = _impulsive(perigee, delta_v_ms)
+    ra_finite = ra_impulsive = dv_effective = loss = None
+    note = None
+    if after.keplerian()["a"] <= 0.0 or impulsive.keplerian()["a"] <= 0.0:
+        note = ("This velocity change puts the spacecraft on an escape trajectory, so there is no apogee "
+                "to compare the finite and impulsive burns by.")
+    else:
+        ra_finite, _ = _apogee_after(prop, after)
+        ra_impulsive, _ = _apogee_after(prop, impulsive)
+        # The impulsive velocity change at the perigee that reaches the finite burn's apogee
+        dc = M.DifferentialCorrector().vary("dv", delta_v_ms, perturbation=0.01, max_step=500.0)
+        dc.achieve("apogee_km", ra_finite, _APOGEE_TOL_KM)
+        effective = dc.solve(lambda v: {"apogee_km": _apogee_after(prop, _impulsive(perigee, v["dv"]))[0]})
+        dv_effective = float(effective.values["dv"])
+        loss = delta_v_ms - dv_effective
     final_mass = m0 - propellant
     return {
         "burn_duration_s": duration,
@@ -150,10 +156,10 @@ def simulate_finite_burn(request, delta_v_ms, thrust_n=450.0, isp_s=315.0, mass_
         "ideal_delta_v_ms": delta_v_ms,
         "apogee_after_finite_km": ra_finite,
         "apogee_after_impulsive_km": ra_impulsive,
-        "effective_converged": bool(effective.converged),
         "gravity_losses_ms": loss,
         "actual_effective_delta_v_ms": dv_effective,
-        "gravity_loss_penalty_pct": 100.0 * loss / delta_v_ms,
+        "gravity_loss_penalty_pct": None if loss is None else 100.0 * loss / delta_v_ms,
+        "note": note,
         "burn_profile": {
             "initial_accel_ms2": thrust_n / m0,
             "final_accel_ms2": thrust_n / final_mass,
