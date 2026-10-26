@@ -1,9 +1,11 @@
-earth.png: equirectangular Earth map, longitude -180 at the left edge.
-Derived from the project's earlier world_map_dark.png (recorded in the project notes as NASA Blue Marble imagery; not yet confirmed)
-with its drawn equator and tropic lines removed, oceans dark.
+earth.png: equirectangular Earth map, 2048 x 1024, longitude -180 at the left edge.
 
-Checked 2026-10-25: the land imagery looks like NASA's Blue Marble (MODIS-based), but the original download is not
-recorded, so where this file came from is still unproven. If it is Blue Marble, NASA's Visible Earth image-use
-policy allows re-use (commercial included) with "NASA" as the only required credit
-(https://visibleearth.nasa.gov/image-use-policy; the Blue Marble Next Generation credit asked for is
-"NASA Goddard Space Flight Center / Reto Stockli, NASA Earth Observatory").
+Source: NASA Blue Marble Next Generation, July 2004, topography and bathymetry, 5400 x 2700
+  https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73751/world.topo.bathy.200407.3x5400x2700.jpg
+  downloaded 2026-10-26, SHA-256 4f4240673a3a1b173d61b92ca4b07bac5fd17059ea5f725ba6da5a9c5386b7ba
+Processing: water pixels (blue clearly above red and green and not bright, or near black) set to one
+dark blue (9, 17, 36) so the oceans match the console's dark theme; then resized to 2048 x 1024 (Lanczos).
+
+Credit: NASA Goddard Space Flight Center / Reto Stöckli, NASA Earth Observatory (Blue Marble Next
+Generation). NASA imagery is not copyrighted; NASA's image-use guidelines ask for "NASA" as credit
+(https://www.nasa.gov/nasa-brand-center/images-and-media/).
