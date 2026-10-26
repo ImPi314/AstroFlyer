@@ -69,8 +69,9 @@ eclipses from the conical umbra/penumbra model; ground-station AOS/LOS with elev
 
 * *Covariance-steered stepping* (`steering="covariance"`): the state transition matrix is integrated
   with the orbit and each step is capped so the 1-σ position uncertainty grows by at most η. Against
-  plain RKF7(8) it removes much of the error on several 7-day cases (HEO stress, full model:
-  26.3 m → 6.0 m) at about 4× the run time; it makes some worse and does not beat DOP853 overall.
+  plain RKF7(8) (both restarting at shadow and drag boundaries) it improves a few 7-day cases
+  (gravity-only GTO: 0.52 m → 0.17 m) at about 3× the run time; it makes some worse (GTO, full model:
+  7.04 m → 7.78 m) and does not beat DOP853 overall.
 * *ECR-MF fidelity tiers* (`fidelity="ecr_mf"`): above 2,000 km and 20,000 km altitude, gravity is cut
   to the lowest degree whose omitted acceleration is below 10⁻¹⁰ m/s². At 70×70 it stays within
   0.0032 m of the full model over a day, but gives no speed-up: gravity is not the costly force.

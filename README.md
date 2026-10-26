@@ -52,8 +52,9 @@ is downloaded at runtime.
   altitude the gravity field is cut to the lowest degree whose omitted acceleration is provably below
   ε = 10⁻¹⁰ m/s²; the run reports each tier's degree, its certified bound and every switch time.
 * Measured against Orekit in
-  [validation/results/innovations](astroflyer/validation/results/innovations/README.md): steering removes
-  much of plain RKF7(8)'s error on several cases at ~4× the run time; ECR-MF keeps the full model's accuracy
+  [validation/results/innovations](astroflyer/validation/results/innovations/README.md): steering improves
+  a few cases (gravity-only GTO over 7 days 0.52 → 0.17 m), makes others worse and costs ~3× the run
+  time, so it does not beat DOP853 overall; ECR-MF keeps the full model's accuracy
   but gives no speed-up, because gravity is not the costly force.
 
 ### Events and access (`event_predictor.py`, `access.py`, `eclipse.py`)
@@ -81,7 +82,9 @@ is downloaded at runtime.
 * Linked 3D orbit view (Three.js), ground track with station contacts and shadow, parameter plots
   (uPlot) and a watch panel, all driven by one playback timeline.
 * Twelve sample orbits, from Molniya and Tundra to XMM-Newton, Chandra and a lunar transfer.
-* Fonts, icons, textures and libraries are bundled; the console works with no network.
+* Fonts, icons, textures and libraries are bundled; the console works with no network. Earth
+  imagery: NASA Blue Marble Next Generation (NASA Goddard Space Flight Center / Reto Stöckli, NASA
+  Earth Observatory), oceans darkened.
 
 ---
 
