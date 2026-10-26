@@ -543,6 +543,9 @@ button, input, select { font: inherit; color: inherit; }
 
 .tool-form .field { width: 200px; padding: 6px 8px; }
 .tool-form .button { margin: 0 8px 6px; }
+/* Always shown in tool forms: a hint appearing on focus moved the submit button under the pointer,
+   so the first click after editing a field missed it */
+.tool-form .field-hint { display: block; }
 
 .section-pad { padding: 8px 20px 12px; }
 .script-error { color: var(--error); }

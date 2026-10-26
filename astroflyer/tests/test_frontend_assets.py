@@ -88,3 +88,13 @@ class TestFrontendNoEmoji(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestToolFormLayout(unittest.TestCase):
+
+    def test_tool_form_hints_do_not_appear_on_focus(self):
+        # A hint shown only while its field had focus grew the field, so leaving the field moved the
+        # submit button and the first click on Solve or Simulate after typing missed it
+        with open(os.path.join(FRONTEND, "css", "app.css"), encoding="utf-8") as f:
+            css = f.read()
+        self.assertRegex(css, r"\.tool-form \.field-hint\s*\{\s*display:\s*block;\s*\}")

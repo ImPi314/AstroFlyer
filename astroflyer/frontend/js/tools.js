@@ -253,7 +253,7 @@ function targeting(result) {
         </section>
         <section class="tool-section">
             <h3 class="section-title">Finite burn with mass loss</h3>
-            <p class="field-hint">The burn is centred on the perigee with thrust along the velocity. Its loss is the requested velocity change minus the impulsive burn at the perigee that reaches the same apogee.</p>
+            <p class="tool-lead">The burn is centred on the perigee with thrust along the velocity. Its loss is the requested velocity change minus the impulsive burn at the perigee that reaches the same apogee.</p>
             <form class="tool-form" data-form="burn" novalidate>
                 ${inputField('dv', 'Velocity change', 'm/s', Math.round(dvDefault * 100) / 100)}
                 ${inputField('mass', 'Starting mass', 'kg', mass)}
