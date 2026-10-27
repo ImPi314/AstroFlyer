@@ -229,7 +229,10 @@ def _closed_orbit_reports(sol, q, epoch, a_km, e, inc, raan, aop, ta, num_orbits
     passes = predictor.predict_ground_station_passes(times, pos, epoch, vel)
     cov = CovarianceEngine()
     elements = dict(sma_km=a_km, ecc=e, inc_deg=inc, raan_deg=raan, aop_deg=aop, ta_deg=ta)
-    tle = CCSDSExporter.generate_tle(epoch, pos[0], vel[0])
+    try:
+        tle = CCSDSExporter.generate_tle(epoch, pos[0], vel[0])
+    except ValueError as err:     # e.g. a perigee inside the Earth, which SGP4 treats as decayed
+        tle, tle_note = None, f"No TLE: {err}."
     opm = CCSDSExporter.generate_ccsds_opm(
         epoch, pos[0] / 1000.0, vel[0] / 1000.0, **elements, gm_km3s2=MU_EARTH / 1e9, mass_kg=q.number("mass"),
         cd=q.number("cd"), cr=q.number("cr"), drag_area_m2=q.number("drag_area"), srp_area_m2=q.number("srp_area"))
@@ -254,11 +257,13 @@ def _closed_orbit_reports(sol, q, epoch, a_km, e, inc, raan, aop, ta, num_orbits
                                   if sol.get("stm") is not None
                                   else cov.propagate_stm_and_covariance(times, pos, vel)),
         "force_diagnostics": sol.get("force_diagnostics", {}),
-        "ccsds_interoperability": {"tle_string": tle["tle"], "opm_string": opm,
-                                   "tle_fit": {k: tle[k] for k in ("position_error_m", "velocity_error_ms")}},
+        "ccsds_interoperability": {"tle_string": tle["tle"] if tle else None, "opm_string": opm,
+                                   "tle_fit": ({k: tle[k] for k in ("position_error_m", "velocity_error_ms")}
+                                               if tle else None)},
         "innovations_suite": {"ecr_mf": sol.get("ecr_mf"),
                               "covariance_steered_stepping": steering_summary(sol.get("steps"))},
         "script_workbench": {"script_content": str(script)},
+        **({} if tle else {"notes": [tle_note]}),
     }
 
 
