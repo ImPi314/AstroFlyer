@@ -20,6 +20,10 @@ never silently replaced:
   forces        enable_drag, enable_third_body, enable_srp
   spacecraft    mass, dry_mass, fuel_mass (kg), cd, drag_area, cr, srp_area (m^2)
   preset        the mission's name, echoed in the report
+
+A start below the WGS-84 surface is refused. A run that reaches the surface stops there: the
+report has status "impact" and impact {t_s, utc, latitude_deg, longitude_deg}, and leaves out
+the reports of a whole orbit.
 =============================================================================
 """
 
@@ -35,6 +39,7 @@ from .ccsds_exporter import CCSDSExporter
 from .covariance_engine import CovarianceEngine
 from .epoch import Epoch
 from .event_predictor import EventPredictor
+from .frames import gcrf_to_geodetic
 from .radiation_belts import RadiationBeltModel
 from .trajectory_engine import MissionScriptWorkbench
 
@@ -62,6 +67,11 @@ def run(request):
         raise ValueError("num_orbits must be between 0.5 and 20")
 
     initial_state, r0, v0, (a_km, e, inc, raan, aop, ta) = initial_conditions(q)
+    if initial_state == "cartesian":
+        height_km = float(np.ravel(gcrf_to_geodetic(np.atleast_2d(r0), epoch)[2])[0]) / 1000.0
+        if height_km < 0.0:
+            raise ValueError(f"The initial position is {-height_km:.1f} km below the Earth's surface "
+                             "(WGS-84 ellipsoid)")
     closed = a_km > 0.0 and e < 1.0
     if not closed and duration_s is None:
         raise ValueError("The initial state is an escape trajectory (e >= 1), which has no period, "
@@ -118,6 +128,15 @@ def run(request):
                           else None),
     }
     report = _trajectory_report(sol, run_s, closed, config)
+    if sol["impact"] is not None:
+        impact = sol["impact"]
+        report.update(status="impact", impact=impact)
+        report["notes"] = [f"The spacecraft reached the Earth's surface at {impact['utc']} UTC "
+                           f"({impact['t_s'] / 60.0:.1f} min into the run), latitude "
+                           f"{impact['latitude_deg']:.2f} deg, longitude {impact['longitude_deg']:.2f} deg; "
+                           "the run stops there. Reports of a whole orbit (events, radiation, covariance, "
+                           "mission script, TLE/OPM export) are not produced."]
+        return report
     if not closed:
         report["notes"] = ["Escape trajectory (e >= 1): closed-orbit reports (events, radiation, "
                            "covariance, mission script, TLE/OPM export) are not produced."]

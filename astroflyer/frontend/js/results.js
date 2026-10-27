@@ -180,6 +180,10 @@ export function fromPayload(payload) {
         },
         // The engine's remarks about the run, such as which reports an escape run leaves out.
         notes: payload.notes ?? [],
+        // Where and when the run reached the Earth's surface and stopped; null if it never did.
+        impact: payload.impact
+            ? { t: payload.impact.t_s, utc: payload.impact.utc, latitude_deg: payload.impact.latitude_deg, longitude_deg: payload.impact.longitude_deg }
+            : null,
     };
 }
 

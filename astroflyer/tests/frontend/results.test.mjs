@@ -79,3 +79,19 @@ test('the targeting request is the run request with the run initial state and ep
     assert.deepEqual(req.velocity_kms, escape.velocity_ms[0].map((v) => v / 1000));
     assert.equal(req.epoch, escape.epoch.utc);
 });
+
+// ---------- Surface impact ----------
+// The engine stops a run that reaches the Earth's surface and says where and when.
+
+const impact = { t_s: 512.25, utc: '2026-03-15T00:08:32.250000Z', latitude_deg: 0.0, longitude_deg: 31.37 };
+
+test('a run that reached the surface reads with its impact time and place', () => {
+    const result = fromPayload({ ...escape, status: 'impact', impact, notes: ['The spacecraft reached the Earth\'s surface.'] });
+    assert.deepEqual(result.impact, { t: 512.25, utc: impact.utc, latitude_deg: 0.0, longitude_deg: 31.37 });
+    assert.deepEqual(result.notes, ['The spacecraft reached the Earth\'s surface.']);
+});
+
+test('a run that stayed clear of the surface, or an older engine, has no impact', () => {
+    assert.equal(fromPayload(escape).impact, null);
+    assert.equal(fromPayload({ ...escape, status: 'ok', impact: null }).impact, null);
+});

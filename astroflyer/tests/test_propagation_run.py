@@ -28,6 +28,40 @@ class PropagationRunTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "perigee"):
             self.run_request(a=6000.0, e=0.01)
 
+    def test_cartesian_start_below_the_surface_is_refused(self):
+        # 6360 km from the centre over the equator is 18 km underground (and 3 km above the pole's
+        # 6356.8 km, so the check must use the WGS-84 ellipsoid, not a sphere)
+        with self.assertRaisesRegex(ValueError, "below the Earth's surface"):
+            self.run_request(position_km=[6360.0, 0.0, 0.0], velocity_kms=[0.0, 7.9, 0.0], duration_s=600)
+        report = self.run_request(position_km=[0.0, 0.0, 6360.0], velocity_kms=[7.9, 0.0, 0.0],
+                                  duration_s=60, a=None, e=None)
+        self.assertGreater(report["altitude_km"][0], 0.0)
+
+    def test_a_run_that_reaches_the_surface_reports_the_impact(self):
+        # 300 km up at 5 km/s is a closed orbit whose perigee is inside the Earth: it comes down
+        # within minutes, and the run must say so instead of carrying on underground
+        report = self.run_request(position_km=[6678.137, 0.0, 0.0], velocity_kms=[0.0, 5.0, 0.0],
+                                  duration_s=3600, a=None, e=None, epoch="2026-03-15T00:00:00Z")
+        self.assertEqual(report["status"], "impact")
+        impact = report["impact"]
+        self.assertLess(impact["t_s"], 3600.0)
+        self.assertEqual(report["times"][-1], impact["t_s"])
+        self.assertAlmostEqual(report["altitude_km"][-1], 0.0, places=3)
+        self.assertLess(min(report["altitude_km"]), 0.001)
+        self.assertGreaterEqual(min(report["altitude_km"]), -0.001)
+        self.assertTrue(impact["utc"].startswith("2026-03-15T00:"))
+        self.assertTrue(-90.0 <= impact["latitude_deg"] <= 90.0 and -180.0 <= impact["longitude_deg"] <= 180.0)
+        self.assertNotIn("events_suite", report)     # analyses of a whole orbit are not produced
+        self.assertTrue(any("surface" in note for note in report["notes"]))
+
+    def test_analytic_propagators_stop_at_the_surface_too(self):
+        for method in ("KEPLER", "J2MEAN"):
+            report = self.run_request(position_km=[6678.137, 0.0, 0.0], velocity_kms=[0.0, 5.0, 0.0],
+                                      duration_s=3600, a=None, e=None, method=method)
+            self.assertEqual(report["status"], "impact", method)
+            self.assertAlmostEqual(report["altitude_km"][-1], 0.0, places=3, msg=method)
+            self.assertGreaterEqual(min(report["altitude_km"]), -0.001, method)
+
     def test_apsis_altitudes_are_above_the_equatorial_radius(self):
         # The console states altitudes above the WGS-84 equatorial radius, as the engine's geodetic
         # altitudes are; the 6371 km mean radius put a 250 km x 35786 km GTO 7 km low

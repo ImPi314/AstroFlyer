@@ -81,6 +81,8 @@ function render() {
     const needsRun = current !== 'script';
     if (needsRun && !result) {
         page.innerHTML = '<div class="empty"><p class="empty-title">No run yet</p><p>Press Run or F5. This tool works from the last run.</p></div>';
+    } else if (result?.impact && closedOrbitTools.has(current)) {
+        page.innerHTML = '<div class="empty"><p class="empty-title">Closed orbits only</p><p>The last run reached the Earth\'s surface, so it has no apogee to target. Raise the perigee and run again.</p></div>';
     } else if (result && !result.summary.closedOrbit && closedOrbitTools.has(current)) {
         page.innerHTML = '<div class="empty"><p class="empty-title">Closed orbits only</p><p>The last run is an escape trajectory, so it has no apogee to target.</p></div>';
     } else {

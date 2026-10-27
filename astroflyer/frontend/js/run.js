@@ -53,7 +53,8 @@ async function execute(startMessage, body, call) {
             ? `Perigee ${num(result.summary.perigee_alt_km)} km, apogee ${num(result.summary.apogee_alt_km)} km.`
             : `Escape trajectory, e = ${num(result.summary.eccentricity, 4)}, closest approach ${num(result.summary.perigee_alt_km)} km.`;
         log('info', `Finished in ${num(result.summary.solve_s, 2)} s with ${num(result.summary.points)} points. ${shape}`);
-        for (const note of result.notes) log('info', note);
+        // The impact note says where the spacecraft came down: shown as a warning, not an error, since the run succeeded
+        for (const note of result.notes) log(result.impact ? 'warning' : 'info', note);
     } catch (err) {
         if (err.name === 'AbortError') {
             const hasResult = Boolean(store.get('result'));

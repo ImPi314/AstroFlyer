@@ -358,6 +358,24 @@ class _AnalyticSolution:
         self.success = True
 
 
+def _analytic_until_surface(state_fn, t_eval, epoch):
+    """The output times up to where an analytic trajectory first reaches the WGS-84 surface, ending
+    with that time (found by bisection to 1 microsecond), and the impact time; t_eval, None if it never does."""
+    def height(t):
+        r, _ = state_fn(np.atleast_1d(t))
+        return np.ravel(gcrf_to_geodetic(r, epoch, offsets_s=np.atleast_1d(t))[2])
+
+    below = np.flatnonzero(height(t_eval) < 0.0)
+    if not below.size:
+        return t_eval, None
+    i = int(below[0])
+    lo, hi = float(t_eval[i - 1]), float(t_eval[i])
+    while hi - lo > 1e-6:
+        mid = 0.5 * (lo + hi)
+        lo, hi = (mid, hi) if height(mid)[0] > 0.0 else (lo, mid)
+    return np.append(t_eval[:i], lo), lo
+
+
 def _anomaly_search_grid(t_span, num_points, y0, mu):
     """Evenly spaced times fine enough that num_points can be picked from them evenly in eccentric
     anomaly. The points needed at perigee, per unit time, are a/r_p times the orbit's average (Kepler:
@@ -480,8 +498,10 @@ class ThirdReviewEngine:
         steerer = None
         if analytic_kind is not None:
             state_fn = self._analytic_state_function(analytic_kind)
+            t_eval, t_impact = _analytic_until_surface(state_fn, t_eval, self.epoch)
             r_out, v_out = state_fn(t_eval)
             sol = _AnalyticSolution(t_eval, r_out, v_out)
+            sol.impact = None if t_impact is None else {'t_s': t_impact}
             apsides = bool(cartesian_to_keplerian(self.y0[:3], self.y0[3:], mu=self.mu)['e'] > 1e-3)
             event_list = analytic.analytic_events(state_fn, t_eval, self.epoch, apsides=apsides)
         else:
@@ -606,5 +626,9 @@ class ThirdReviewEngine:
             'stm': sol.y[6:42, keep].T.reshape(-1, 6, 6) if steerer is not None else None,
             'steps': steerer.record() if steerer is not None else None,
             'ecr_mf': schedule.report(sol.t_events[len(_ORBIT_EVENT_FUNCTIONS):]) if schedule else None,
+            # Where the run reached the WGS-84 surface and stopped (its last output), else None
+            'impact': ({'t_s': float(times[-1]), 'utc': (self.epoch + float(times[-1])).iso('UTC'),
+                        'latitude_deg': float(lat_arr[-1]), 'longitude_deg': float(lon_arr[-1])}
+                       if getattr(sol, 'impact', None) is not None else None),
         }
 

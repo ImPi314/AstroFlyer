@@ -48,7 +48,8 @@ def integrate_trajectory(y0, t_span, epoch, force_model, method="DOP853", *, rto
     steering: a covariance_engine.CovarianceSteering (RKF78 or BS only). fidelity: an
     ecr_mf_controller.FidelitySchedule, whose config_at(r) replaces force_model per evaluation.
     events: solve_ivp-style g(t, y), passed through. Returns a solve_ivp-style result
-    (t, y, t_events, y_events, status, message) plus boundary_times, the restart times.
+    (t, y, t_events, y_events, status, message) plus boundary_times, the restart times, and
+    impact: {"t_s", "y"} where the trajectory reached the WGS-84 surface and stopped, else None.
     """
     name = method_key(method)
     if name is None:
@@ -93,14 +94,44 @@ def integrate_trajectory(y0, t_span, epoch, force_model, method="DOP853", *, rto
         boundaries += drag_boundary_events(epoch_tt, rotation_at)
 
     y0 = np.asarray(y0, dtype=float)
+    user_events = list(events or []) + [_surface_event(rotation_at)]
     if name in _OWN_METHODS:
         options = dict(method=name, rtol=rtol, atol=atol, steering=steering,
                        n_error=6 if variational else None,
                        fixed_step=(fixed_step or 10.0) if name == "RK4" else None)
-        return integrate_segmented(rhs, t_span, y0, boundaries, t_eval=t_eval, events=events, **options)
-    if boundaries:
-        return solve_ivp_segmented(rhs, t_span, y0, boundaries, method=name, t_eval=t_eval, rtol=rtol,
-                                   atol=atol, events=events)
-    sol = solve_ivp(rhs, t_span, y0, method=name, t_eval=t_eval, rtol=rtol, atol=atol, events=events)
-    sol.boundary_times = np.array([])
+        sol = integrate_segmented(rhs, t_span, y0, boundaries, t_eval=t_eval, events=user_events, **options)
+    elif boundaries:
+        sol = solve_ivp_segmented(rhs, t_span, y0, boundaries, method=name, t_eval=t_eval, rtol=rtol,
+                                  atol=atol, events=user_events)
+    else:
+        sol = solve_ivp(rhs, t_span, y0, method=name, t_eval=t_eval, rtol=rtol, atol=atol, events=user_events)
+        sol.boundary_times = np.array([])
+    return _with_impact(sol, events)
+
+
+def _surface_event(rotation_at):
+    """Geodetic height above the WGS-84 ellipsoid; the run stops where it falls through zero."""
+    def surface(t, y):
+        return forces.itrf_to_geodetic(rotation_at(t) @ np.asarray(y[:3]))[2]
+    surface.terminal = True
+    surface.direction = -1.0
+    return surface
+
+
+def _with_impact(sol, events):
+    """
+    Takes the surface event off the result's event lists (so they line up with `events` again)
+    and records it as sol.impact = {"t_s", "y"}, or None. A run that hit the surface ends with
+    the impact state, whether or not it was a requested output time.
+    """
+    t_hit, y_hit = sol.t_events.pop(), sol.y_events.pop()
+    if events is None:
+        sol.t_events = sol.y_events = None
+    sol.impact = None
+    if len(t_hit):
+        t_s, y = float(t_hit[0]), np.asarray(y_hit[0], dtype=float)
+        sol.impact = {"t_s": t_s, "y": y}
+        if sol.t[-1] != t_s:
+            sol.t = np.append(sol.t, t_s)
+            sol.y = np.column_stack([sol.y, y])
     return sol

@@ -1034,7 +1034,8 @@ button:disabled { opacity: 0.4; cursor: default; }
     white-space: nowrap;
 }
 
-.messages-latest[data-level="error"] { color: var(--error); }
+.messages-latest[data-level="error"],
+.messages-latest[data-level="warning"] { color: var(--error); }
 
 .messages-list {
     max-height: 160px;
@@ -1052,7 +1053,8 @@ button:disabled { opacity: 0.4; cursor: default; }
 }
 
 .message time { color: var(--muted); }
-.message[data-level="error"] { color: var(--error); }
+.message[data-level="error"],
+.message[data-level="warning"] { color: var(--error); }
 .message .icon { width: 14px; height: 14px; }
 
 /* ---------- Narrow windows: inspector slides over the views ---------- */

@@ -31,12 +31,15 @@ function renderRun() {
     const el = root.querySelector('[data-status="run"]');
     clearInterval(timer);
     timer = null;
+    el.dataset.level = run.status !== 'running' && store.get('result')?.impact ? 'error' : '';
     if (run.status === 'running') {
         const tick = () => { el.textContent = `Running, ${num((performance.now() - run.startedAt) / 1000, 1)} s`; };
         tick();
         timer = setInterval(tick, 200);
     } else if (run.status === 'failed') {
         el.textContent = 'Run failed';
+    } else if (store.get('result')?.impact) {
+        el.textContent = `Ended at surface impact, last run ${num(store.get('result').summary.solve_s, 2)} s`;
     } else if (store.get('result')) {
         el.textContent = `Stopped, last run ${num(store.get('result').summary.solve_s, 2)} s`;
     } else {
