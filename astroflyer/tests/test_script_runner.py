@@ -343,6 +343,21 @@ class TestCrossSiteRequests(unittest.TestCase):
         ok = urllib.request.urlopen(urllib.request.Request(url, body, {"Content-Type": "application/json"}), timeout=60)
         self.assertIsNone(ok.headers.get("Access-Control-Allow-Origin"))
 
+    def test_a_refused_post_is_answered_whatever_its_size(self):
+        # The refusal used to close the connection with the body unread, and Windows then resets
+        # the connection (WinError 10053) before the client reads the 415; a large body makes it certain
+        from astroflyer.backend.app_server import create_server
+        server = create_server(port=0)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        url = f"http://127.0.0.1:{server.server_address[1]}/api/script/run"
+        plain = urllib.request.Request(url, b"x" * 4_000_000, {"Content-Type": "text/plain"})
+        for _ in range(3):
+            with self.assertRaises(urllib.error.HTTPError) as caught:
+                urllib.request.urlopen(plain, timeout=60)
+            self.assertEqual(caught.exception.code, 415)
+
 
 if __name__ == "__main__":
     unittest.main()

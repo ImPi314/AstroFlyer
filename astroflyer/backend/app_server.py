@@ -173,10 +173,13 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
         if path.startswith("/api/"):
             # Only the console's own JSON requests: a page on another site can send a text/plain
             # POST here without the browser's cross-origin check, but not an application/json one
+            content_length = int(self.headers.get('Content-Length', '0'))
             if self.headers.get_content_type() != "application/json":
+                # Read the body first: closing with it unread makes Windows reset the connection
+                # before the client sees the 415
+                self._discard(content_length)
                 self.send_json({"error": "POST bodies must be application/json"}, 415)
                 return
-            content_length = int(self.headers.get('Content-Length', '0'))
             post_data = self.rfile.read(content_length) if content_length > 0 else b'{}'
             params: dict[str, list[str]] = {}
             self.json_body: dict[str, Any] = {}     # the parsed body, for routes that take lists or objects
@@ -189,6 +192,14 @@ class ThirdReviewAppHandler(SimpleHTTPRequestHandler):
             self.handle_api(path, params)
         else:
             self.send_error(404, "Endpoint not found")
+
+    def _discard(self, length: int) -> None:
+        """Reads and drops `length` bytes of the request body, in pieces."""
+        while length > 0:
+            chunk = self.rfile.read(min(length, 65536))
+            if not chunk:
+                return
+            length -= len(chunk)
 
     def send_json(self, data: Any, status_code: int = 200) -> None:
         resp_bytes = json.dumps(data, indent=2, cls=NumpyJSONEncoder).encode("utf-8")
