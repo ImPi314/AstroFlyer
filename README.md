@@ -98,14 +98,19 @@ The propagator is checked against three independent tools, from the same startin
 force model up one level at a time (L0 two-body → L7 full model). All are given AstroFlyer's
 own EGM2008 coefficients, so the comparison is of the propagators, not their input data.
 
+Latest run 2026-10-28 on the development laptop (Python 3.14.6; per-case tables in
+[results/rerun_2026-10-28](astroflyer/validation/results/rerun_2026-10-28)):
+
 | Reference | Run | Largest position difference | Limit | Result |
 | --- | --- | --- | --- | --- |
-| Orekit 13.1 | 1 day, L0–L7 | 0.63 m (GTO, drag on) | 10 m | 32/32 pass |
-| Orekit 13.1 | 7 days, L3–L7 | 6.1 m (GTO, full model) | 100 m | 20/20 pass |
+| Orekit 13.1.9 | 1 day, L0–L7 | 0.63 m (GTO, drag on) | 10 m | 32/32 pass |
+| Orekit 13.1.9 | 7 days, L0–L7 | 6.12 m (GTO, full model) | 100 m | 32/32 pass |
 | NASA GMAT R2026a | 1 day, L0–L7 | 1.06 m (Molniya, SRP on) | 10 m | 32/32 pass |
-| NASA GMAT R2026a | 7 days, L3–L7 | 32.6 m (Molniya, SRP on) | 100 m | 20/20 pass |
+| NASA GMAT R2026a | 7 days, L0–L7 | 32.6 m (Molniya, SRP on) | 100 m | 32/32 pass |
 | Basilisk 2.11.1 | 1 day, L0–L6 | 0.72 m (Molniya, SRP on) through L5; drag 313 m (GTO) | 10 m | 26/28 pass |
-| Basilisk 2.11.1 | 7 days, L3–L6 | 30.3 m (Molniya, SRP on) through L5; drag 16.6 km (GTO) | 100 m | 14/16 pass |
+| Basilisk 2.11.1 | 7 days, L0–L6 | 30.3 m (Molniya, SRP on) through L5; drag 16.6 km (GTO) | 100 m | 26/28 pass |
+
+![Largest difference from each reference per force level](docs/figures/validation/crosscheck_overview.png)
 
 Gravity and Sun/Moon agree with both to a few centimetres over a day. The larger GMAT differences
 come from two documented modelling choices, each confirmed by changing AstroFlyer to match and
@@ -116,6 +121,84 @@ model's recommended drag density, which Orekit's results agree with). Basilisk h
 sphere, not the WGS-84 ellipsoid. With AstroFlyer switched to a sphere in an experiment, drag agrees
 to 0.5 m a day on GTO and 0.1 m on Molniya. Tables, method and how to rerun them are in
 [astroflyer/validation/results](astroflyer/validation/results/README.md).
+
+### Integration across force-model discontinuities
+
+SRP switches off through the penumbra and NRLMSISE-00 density jumps at fixed altitudes and at UTC
+midnight. An adaptive integrator that steps across such a point loses its error control there; Woodburn
+(2000) measured up to 118 m a week from shadow crossings alone and recommended restarting at them.
+AstroFlyer restarts every integrator (DOP853, RKF7(8), Bulirsch–Stoer, Radau, RK4) at the exact
+penumbra and umbra edges of the WGS-84 shadow and at every drag-model jump, in every run the
+application makes. The same cases were run against Orekit with the restarts removed for the run only
+([restart_ablation.py](astroflyer/validation/results/discontinuity_restarts/restart_ablation.py)):
+
+| 7 days, max difference from Orekit | DOP853, stepping across | DOP853, restarted | RKF7(8), stepping across | RKF7(8), restarted |
+| --- | --- | --- | --- | --- |
+| Molniya, SRP (L5) | 54.1 m | 1.71 m | 0.70 m | 2.60 m |
+| Molniya, full model (L7) | 63.9 m | 5.15 m | 3.59 m | 6.03 m |
+| Tundra, full model (L7) | 11.5 m | 0.021 m | 18.2 m | 0.010 m |
+| GTO, SRP (L5) | 56.8 m | 5.47 m | 9.13 m | 6.24 m |
+| GTO, drag (L6) | 2.60 m | 2.85 m | 1.83 m | 2.33 m |
+| GTO, full model (L7) | 12.9 m | 6.12 m | 9.90 m | 7.04 m |
+| HEO stress, SRP (L5) | 65.0 m | 2.80 m | 27.2 m | 2.96 m |
+| HEO stress, full model (L7) | 51.4 m | 4.51 m | 26.3 m | 4.49 m |
+
+The worst case over all 24 orbit/level/integrator combinations (L5–L7) falls from 65.9 m to 7.04 m.
+Without restarts the result depends on where the steps happen to land: five combinations (RKF7(8) on
+Molniya, both integrators on GTO drag) come out 0.25–2.45 m closer without them. With restarts the two
+integrators agree with each other and with Orekit. One day: Molniya with drag goes from
+14.4 m to 0.15 m (DOP853).
+
+![Restarts on and off, 7 days](docs/figures/validation/restarts_7day.png)
+![Difference from Orekit over 7 days, Molniya and the e = 0.88 orbit](docs/figures/validation/restarts_molniya_stress_series.png)
+
+### Uncertainty-steered steps and radius-tiered gravity
+
+Two engine options (`steering="covariance"` and `fidelity="ecr_mf"` on `/api/propagate` and
+`ThirdReviewEngine.propagate`, and on the console's propagator panel as **Step control** for
+RKF7(8)/BS and **Gravity fidelity** next to **Gravity field** (degree 2–70) for the full model; the run
+log reports what each did) were measured against Orekit and against the full model ([innovations](astroflyer/validation/results/innovations/README.md)).
+
+**Covariance-steered stepping** integrates the state transition matrix with the orbit and caps each
+step so the 1-σ position uncertainty grows by at most η = 0.02, so step size follows the uncertainty
+the analyst reads rather than the truncation error alone.
+
+| Gravity only (L3), 7 days, vs Orekit | RKF7(8) | RKF7(8), steered |
+| --- | --- | --- |
+| GTO | 0.519 m | 0.160 m |
+| HEO stress | 0.299 m | 0.209 m |
+| Tundra | 0.0174 m | 0.0141 m |
+| Molniya | 0.264 m | 0.307 m |
+
+With the full force model it gives no consistent gain (GTO L7 over 7 days 7.04 m → 7.78 m) and the run
+takes about 3–3.5× as long.
+
+![Covariance-steered steps over one GTO revolution](docs/figures/validation/steering_gto_steps.png)
+
+**ECR-MF** splits the orbit by radius and, in each tier, keeps the lowest gravity degree whose omitted
+acceleration is provably below ε = 10⁻¹⁰ m/s² (a bound from the EGM2008 degree amplitudes). At 70×70
+the tiers are degree 70 below 2,000 km, 58 to 20,000 km and 8 above. Against the full 70×70 model
+([ecr_mf_70x70](astroflyer/validation/results/ecr_mf_70x70)), run 2026-10-28:
+
+| Orbit | 1 day | 7 days |
+| --- | --- | --- |
+| Molniya | 0.0020 m | 0.243 m |
+| Tundra | 0.0010 m | 0.039 m |
+| GTO | 0.0075 m | 2.08 m |
+| HEO stress | 0.0009 m | 0.046 m |
+
+Run time changes by 0.98–1.14×: gravity is not where the time goes, so ECR-MF gives a certified bound
+on what each part of the orbit leaves out, not a speed-up.
+
+![Certified omitted-gravity bound per tier](docs/figures/validation/ecr_mf_bound.png)
+
+### Offline operation
+
+Every run above used only data in the installed application: EGM2008 to 70×70, the DE440 Sun/Moon
+subset (1990–2060), IERS leap seconds and Earth orientation, and the CelesTrak space-weather history
+([offline_data.md](docs/app_data/offline_data.md)). The server binds to 127.0.0.1 only, the window
+resolves no host but localhost and WebView2 background networking is off; `test_offline_packaging.py`
+checks each of these. Orekit, GMAT and Basilisk are needed only to rerun the cross-checks.
 
 ---
 

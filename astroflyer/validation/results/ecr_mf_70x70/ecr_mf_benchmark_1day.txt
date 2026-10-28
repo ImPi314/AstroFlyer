@@ -1,0 +1,4 @@
+molniya    1 d  full    0.6 s  ecr_mf    0.5 s  speed-up 1.03x  max diff 0.0020 m  tiers [70, 58, 8]
+tundra     1 d  full    0.2 s  ecr_mf    0.2 s  speed-up 1.11x  max diff 0.0010 m  tiers [70, 58, 8]
+gto        1 d  full    1.0 s  ecr_mf    1.0 s  speed-up 0.98x  max diff 0.0075 m  tiers [70, 58, 8]
+heo_stress 1 d  full    0.3 s  ecr_mf    0.2 s  speed-up 1.06x  max diff 0.0009 m  tiers [70, 58, 8]

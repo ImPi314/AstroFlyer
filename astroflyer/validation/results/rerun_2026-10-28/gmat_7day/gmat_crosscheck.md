@@ -1,0 +1,39 @@
+# AstroFlyer vs GMAT cross-check
+
+Reference data: GMAT R2026a, RungeKutta89 at accuracy 1e-13; AstroFlyer's EGM2008 coefficients; GMAT's DE424 Sun/Moon, Earth orientation and shadow model. Epoch 2026-01-01T00:00:00 TT, GCRF, output every 600 s.
+AstroFlyer propagator: dop853 ({'method': 'DOP853'}).
+
+| Orbit | Level | Forces | Days | Max 3D (m) | Radial (m) | In-track (m) | Cross-track (m) | Max |dv| (m/s) | Limit (m) | Result | AstroFlyer (s) | GMAT (s) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| molniya | L0 | two-body | 7 | 1.11 | 0.475 | 1.1 | 0.155 | 0.000893 | 100 | PASS | 1.8 | 0.7 |
+| molniya | L1 | J2 only | 7 | 0.963 | 0.415 | 0.95 | 0.156 | 0.000771 | 100 | PASS | 1.6 | 0.7 |
+| molniya | L2 | zonal 4x0 | 7 | 0.706 | 0.306 | 0.696 | 0.156 | 0.000565 | 100 | PASS | 1.0 | 1.6 |
+| molniya | L3 | gravity 8x8 | 7 | 0.865 | 0.373 | 0.851 | 0.156 | 0.000688 | 100 | PASS | 2.9 | 68.8 |
+| molniya | L4 | 8x8 + Sun/Moon (DE440) | 7 | 1.04 | 0.447 | 1.03 | 0.156 | 0.000835 | 100 | PASS | 2.1 | 1.5 |
+| molniya | L5 | L4 + SRP, conical shadow | 7 | 32.6 | 14.1 | 32.2 | 0.16 | 0.026 | 100 | PASS | 2.7 | 2.0 |
+| molniya | L6 | L5 + NRLMSISE-00 drag | 7 | 16.2 | 7 | 16 | 0.159 | 0.013 | 100 | PASS | 11.5 | 4.1 |
+| molniya | L7 | L6 + relativity (full model) | 7 | 16.2 | 6.98 | 15.9 | 0.14 | 0.0129 | 100 | PASS | 4.5 | 4.9 |
+| tundra | L0 | two-body | 7 | 0.18 | 0.00612 | 0.0727 | 0.177 | 1.1e-05 | 100 | PASS | 0.5 | 0.8 |
+| tundra | L1 | J2 only | 7 | 0.179 | 0.00378 | 0.0739 | 0.177 | 1.09e-05 | 100 | PASS | 0.6 | 0.8 |
+| tundra | L2 | zonal 4x0 | 7 | 0.179 | 0.00249 | 0.0732 | 0.177 | 1.08e-05 | 100 | PASS | 0.9 | 0.9 |
+| tundra | L3 | gravity 8x8 | 7 | 0.179 | 0.0046 | 0.0641 | 0.177 | 1.08e-05 | 100 | PASS | 0.5 | 0.9 |
+| tundra | L4 | 8x8 + Sun/Moon (DE440) | 7 | 0.18 | 0.00507 | 0.0674 | 0.178 | 1.09e-05 | 100 | PASS | 0.8 | 1.3 |
+| tundra | L5 | L4 + SRP, conical shadow | 7 | 2.27 | 0.528 | 2.27 | 0.18 | 0.000232 | 100 | PASS | 1.5 | 1.6 |
+| tundra | L6 | L5 + NRLMSISE-00 drag | 7 | 2.29 | 0.535 | 2.29 | 0.18 | 0.000234 | 100 | PASS | 1.7 | 3.1 |
+| tundra | L7 | L6 + relativity (full model) | 7 | 2.5 | 0.576 | 2.5 | 0.162 | 0.000256 | 100 | PASS | 1.5 | 3.3 |
+| gto | L0 | two-body | 7 | 1.76 | 0.839 | 1.76 | 0.0679 | 0.00157 | 100 | PASS | 0.9 | 0.7 |
+| gto | L1 | J2 only | 7 | 1.76 | 0.745 | 1.74 | 0.0642 | 0.00152 | 100 | PASS | 1.1 | 0.8 |
+| gto | L2 | zonal 4x0 | 7 | 1.86 | 0.789 | 1.84 | 0.0642 | 0.00161 | 100 | PASS | 1.1 | 0.8 |
+| gto | L3 | gravity 8x8 | 7 | 1.88 | 0.8 | 1.86 | 0.0642 | 0.00162 | 100 | PASS | 1.2 | 0.8 |
+| gto | L4 | 8x8 + Sun/Moon (DE440) | 7 | 1.57 | 0.669 | 1.56 | 0.0643 | 0.00136 | 100 | PASS | 1.7 | 1.8 |
+| gto | L5 | L4 + SRP, conical shadow | 7 | 0.766 | 0.322 | 0.759 | 0.0643 | 0.000666 | 100 | PASS | 3.3 | 2.4 |
+| gto | L6 | L5 + NRLMSISE-00 drag | 7 | 7.41 | 3.17 | 7.3 | 0.0645 | 0.00627 | 100 | PASS | 6.8 | 4.7 |
+| gto | L7 | L6 + relativity (full model) | 7 | 7.39 | 3.16 | 7.28 | 0.0938 | 0.00626 | 100 | PASS | 7.2 | 5.5 |
+| heo_stress | L0 | two-body | 7 | 0.387 | 0.0724 | 0.202 | 0.33 | 0.000128 | 100 | PASS | 0.5 | 0.8 |
+| heo_stress | L1 | J2 only | 7 | 0.377 | 0.0447 | 0.187 | 0.327 | 4.8e-05 | 100 | PASS | 0.6 | 0.7 |
+| heo_stress | L2 | zonal 4x0 | 7 | 0.381 | 0.0311 | 0.196 | 0.327 | 6.05e-05 | 100 | PASS | 0.6 | 1.0 |
+| heo_stress | L3 | gravity 8x8 | 7 | 0.378 | 0.0275 | 0.188 | 0.327 | 4.05e-05 | 100 | PASS | 0.7 | 0.8 |
+| heo_stress | L4 | 8x8 + Sun/Moon (DE440) | 7 | 0.381 | 0.0584 | 0.196 | 0.327 | 7.38e-05 | 100 | PASS | 0.9 | 1.4 |
+| heo_stress | L5 | L4 + SRP, conical shadow | 7 | 1.74 | 0.829 | 1.72 | 0.327 | 0.00129 | 100 | PASS | 1.4 | 1.6 |
+| heo_stress | L6 | L5 + NRLMSISE-00 drag | 7 | 3.73 | 1.77 | 3.69 | 0.327 | 0.00277 | 100 | PASS | 2.0 | 3.4 |
+| heo_stress | L7 | L6 + relativity (full model) | 7 | 4.33 | 2.05 | 4.29 | 0.355 | 0.00322 | 100 | PASS | 2.1 | 3.4 |

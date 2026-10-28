@@ -8,7 +8,8 @@ Candidates: Girish Gowda S (1AH23AS019), Gowtham N (1AH23AS020), Harshith S Puro
 Guides: Mr. Vijay M (Assistant Professor), Dr. Suresh C (Professor & Head of Department).
 
 Status as of October 2026 (branch `main`). Every number below was produced by the code in this
-repository and can be regenerated with the commands given; nothing is quoted from elsewhere.
+repository and can be regenerated with the commands given; the only figure quoted from elsewhere is
+Woodburn's (2000), given for comparison in §4.
 
 ---
 
@@ -23,9 +24,10 @@ orbits (Molniya, Tundra, GTO, high-apogee science orbits, lunar transfers) and p
   WGS-84 conical shadow, NRLMSISE-00 drag (double-precision port) driven by the bundled CelesTrak
   daily F10.7/Ap history, and post-Newtonian relativity.
 * **Default integrator:** SciPy DOP853, restarted exactly at shadow edges and drag-model jumps.
-* **Validation:** the same 52 cases cross-checked against three independent propagators (§4).
-  All pass against Orekit and NASA GMAT. Against Basilisk, 40 of 44 pass; the four that fail are drag
-  cases, from a documented difference in how Basilisk's atmosphere computes altitude.
+* **Validation:** the same 64 cases (four orbits, eight force levels, 1 and 7 days) cross-checked
+  against three independent propagators (§4). All pass against Orekit and NASA GMAT. Against Basilisk,
+  which has no relativity (56 cases), 52 pass; the four that fail are drag cases, from a documented
+  difference in how Basilisk's atmosphere computes altitude.
 * **Application:** a local Python server (127.0.0.1) and a browser console (Three.js 3D view, ground
   track, uPlot plots) in a native window through pywebview / Edge WebView2. All data ships with the
   installer; nothing is downloaded at runtime.
@@ -90,14 +92,18 @@ L2 J2–J4, L3 8×8, L4 + Sun/Moon, L5 + SRP, L6 + drag, L7 + relativity. Every 
 own EGM2008 coefficients, spacecraft (Cr·A/m 0.02, Cd·A/m 0.01 m²/kg) and constant space weather
 (F10.7 150, Ap 15). Limits: 10 m after 1 day, 100 m after 7 days.
 
+Run 2026-10-28 (Python 3.14.6; [validation/results/rerun_2026-10-28](validation/results/rerun_2026-10-28)):
+
 | Reference | Run | Largest position difference | Result |
 | --- | --- | --- | --- |
-| Orekit 13.1 | 1 day, L0–L7 | 0.63 m (GTO, drag on) | 32/32 pass |
-| Orekit 13.1 | 7 days, L3–L7 | 6.1 m (GTO, full model) | 20/20 pass |
+| Orekit 13.1.9 | 1 day, L0–L7 | 0.63 m (GTO, drag on) | 32/32 pass |
+| Orekit 13.1.9 | 7 days, L0–L7 | 6.12 m (GTO, full model) | 32/32 pass |
 | NASA GMAT R2026a | 1 day, L0–L7 | 1.06 m (Molniya, SRP on) | 32/32 pass |
-| NASA GMAT R2026a | 7 days, L3–L7 | 32.6 m (Molniya, SRP on) | 20/20 pass |
+| NASA GMAT R2026a | 7 days, L0–L7 | 32.6 m (Molniya, SRP on) | 32/32 pass |
 | Basilisk 2.11.1 | 1 day, L0–L6 | 0.72 m through L5; drag 313 m (GTO) | 26/28 pass |
-| Basilisk 2.11.1 | 7 days, L3–L6 | 30.3 m through L5; drag 16.6 km (GTO) | 14/16 pass |
+| Basilisk 2.11.1 | 7 days, L0–L6 | 30.3 m through L5; drag 16.6 km (GTO) | 26/28 pass |
+
+![Largest difference per force level](../docs/figures/validation/crosscheck_overview.png)
 
 Through L4 (gravity, Sun and Moon) AstroFlyer agrees with all three to centimetres over a day. Each
 larger difference was traced by an experiment that changed one side to match the other and watched the
@@ -122,6 +128,42 @@ WGS-84 shadow (Molniya L5 over 7 days, 31.7 m → 1.7 m against Orekit) and a do
 NRLMSISE-00 (single precision made GTO drag differ by metres between computers).
 
 Tables, method and rerun commands: [validation/results](validation/results/README.md).
+
+**Restarts at discontinuities.** Woodburn (2000) measured up to 118 m a week from integrators stepping
+across shadow boundaries, for the shadow only. AstroFlyer restarts all five integrators at the WGS-84
+penumbra and umbra edges and at every NRLMSISE-00 jump (fixed altitudes, UTC midnight). Removing the
+restarts for one run
+([discontinuity_restarts](validation/results/discontinuity_restarts/restart_ablation.py)) and comparing
+with Orekit over 7 days at L5–L7: DOP853's worst case goes from 65.9 m to 6.12 m, and RKF7(8)'s from
+27.2 m to 7.04 m (Tundra L7: 18.2 m → 0.010 m; e = 0.88 orbit L5: 27.2 m → 2.96 m). Five of the 24
+combinations come out 0.25–2.45 m closer without restarts (RKF7(8) on Molniya, both integrators on GTO
+drag), where the unrestarted steps happen to land well; with restarts the two integrators agree with
+each other.
+
+![Restarts on and off](../docs/figures/validation/restarts_7day.png)
+![Molniya and e = 0.88 orbit, SRP, 7 days](../docs/figures/validation/restarts_molniya_stress_series.png)
+
+**Uncertainty-steered steps** (`steering="covariance"`, RKF7(8)/BS): the step is capped so the 1-σ
+position uncertainty from the integrated state transition matrix grows by at most η = 0.02 per step.
+Gravity-only over 7 days it brings RKF7(8) closer to Orekit on GTO (0.519 → 0.160 m), the e = 0.88
+orbit (0.299 → 0.209 m) and Tundra (0.0174 → 0.0141 m), not on Molniya (0.264 → 0.307 m); with the full
+model it gives no consistent gain and costs 3–3.5× the run time.
+
+![Steered steps, GTO](../docs/figures/validation/steering_gto_steps.png)
+
+**Radius-tiered gravity, ECR-MF** (`fidelity="ecr_mf"`): degree 70 below 2,000 km, 58 to 20,000 km and 8
+above, each with a certified omitted-acceleration bound below 10⁻¹⁰ m/s². Against the full 70×70 model
+it stays within 0.9–7.5 mm over a day and 0.039–2.08 m over 7 days (GTO largest); run time is unchanged
+(0.98–1.14×). Steering and ECR-MF are engine options on `/api/propagate` and on the console's
+propagator panel: **Step control** for RKF7(8)/BS, and **Gravity field** (degree 2–70) with **Gravity
+fidelity** ECR-MF for the full model; the run log reports the steps the uncertainty cap shortened and
+the ECR-MF degrees, switches and certified bound.
+
+![ECR-MF bound per tier](../docs/figures/validation/ecr_mf_bound.png)
+
+**Offline.** All of the above ran on the data bundled with the application (EGM2008 70×70, DE440
+1990–2060, IERS, CelesTrak space weather); the server binds to 127.0.0.1, the window resolves only
+localhost and WebView2 background networking is off (`test_offline_packaging.py`).
 
 **Run time.** Over the 32 one-day cases AstroFlyer takes 16 s in total, against Orekit's 19 s and GMAT's
 21 s. These are wall-clock times that include process and JVM start-up, so they show the tools are
