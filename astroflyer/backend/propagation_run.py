@@ -84,7 +84,7 @@ def run(request):
         per_orbit = q.number("points_per_orbit")
         if duration_s is None:
             num_points = int(per_orbit * num_orbits)
-        elif r_cart is not None:
+        elif initial_state == "cartesian":
             num_points = int(duration_s / 60.0)     # one a minute: the state may not be a closed orbit
         else:
             num_points = int(per_orbit * duration_s / period)

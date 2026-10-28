@@ -62,6 +62,17 @@ class PropagationRunTest(unittest.TestCase):
             self.assertAlmostEqual(report["altitude_km"][-1], 0.0, places=3, msg=method)
             self.assertGreaterEqual(min(report["altitude_km"]), -0.001, method)
 
+    def test_run_length_in_seconds_sets_the_output_from_points_per_orbit(self):
+        # The console sends duration_s with points_per_orbit and no num_points when the run length
+        # is given in hours or days; that request used to fail with a NameError
+        period = 2.0 * math.pi * math.sqrt((26600e3) ** 3 / MU_EARTH)
+        report = self.run_request(num_points=None, num_orbits=None, duration_s=2.0 * period,
+                                  points_per_orbit=400)
+        self.assertEqual(len(report["times"]), 800)
+        report = self.run_request(num_points=None, num_orbits=None, a=None, e=None, duration_s=3 * 3600.0,
+                                  position_km=[26600.0 * 0.26, 0.0, 0.0], velocity_kms=[0.0, 9.0, 0.0])
+        self.assertEqual(len(report["times"]), 200)    # one a minute, raised to the 200-point minimum
+
     def test_apsis_altitudes_are_above_the_equatorial_radius(self):
         # The console states altitudes above the WGS-84 equatorial radius, as the engine's geodetic
         # altitudes are; the 6371 km mean radius put a 250 km x 35786 km GTO 7 km low
