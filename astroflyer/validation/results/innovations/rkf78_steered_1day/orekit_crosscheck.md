@@ -1,6 +1,6 @@
 # AstroFlyer vs Orekit cross-check
 
-Reference data: orekit-data at C:\Users\Harshith\OneDrive\Desktop\major_project_py\astroflyer\validation\orekit-data. Epoch 2026-01-01T00:00:00 TT, GCRF, output every 600 s.
+Reference data: orekit-data at astroflyer/validation/orekit-data. Epoch 2026-01-01T00:00:00 TT, GCRF, output every 600 s.
 AstroFlyer propagator: rkf78_steered ({'method': 'RKF78', 'steering': 'covariance'}).
 
 | Orbit | Level | Forces | Days | Max 3D (m) | Radial (m) | In-track (m) | Cross-track (m) | Max |dv| (m/s) | Limit (m) | Result | AstroFlyer (s) | Orekit (s) |
