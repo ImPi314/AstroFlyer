@@ -1,13 +1,14 @@
 // Mission tree: the objects in the mission. Selecting one opens it in the inspector.
 
 import * as store from './store.js';
+import { newBurn } from './mission.js';
 import { escapeHtml, icon } from './format.js';
 import { openInspector } from './inspector.js';
 import { VIEW_TYPES, paneTitle } from './views/registry.js';
 import { visiblePanes } from './workspace.js';
 
 let root;
-const expanded = new Set(['stations', 'outputs']);
+const expanded = new Set(['burns', 'stations', 'outputs']);
 
 export function mountTree(element) {
     root = element;
@@ -29,6 +30,13 @@ function items() {
     return [
         { id: 'spacecraft', icon: 'satellite', label: mission.spacecraft.name },
         { id: 'propagator', icon: 'settings-2', label: 'Propagator' },
+        {
+            id: 'burns', icon: 'rocket', label: 'Burns', group: true,
+            children: [
+                ...mission.burns.map((burn, i) => ({ id: `burn:${i}`, label: burn.name })),
+                { id: 'burn:add', icon: 'plus', label: 'Add burn' },
+            ],
+        },
         {
             id: 'stations', icon: 'radio-tower', label: 'Ground stations', group: true,
             empty: 'Listed after the first run',
@@ -81,7 +89,12 @@ function toggle(id) {
 
 function activate(item) {
     if (item.hasAttribute('aria-expanded')) toggle(item.dataset.id);
-    else {
+    else if (item.dataset.id === 'burn:add') {
+        const mission = store.get('mission');
+        const burns = [...mission.burns, newBurn(mission.burns.length)];
+        store.set({ mission: { ...mission, burns }, selection: `burn:${burns.length - 1}` });
+        openInspector();
+    } else {
         store.set({ selection: item.dataset.id });
         openInspector();
     }

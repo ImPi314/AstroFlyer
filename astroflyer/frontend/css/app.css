@@ -893,6 +893,7 @@ button:disabled { opacity: 0.4; cursor: default; }
 .key-node { width: 3px; height: 3px; background: var(--muted); }
 .key-shadow { width: 12px; height: 4px; background: var(--eclipse); }
 .key-contact { width: 12px; height: 4px; background: var(--contact); opacity: 0.6; }
+.key-burn { width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 6px solid var(--text); }
 
 .scale[hidden] { display: none; }
 

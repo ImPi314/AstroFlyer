@@ -6,7 +6,7 @@ import { mountTimeline } from './timeline.js';
 import { mountMessages, log } from './messages.js';
 import { mountWorkspace } from './workspace.js';
 import { mountTools } from './tools.js';
-import { mountHome, saveMission } from './home.js';
+import { mountHome, saveMission, chooseMissionFile, continueMission } from './home.js';
 import { mountStatus } from './status.js';
 
 store.set({ mission: structuredClone(defaultMission) });
@@ -25,6 +25,13 @@ document.querySelector('.topbar-actions').addEventListener('click', (event) => {
     const action = event.target.closest('[data-action]')?.dataset.action;
     if (action === 'home') store.set({ home: !store.get('home') });
     if (action === 'save') saveMission();
+    if (action === 'open') chooseMissionFile();
+    if (action === 'continue') continueMission();
+});
+const continueButton = document.querySelector('[data-action="continue"]');
+store.on(['result', 'run'], () => {
+    const result = store.get('result');
+    continueButton.disabled = !result?.finalState || Boolean(result.impact) || store.get('run').status === 'running';
 });
 
 // The mission tree and inspector can be hidden to give the views the whole width.

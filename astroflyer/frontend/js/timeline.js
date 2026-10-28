@@ -44,6 +44,7 @@ export function mountTimeline(element) {
                 <li><i class="key key-node"></i>Node</li>
                 <li><i class="key key-shadow"></i>Shadow</li>
                 <li><i class="key key-contact"></i>Station contact</li>
+                <li><i class="key key-burn"></i>Burn</li>
             </ul>
         </div>
         <div class="transport">
@@ -249,6 +250,18 @@ function draw() {
         ctx.moveTo(px, a.kind === 'perigee' ? mid - 8 : mid - 5);
         ctx.lineTo(px, a.kind === 'perigee' ? mid + 8 : mid + 5);
         ctx.stroke();
+    }
+
+    // Burns: a small triangle above the line, pointing at the burn instant.
+    ctx.fillStyle = color('--text');
+    for (const b of result.burns.filter((burn) => burn.applied)) {
+        const px = Math.round(x(b.t_s)) + 0.5;
+        ctx.beginPath();
+        ctx.moveTo(px - 4, mid - 16);
+        ctx.lineTo(px + 4, mid - 16);
+        ctx.lineTo(px, mid - 10);
+        ctx.closePath();
+        ctx.fill();
     }
 
     // Node crossings: a small dot on the line, quieter than the apsides.

@@ -68,6 +68,9 @@ is downloaded at runtime.
 * A mission-script interpreter (Create/Propagate/Maneuver/Target/If/While/For/Report).
 * GTO→GEO and perigee-raise targeting; multi-burn perigee pumping.
 * Targeting tab: apogee raise and finite burn from the run's first perigee, on the run's force model.
+* Impulsive burns in the mission itself: add them under **Burns** in the mission tree (at the next
+  perigee, the next apogee or a time after the start; velocity change in the VNC frame; propellant from
+  the specific impulse). Run applies them in order and restarts the integration at each one.
 
 ### Analysis modules
 * Van Allen belt L-shell, magnetic field and belt crossings along the trajectory
@@ -84,6 +87,13 @@ is downloaded at runtime.
   Access, Targeting, Radiation, Covariance) and **Data** (mission script, export).
 * Linked 3D orbit view (Three.js), ground track with station contacts and shadow, parameter plots
   (uPlot) and a watch panel, all driven by one playback timeline.
+* Mission files: **Save** (Ctrl+S) writes the mission as JSON; **Open** (Ctrl+O) or the Start
+  screen reads it back.
+* **Continue from the end of the last run** (the button after Save): the mission starts again from
+  the last run's final state (GCRF position and velocity, epoch to the microsecond, mass after burns),
+  with whatever integrator, force model, span and burns you choose next. Saving then keeps that point
+  as a checkpoint, and the file lists the legs it was continued from. Continuing a 1-orbit Molniya
+  run for another orbit (full model, 8 x 8 field) ends 2.9 cm from the same 2-orbit run done in one go.
 * Twelve sample orbits, from Molniya and Tundra to XMM-Newton, Chandra and a lunar transfer.
 * Fonts, icons, textures and libraries are bundled; the console works with no network. Earth
   imagery: NASA Blue Marble Next Generation (NASA Goddard Space Flight Center / Reto Stöckli, NASA

@@ -21,6 +21,17 @@ never silently replaced:
   forces        enable_drag, enable_third_body, enable_srp
   spacecraft    mass, dry_mass, fuel_mass (kg), cd, drag_area, cr, srp_area (m^2)
   preset        the mission's name, echoed in the report
+  burns         impulsive burns, applied in list order (at most 20): {timing, t_s, dv_ms, frame,
+                isp_s, name}. timing "elapsed" burns at t_s seconds after the start; "perigee" or
+                "apogee" at the first such apsis after the previous burn (or the start). dv_ms is
+                the velocity change in m/s in frame VNC (default), RTN or GCRF; isp_s (default
+                300 s) sets the propellant by the rocket equation, and the mass after a burn sets
+                Cd*A/m and Cr*A/m of the rest of the run. Each burn is a restart of the
+                integration from the burned state.
+
+Every report has final_state {utc (to the microsecond), t_s, position_km, velocity_kms (GCRF),
+mass_kg}: the state a later run can start from with new settings. A run with burns also has
+burns, one entry per requested burn with what happened (applied false when the run ended first).
 
 A start below the WGS-84 surface is refused. A run that reaches the surface stops there: the
 report has status "impact" and impact {t_s, utc, latitude_deg, longitude_deg}, and leaves out
@@ -107,15 +118,19 @@ def run(request):
     full_model = model.lower() not in _ZONAL_DEGREE
     degree = int(degree) if full_model else _ZONAL_DEGREE[model.lower()]
     forces_on = {k: q.boolean(k) for k in ("enable_drag", "enable_third_body", "enable_srp")}
+    burns = _burn_plan(q.values.get("burns"), run_s)
 
-    started = time.time()
-    sol = ThirdReviewEngine(np.concatenate([r0, v0]), epoch=epoch).propagate(
-        (0.0, run_s), num_points=num_points, sampling="anomaly",     # points follow the orbit
+    if q.text("steering") and burns:
+        raise ValueError("Covariance steering runs without burns: its uncertainty does not carry across "
+                         "a burn. Turn steering off or remove the burns")
+    propagate_options = dict(
         model=model, method=method, rtol=tol, atol=tol, **forces_on,
-        b_star=cd * drag_area / mass,                               # Cd*A/m; the EOM applies the 1/2
-        cr_area_over_m=cr * srp_area / mass,
         fixed_step=q.number("step_s", 0.0) or None, steering=q.text("steering") or None, fidelity=fidelity,
         **({"gravity_degree": degree, "gravity_order": degree} if full_model else {}))
+
+    started = time.time()
+    sol, burn_reports, burn_notes, final_mass, legs_closed = _propagate_with_burns(
+        r0, v0, epoch, run_s, num_points, burns, mass, cd * drag_area, cr * srp_area, propagate_options)
     solve_s = time.time() - started
 
     config = {
@@ -136,21 +151,219 @@ def run(request):
                           else None),
     }
     report = _trajectory_report(sol, run_s, closed, config)
+    report["final_state"] = _final_state(sol, epoch, final_mass)
+    report["burns"] = burn_reports
+    report.update(_reports_after(sol, q, epoch, closed and legs_closed, (a_km, e, inc, raan, aop, ta), num_orbits))
+    if any(b["applied"] for b in burn_reports) and report["status"] == "ok" and closed and legs_closed:
+        burn_notes.append("The TLE, OPM and generated mission script describe the starting orbit, before the burns.")
+    if burn_notes:
+        report["notes"] = report.get("notes", []) + burn_notes
+    return report
+
+
+def _reports_after(sol, q, epoch, closed, elements, num_orbits):
+    """The impact or escape remark, or the closed-orbit reports."""
     if sol["impact"] is not None:
         impact = sol["impact"]
-        report.update(status="impact", impact=impact)
-        report["notes"] = [f"The spacecraft reached the Earth's surface at {impact['utc']} UTC "
-                           f"({impact['t_s'] / 60.0:.1f} min into the run), latitude "
-                           f"{impact['latitude_deg']:.2f} deg, longitude {impact['longitude_deg']:.2f} deg; "
-                           "the run stops there. Reports of a whole orbit (events, radiation, covariance, "
-                           "mission script, TLE/OPM export) are not produced."]
-        return report
+        return {"status": "impact", "impact": impact,
+                "notes": [f"The spacecraft reached the Earth's surface at {impact['utc']} UTC "
+                          f"({impact['t_s'] / 60.0:.1f} min into the run), latitude "
+                          f"{impact['latitude_deg']:.2f} deg, longitude {impact['longitude_deg']:.2f} deg; "
+                          "the run stops there. Reports of a whole orbit (events, radiation, covariance, "
+                          "mission script, TLE/OPM export) are not produced."]}
     if not closed:
-        report["notes"] = ["Escape trajectory (e >= 1): closed-orbit reports (events, radiation, "
-                           "covariance, mission script, TLE/OPM export) are not produced."]
-        return report
-    report.update(_closed_orbit_reports(sol, q, epoch, a_km, e, inc, raan, aop, ta, num_orbits))
-    return report
+        return {"notes": ["Escape trajectory (e >= 1): closed-orbit reports (events, radiation, "
+                          "covariance, mission script, TLE/OPM export) are not produced."]}
+    return _closed_orbit_reports(sol, q, epoch, *elements, num_orbits)
+
+
+def _final_state(sol, epoch, mass_kg):
+    """The run's last state at full precision, for starting a later run from it."""
+    t = float(sol["times"][-1])
+    return {"utc": (epoch + t).iso("UTC", 6), "t_s": t,
+            "position_km": (np.asarray(sol["position_m"][-1], dtype=float) / 1000.0).tolist(),
+            "velocity_kms": (np.asarray(sol["velocity_ms"][-1], dtype=float) / 1000.0).tolist(),
+            "mass_kg": float(mass_kg)}
+
+
+# ---------- Impulsive burns ----------
+
+MAX_BURNS = 20
+_BURN_FRAMES = ("VNC", "RTN", "GCRF")
+_APSIS_SEARCH_POINTS = 50
+
+
+def _burn_plan(raw, run_s):
+    """The request's burns, checked: [{name, timing, t_s, dv, frame, isp_s}]."""
+    if raw is None:
+        return []
+    if not isinstance(raw, (list, tuple)):
+        raise ValueError("burns must be a list of burns")
+    if len(raw) > MAX_BURNS:
+        raise ValueError(f"A run takes at most {MAX_BURNS} burns")
+    plan, previous = [], None
+    for k, item in enumerate(raw, 1):
+        if not isinstance(item, dict):
+            raise ValueError(f"Burn {k} must be an object with timing and dv_ms")
+        b = _Request(item)
+        name = b.text("name").strip() or f"Burn {k}"
+        where = f"Burn {k} ({name})"
+        timing = b.text("timing").lower()
+        if timing not in ("elapsed", "perigee", "apogee"):
+            raise ValueError(f"{where}: timing must be 'elapsed', 'perigee' or 'apogee'")
+        dv = b.vector("dv_ms")
+        if dv is None:
+            raise ValueError(f"{where}: give dv_ms, the velocity change in m/s")
+        frame = (b.text("frame") or "VNC").upper()
+        if frame not in _BURN_FRAMES:
+            raise ValueError(f"{where}: frame must be VNC, RTN or GCRF")
+        isp = b.number("isp_s", 300.0)
+        if not isp > 0.0:
+            raise ValueError(f"{where}: isp_s must be above 0 s")
+        t_s = None
+        if timing == "elapsed":
+            t_s = b.number("t_s", None)
+            if t_s is None or t_s < 0.0:
+                raise ValueError(f"{where}: give t_s, the time of the burn in seconds after the start")
+            if t_s >= run_s:
+                raise ValueError(f"{where} at {t_s:.1f} s is after the run ends at {run_s:.1f} s")
+            if previous is not None and t_s < previous[1]:
+                raise ValueError(f"{where} at {t_s:.1f} s comes before {previous[0]} at {previous[1]:.1f} s")
+            previous = (where, t_s)
+        plan.append({"name": name, "where": where, "timing": timing, "t_s": t_s, "dv": dv,
+                     "frame": frame, "isp_s": isp})
+    return plan
+
+
+def _burn_report(burn, applied=False, **values):
+    return {"name": burn["name"], "timing": burn["timing"], "frame": burn["frame"],
+            "dv_ms": burn["dv"].tolist(), "delta_v_ms": float(np.linalg.norm(burn["dv"])), "isp_s": burn["isp_s"],
+            "applied": applied, "t_s": None, "utc": None, "mass_before_kg": None, "mass_after_kg": None,
+            "propellant_kg": None, **values}
+
+
+def _propagate_with_burns(r0, v0, epoch, run_s, num_points, burns, mass, cd_area, cr_area, options):
+    """
+    Propagates from (r0, v0) for run_s seconds, applying the impulsive burns in order. Each leg
+    between burns is its own propagation from the burned state, so the integrator restarts at
+    every burn. Returns (sol, burn reports, notes, final mass, every leg closed).
+    """
+    def leg(t0, y0, m, span, points):
+        return ThirdReviewEngine(y0, epoch=epoch + t0).propagate(
+            (0.0, span), num_points=points, sampling="anomaly",      # points follow the orbit
+            b_star=cd_area / m, cr_area_over_m=cr_area / m, **options)  # Cd*A/m; the EOM applies the 1/2
+
+    def points_for(span):
+        return max(20, int(round(num_points * span / run_s)))
+
+    t, y, m = 0.0, np.concatenate([r0, v0]).astype(float), float(mass)
+    pieces, reports, notes, closed = [], [], [], True
+    impact = False
+    for k, burn in enumerate(burns):
+        where = burn["where"]
+        if burn["timing"] == "elapsed":
+            t_burn = burn["t_s"]
+            if t_burn < t:
+                raise ValueError(f"{where} at {t_burn:.1f} s comes before the burn before it, at {t:.1f} s")
+        else:
+            t_burn = _next_apsis(leg, t, y, m, run_s, burn["timing"], where)
+            if t_burn is None:
+                notes.append(f"{where} was not applied: the run ended before the next {burn['timing']}.")
+                reports += [_burn_report(b) for b in burns[k:]]
+                break
+        if t_burn > t:
+            piece = leg(t, y, m, t_burn - t, points_for(t_burn - t))
+            pieces.append((t, piece))
+            if piece["impact"] is not None:
+                impact = True
+                reports += [_burn_report(b) for b in burns[k:]]
+                break
+            y = np.concatenate([piece["position_m"][-1], piece["velocity_ms"][-1]]).astype(float)
+        r, v = y[:3], y[3:]
+        dv = mission._local_frame(burn["frame"], r, v).T @ burn["dv"]
+        m_after = m * math.exp(-float(np.linalg.norm(dv)) / (burn["isp_s"] * mission.G0))
+        if m_after < 10.0:
+            raise ValueError(f"{where} would leave {m_after:.1f} kg; a spacecraft needs at least 10 kg. "
+                             "Lower the velocity change or raise the specific impulse")
+        y = np.concatenate([r, v + dv])
+        closed = closed and mission.keplerian_from_state(y[:3], y[3:], MU_EARTH)["e"] < 1.0
+        reports.append(_burn_report(burn, applied=True, t_s=float(t_burn), utc=(epoch + float(t_burn)).iso("UTC"),
+                                    mass_before_kg=m, mass_after_kg=m_after, propellant_kg=m - m_after))
+        t, m = float(t_burn), m_after
+    if not impact and t < run_s:
+        pieces.append((t, leg(t, y, m, run_s - t, points_for(run_s - t))))
+    sol = _join(pieces, epoch, [r for r in reports if r["applied"]])
+    return sol, reports, notes, m, closed
+
+
+def _next_apsis(leg, t, y, m, run_s, kind, where):
+    """Time of the first perigee or apogee after t (not at t itself), or None if the run ends first."""
+    kep = mission.keplerian_from_state(y[:3], y[3:], MU_EARTH)
+    if not (kep["a"] > 0.0 and kep["e"] < 1.0):
+        raise ValueError(f"{where}: a burn at the {kind} needs a closed orbit; this one is an escape trajectory")
+    if kep["e"] < 1e-3:
+        raise ValueError(f"{where}: the orbit is near circular (e < 0.001), so its {kind} is not defined; "
+                         "time the burn instead")
+    period = 2.0 * math.pi * math.sqrt(kep["a"] ** 3 / MU_EARTH)
+    span = min(1.5 * period, run_s - t)
+    probe = leg(t, y, m, span, _APSIS_SEARCH_POINTS)
+    found = [ev["t_s"] for ev in probe["events"] if ev["type"] == kind and ev["t_s"] > 1e-3]
+    return t + found[0] if found else None
+
+
+_PER_SAMPLE = ("times", "time_hours", "position_m", "velocity_ms", "altitude_km", "velocity_kms",
+               "semi_major_axis_km", "eccentricity", "inclination_deg", "raan_deg", "arg_perigee_deg",
+               "true_anomaly_deg", "energy_joules_kg", "energy_fractional_error", "h_fractional_error",
+               "latitude_deg", "longitude_deg", "position_itrf_m", "velocity_itrf_ms", "utc_iso")
+
+
+def _join(pieces, epoch, burns):
+    """
+    One solution from the legs [(start time, sol)] of a run with burns. Each leg but the last loses
+    its final sample, the state just before the burn, so the samples keep time order and the burn
+    instant holds the burned state. Energy and momentum errors stay relative to each leg's start,
+    since a burn really changes them.
+    """
+    burn_events = [{"type": "burn", "t_s": b["t_s"], "utc": b["utc"], "name": b["name"]} for b in burns]
+    if len(pieces) == 1 and pieces[0][0] == 0.0:
+        sol = dict(pieces[0][1])
+        sol["events"] = sorted(list(sol["events"]) + burn_events, key=lambda ev: ev["t_s"])
+        return sol
+    last = len(pieces) - 1
+    cut = [slice(None) if i == last else slice(0, -1) for i in range(len(pieces))]
+    first = pieces[0][1]
+    sol = dict(first)
+    for key in _PER_SAMPLE:
+        parts = []
+        for (t0, piece), keep in zip(pieces, cut):
+            values = piece[key]
+            if key == "times":
+                values = np.asarray(values) + t0
+            elif key == "time_hours":
+                values = np.asarray(values) + t0 / 3600.0
+            parts.append(list(values[keep]) if key == "utc_iso" else np.asarray(values)[keep])
+        sol[key] = sum(parts, []) if key == "utc_iso" else np.concatenate(parts)
+    suns = [piece.get("sun_direction_eci") for _, piece in pieces]
+    sol["sun_direction_eci"] = (None if any(s is None for s in suns)
+                                else np.concatenate([np.asarray(s)[keep] for s, keep in zip(suns, cut)]))
+    sol["force_diagnostics"] = {k: sum((list(piece["force_diagnostics"][k])[keep] for (_, piece), keep
+                                        in zip(pieces, cut)), [])
+                                for k in first["force_diagnostics"]}
+    sol["eop_in_range"] = all(piece["eop_in_range"] for _, piece in pieces)
+    events = []
+    for t0, piece in pieces:
+        for ev in piece["events"]:
+            shifted = {**ev, "t_s": ev["t_s"] + t0}
+            if not any(e["type"] == ev["type"] and abs(e["t_s"] - shifted["t_s"]) < 1e-3 for e in events):
+                events.append(shifted)
+    sol["events"] = sorted(events + burn_events, key=lambda ev: ev["t_s"])
+    if first.get("ecr_mf") is not None:
+        switches = [{**s, "t_s": s["t_s"] + t0} for t0, piece in pieces for s in piece["ecr_mf"]["switches"]]
+        sol["ecr_mf"] = {**first["ecr_mf"], "switches": switches}
+    end_t0, end = pieces[-1]
+    sol["impact"] = None if end["impact"] is None else {**end["impact"], "t_s": end["impact"]["t_s"] + end_t0}
+    sol["stm"], sol["steps"] = None, None
+    return sol
 
 
 def initial_conditions(q):

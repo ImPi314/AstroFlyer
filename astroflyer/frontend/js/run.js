@@ -5,7 +5,7 @@ import { propagate, propagateScript, EngineError } from './api.js';
 import { toPropagateRequest } from './mission.js';
 import { fromPayload, ignoredInputs, innovationNotes, ORBIT_FIELDS } from './results.js';
 import { log } from './messages.js';
-import { num } from './format.js';
+import { elapsed, num } from './format.js';
 
 let controller = null;
 
@@ -31,7 +31,7 @@ function spanText(prop) {
 
 export function startScriptRun(scriptText) {
     const body = toPropagateRequest(store.get('mission'));
-    for (const field of ORBIT_FIELDS) delete body[field];
+    for (const field of [...ORBIT_FIELDS, 'burns']) delete body[field];   // the script's orbit, without the mission's burns
     return execute('Propagating the orbit in the mission script.', body, (signal) => propagateScript(scriptText, body, signal));
 }
 
@@ -55,6 +55,9 @@ async function execute(startMessage, body, call) {
             : `Escape trajectory, e = ${num(result.summary.eccentricity, 4)}, closest approach ${num(result.summary.perigee_alt_km)} km.`;
         log('info', `Finished in ${num(result.summary.solve_s, 2)} s with ${num(result.summary.points)} points. ${shape}`);
         // The impact note says where the spacecraft came down: shown as a warning, not an error, since the run succeeded
+        for (const burn of result.burns.filter((b) => b.applied)) {
+            log('info', `${burn.name}: ${num(burn.delta_v_ms, 2)} m/s at ${burn.utc.replace('T', ' ').replace(/Z$/, '')} UTC (${elapsed(burn.t_s)}), ${num(burn.propellant_kg, 2)} kg of propellant, ${num(burn.mass_after_kg, 1)} kg left.`);
+        }
         for (const note of result.notes) log(result.impact ? 'warning' : 'info', note);
         for (const note of innovationNotes(payload)) log('info', note);
     } catch (err) {

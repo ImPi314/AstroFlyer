@@ -1,18 +1,19 @@
 // Home screen and mission files: start a new mission, open or save one, reopen a recent one,
-// or start from an HEO sample. Mission files are JSON holding the spacecraft and propagator.
+// or start from an HEO sample. Mission files are JSON holding the spacecraft, propagator, burns
+// and the legs the mission was continued from (see mission.js).
 
 import * as store from './store.js';
-import { defaultMission, schemas, validate, withDefaults } from './mission.js';
+import { continueFromEnd, defaultMission, missionFileText, readMissionFile, withDefaults } from './mission.js';
 import { loadMission } from './inspector.js';
 import { log } from './messages.js';
 import { escapeHtml, icon, num, saveFile } from './format.js';
 import { SAMPLES, sampleMission } from './samples.js';
 
-const FORMAT = 'astroflyer-mission';
 const RECENT_KEY = 'astroflyer.recent.v1';
 const MAX_RECENT = 6;
 
 let root;
+let picker;
 
 export function mountHome(element) {
     root = element;
@@ -20,21 +21,34 @@ export function mountHome(element) {
     root.addEventListener('change', (event) => {
         if (event.target.name === 'open-file') openFile(event.target.files[0]);
     });
+    // The top bar's Open button and Ctrl+O use one hidden file chooser.
+    picker = document.createElement('input');
+    Object.assign(picker, { type: 'file', accept: '.json,application/json', hidden: true });
+    picker.addEventListener('change', () => { openFile(picker.files[0]); picker.value = ''; });
+    document.body.append(picker);
     store.on('home', render);
     document.addEventListener('keydown', (event) => {
         if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
             event.preventDefault();
             saveMission();
         }
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'o') {
+            event.preventDefault();
+            chooseMissionFile();
+        }
         if (event.key === 'Escape' && store.get('home')) store.set({ home: false });
     });
     render();
 }
 
+export function chooseMissionFile() {
+    picker.click();
+}
+
 export function saveMission() {
     const mission = store.get('mission');
     const name = `${mission.spacecraft.name.replace(/[^\w.-]+/g, '_')}.json`;
-    saveFile(name, `${JSON.stringify({ format: FORMAT, version: 1, mission }, null, 2)}\n`, 'application/json');
+    saveFile(name, missionFileText(mission), 'application/json');
     store.set({ missionFile: name });
     remember(name, mission);
     log('info', `Saved ${name}.`);
@@ -110,17 +124,34 @@ function onClick(event) {
 async function openFile(file) {
     if (!file) return;
     try {
-        const data = JSON.parse(await file.text());
-        if (data?.format !== FORMAT) throw new Error('it is not an AstroFlyer mission file');
-        const mission = withDefaults(data.mission);
-        const problems = ['spacecraft', 'propagator'].flatMap((kind) => Object.keys(validate(schemas[kind], mission[kind])));
-        if (problems.length) throw new Error(`these values are missing or out of range: ${problems.join(', ')}`);
+        const mission = readMissionFile(await file.text());
         start(mission, file.name);
         remember(file.name, mission);
-        log('info', `Opened ${file.name}.`);
+        const legs = mission.history.length;
+        log('info', `Opened ${file.name}${legs ? `, continued from ${legs} earlier leg${legs > 1 ? 's' : ''}` : ''}.`);
     } catch (err) {
         log('error', `Could not open ${file.name}: ${err.message}.`);
     }
+}
+
+// Carries the mission on from the end of the last run: the next Run starts at its final state,
+// with whatever propagator settings the user picks. Saving then keeps that point as a checkpoint.
+export function continueMission() {
+    const result = store.get('result');
+    if (!result?.finalState) {
+        log('error', 'Run the mission first: Continue starts from the end of the last run.');
+        return;
+    }
+    if (result.impact) {
+        log('error', 'The last run ended on the Earth\'s surface, so there is nothing to continue.');
+        return;
+    }
+    const mission = continueFromEnd(store.get('mission'), result);
+    const cleared = store.get('mission').burns.length;
+    loadMission(mission);
+    store.set({ selection: 'propagator' });
+    log('info', `Continuing from the end of the last run, ${mission.spacecraft.epoch} UTC, mass ${num(mission.spacecraft.mass, 1)} kg.`
+        + `${cleared ? ' Its burns were cleared; add new ones for this leg.' : ''} Change the settings and press Run. Save keeps this point as a checkpoint.`);
 }
 
 function readRecent() {

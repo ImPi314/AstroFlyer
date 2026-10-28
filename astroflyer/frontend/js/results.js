@@ -178,6 +178,11 @@ export function fromPayload(payload) {
             // False for an escape trajectory (e >= 1); engines before PR #13 only ran closed orbits.
             closedOrbit: payload.closed_orbit ?? true,
         },
+        // The run's last GCRF state, epoch (to the microsecond) and mass, to continue from; null from
+        // engines before it was reported.
+        finalState: payload.final_state ?? null,
+        // One entry per requested burn: when it happened and the propellant it used, or applied false.
+        burns: payload.burns ?? [],
         // The engine's remarks about the run, such as which reports an escape run leaves out.
         notes: payload.notes ?? [],
         // Where and when the run reached the Earth's surface and stopped; null if it never did.
@@ -253,6 +258,7 @@ export function eventTimes(result) {
         ...result.nodes.map((n) => n.t),
         ...result.shadows.flatMap((s) => [s.t0, s.t1]),
         ...result.stations.flatMap((st) => st.passes.flatMap((p) => [p.t0, p.t1])),
+        ...(result.burns ?? []).filter((b) => b.applied).map((b) => b.t_s),
     ];
     return [...new Set(points)].sort((a, b) => a - b);
 }

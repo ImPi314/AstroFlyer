@@ -38,7 +38,18 @@ export const defaultMission = {
         duration: 1,
         points_per_orbit: 400,
     },
+    // Impulsive burns, applied by Run in this order; see schemas.burn.
+    burns: [],
+    // Earlier legs this mission was continued from, oldest first; see continueFromEnd.
+    history: [],
 };
+
+// A burn as the inspector edits it: velocity change in the local VNC frame, in m/s.
+const defaultBurn = { name: 'Burn', timing: 'perigee', elapsed_h: 1, dv_v: 10, dv_n: 0, dv_c: 0, isp: 300 };
+
+export function newBurn(index) {
+    return { ...defaultBurn, name: `Burn ${index + 1}` };
+}
 
 const apsides = (values) => values.orbitInput === 'apsides';
 const keplerian = (values) => values.orbitInput === 'keplerian';
@@ -47,6 +58,8 @@ const elements = (values) => !cartesian(values);
 const fullModel = (values) => values.model === 'coupled';
 const steerable = (values) => values.method === 'RKF78' || values.method === 'BS';
 const spanIn = (unit) => (values) => values.durationUnit === unit;
+const timed = (values) => values.timing === 'elapsed';
+const dvField = (key, label, hint) => ({ key, label, unit: 'm/s', type: 'number', min: -10000, max: 10000, step: 'any', hint });
 
 const R_EARTH_KM = 6378.137;
 const SECONDS = { hours: 3600, days: 86400 };
@@ -130,6 +143,28 @@ export const schemas = {
             },
         ],
     },
+    burn: {
+        title: 'Impulsive burn',
+        groups: [
+            {
+                title: 'Burn',
+                fields: [
+                    { key: 'name', label: 'Name', type: 'text' },
+                    { key: 'timing', label: 'When', type: 'select', options: [['perigee', 'At the next perigee'], ['apogee', 'At the next apogee'], ['elapsed', 'At a time after the start']], hint: 'Burns happen in the order listed, each after the one before. The next perigee or apogee is the first one after the previous burn, or after the start.' },
+                    { key: 'elapsed_h', label: 'Time after the start', unit: 'h', type: 'number', min: 0, max: 720, step: 'any', when: timed, hint: 'Must fall inside the run.' },
+                ],
+            },
+            {
+                title: 'Velocity change (VNC frame)',
+                fields: [
+                    dvField('dv_v', 'Along the velocity (V)', 'Positive speeds the spacecraft up: at perigee it raises the apogee.'),
+                    dvField('dv_n', 'Along the orbit normal (N)', 'Turns the orbit plane.'),
+                    dvField('dv_c', 'Co-normal (C = V x N)', 'In the orbit plane, at right angles to the velocity.'),
+                    { key: 'isp', label: 'Specific impulse', unit: 's', type: 'number', min: 1, max: 10000, step: 'any', hint: 'Sets the propellant used, by the rocket equation. The lighter spacecraft then feels more drag and solar pressure per kilogram.' },
+                ],
+            },
+        ],
+    },
 };
 
 export function visibleFields(schema, values) {
@@ -196,8 +231,64 @@ export function validate(schema, values) {
 // A saved mission with every field AstroFlyer knows: fields saved before they existed take the
 // default, and fields it no longer knows are dropped.
 export function withDefaults(saved) {
-    const pick = (kind) => Object.fromEntries(Object.entries(defaultMission[kind]).map(([key, fallback]) => [key, saved?.[kind]?.[key] ?? fallback]));
-    return { spacecraft: pick('spacecraft'), propagator: pick('propagator') };
+    const fill = (defaults, values) => Object.fromEntries(Object.entries(defaults).map(([key, fallback]) => [key, values?.[key] ?? fallback]));
+    const list = (value) => (Array.isArray(value) ? value : []);
+    return {
+        spacecraft: fill(defaultMission.spacecraft, saved?.spacecraft),
+        propagator: fill(defaultMission.propagator, saved?.propagator),
+        burns: list(saved?.burns).map((burn, i) => fill(newBurn(i), burn)),
+        history: list(saved?.history).map((leg) => ({ ...leg })),
+    };
+}
+
+const FILE_FORMAT = 'astroflyer-mission';
+
+// The text of a mission file as JSON, the way Save writes it.
+export function missionFileText(mission) {
+    return `${JSON.stringify({ format: FILE_FORMAT, version: 1, mission }, null, 2)}\n`;
+}
+
+// The mission in a mission file's text. Throws an Error saying why when it is not one, or when
+// a value is missing or out of range.
+export function readMissionFile(text) {
+    let data;
+    try { data = JSON.parse(text); } catch { data = null; }
+    if (data?.format !== FILE_FORMAT) throw new Error('it is not an AstroFlyer mission file');
+    const mission = withDefaults(data.mission);
+    const problems = [
+        ...['spacecraft', 'propagator'].flatMap((kind) => Object.keys(validate(schemas[kind], mission[kind]))),
+        ...mission.burns.flatMap((burn, i) => Object.keys(validate(schemas.burn, burn)).map((key) => `burn ${i + 1} ${key}`)),
+    ];
+    if (problems.length) throw new Error(`these values are missing or out of range: ${problems.join(', ')}`);
+    return mission;
+}
+
+// "2026-01-01T11:59:35.108282Z" as the epoch field writes it.
+const epochField = (utc) => utc.replace('T', ' ').replace(/Z$/, '');
+
+// The mission that carries on from the end of a run (result.finalState, see results.js): the
+// spacecraft starts at the run's final GCRF state, epoch and mass; the propagator settings stay,
+// for the user to change; the burns, which belonged to the finished leg, are cleared; and the
+// finished leg is added to the history.
+export function continueFromEnd(mission, result) {
+    const end = result.finalState;
+    const [x, y, z] = end.position_km;
+    const [vx, vy, vz] = end.velocity_kms;
+    const request = result.request ?? {};
+    const leg = {
+        start_epoch: mission.spacecraft.epoch,
+        end_epoch: epochField(end.utc),
+        duration_s: end.t_s,
+        method: request.method ?? mission.propagator.method,
+        model: request.model ?? mission.propagator.model,
+        burns: (result.burns ?? []).filter((burn) => burn.applied).length,
+    };
+    return {
+        spacecraft: { ...mission.spacecraft, orbitInput: 'cartesian', epoch: leg.end_epoch, x, y, z, vx, vy, vz, mass: end.mass_kg },
+        propagator: { ...mission.propagator },
+        burns: [],
+        history: [...(mission.history ?? []), leg],
+    };
 }
 
 // The orbit part of the request: GCRF vectors, or elements with their angles.
@@ -229,5 +320,13 @@ export function toPropagateRequest(mission) {
         enable_srp: prop.enable_srp,
         ...span,
         points_per_orbit: prop.points_per_orbit,
+        burns: (mission.burns ?? []).map((burn) => ({
+            name: burn.name,
+            timing: burn.timing,
+            ...(timed(burn) ? { t_s: burn.elapsed_h * 3600 } : {}),
+            dv_ms: [burn.dv_v, burn.dv_n, burn.dv_c],
+            frame: 'VNC',
+            isp_s: burn.isp,
+        })),
     };
 }

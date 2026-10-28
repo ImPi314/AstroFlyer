@@ -185,6 +185,18 @@ comparable, not that one is faster.
   its TLE holds SGP4 mean elements fitted so that SGP4 reproduces that state at the epoch (B* = 0, so no
   drag; SGP4 is analytic and drifts from the precise trajectory afterwards); its generated script starts
   at the run's epoch.
+* Impulsive burns in a run: the mission's burns (at the next perigee or apogee after the previous burn,
+  or at a time; velocity change in VNC, RTN or GCRF; propellant by the rocket equation) go to
+  `/api/propagate` as `burns`. The run integrates up to each burn, adds the velocity change, lowers the
+  mass and restarts from the burned state, so Cd·A/m and Cr·A/m follow the lighter spacecraft. An
+  apsis is located by the integrator's own event function on a search leg of up to 1.5 osculating
+  periods. Checked against the vis-viva equation (a perigee burn's new semi-major axis to 1 m) and a
+  two-burn Hohmann transfer to GEO (final e below 1e-5). Covariance steering is refused with burns,
+  since its covariance does not carry across one.
+* Continuing a run: every run reports its `final_state` (GCRF position and velocity, epoch in UTC to
+  the microsecond, mass). The console's Continue starts the mission there with new settings and
+  records the finished leg in the mission file. Molniya, full model with 8 × 8 field, DOP853 at 1e-10:
+  1 + 1 orbits continued ends 2.9 cm from 2 orbits in one run, and 3 + 3 orbits 4.8 cm from 6.
 * Twelve sample orbits, each checked against its cited source.
 * Runs report only what the engine computed; there are no canned or demo figures.
 
@@ -192,8 +204,8 @@ comparable, not that one is faster.
 
 ## 6. Testing
 
-220 Python tests (`python -m pytest astroflyer/tests`; the Orekit tests need `JAVA_HOME` set, the GMAT
-and Basilisk tests skip when those tools are not installed) and 45 frontend `node:test` tests. New
+244 Python tests (`python -m pytest astroflyer/tests`; the Orekit tests need `JAVA_HOME` set, the GMAT
+and Basilisk tests skip when those tools are not installed) and 61 frontend `node:test` tests. New
 behaviour was written test-first.
 
 ---

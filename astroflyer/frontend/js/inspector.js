@@ -1,4 +1,5 @@
-// Inspector: edits the selected mission object as a draft, applied with Apply or on Run.
+// Inspector: edits the selected mission object (spacecraft, propagator or a burn) as a draft,
+// applied with Apply or on Run.
 // View settings change only what is drawn, so they apply as soon as they are valid.
 
 import * as store from './store.js';
@@ -7,7 +8,19 @@ import { escapeHtml, icon, num } from './format.js';
 import { VIEW_TYPES, paneTitle } from './views/registry.js';
 
 const EDITABLE = ['spacecraft', 'propagator'];
-const drafts = {};
+const drafts = {};      // by kind: 'spacecraft', 'propagator' or 'burn:<index>'
+
+const isBurn = (kind) => /^burn:\d+$/.test(kind);
+const burnAt = (kind) => Number(kind.slice(5));
+const schemaOf = (kind) => (isBurn(kind) ? schemas.burn : schemas[kind]);
+const appliedOf = (kind, mission = store.get('mission')) => (isBurn(kind) ? mission.burns[burnAt(kind)] : mission[kind]);
+const isEditable = (kind) => EDITABLE.includes(kind) || (isBurn(kind) && Boolean(appliedOf(kind)));
+const editableKinds = () => [...EDITABLE, ...store.get('mission').burns.map((_, i) => `burn:${i}`)];
+
+function withApplied(mission, kind, values) {
+    if (!isBurn(kind)) return { ...mission, [kind]: { ...values } };
+    return { ...mission, burns: mission.burns.map((burn, i) => (i === burnAt(kind) ? { ...values } : burn)) };
+}
 let root;
 
 export function mountInspector(element) {
@@ -52,16 +65,18 @@ export function loadMission(mission) {
 export function applyAll() {
     let ok = true;
     let mission = store.get('mission');
-    for (const kind of EDITABLE) {
-        if (Object.keys(validate(schemas[kind], drafts[kind])).length) {
+    const kinds = editableKinds();
+    kinds.forEach(draftOf);
+    for (const kind of kinds) {
+        if (Object.keys(validate(schemaOf(kind), drafts[kind])).length) {
             ok = false;
         } else if (isDirty(kind)) {
-            mission = { ...mission, [kind]: { ...drafts[kind] } };
+            mission = withApplied(mission, kind, drafts[kind]);
         }
     }
     store.set({ mission });
     if (!ok) {
-        const bad = EDITABLE.find((kind) => Object.keys(validate(schemas[kind], drafts[kind])).length);
+        const bad = kinds.find((kind) => Object.keys(validate(schemaOf(kind), drafts[kind])).length);
         store.set({ selection: bad });
         openInspector();
     }
@@ -70,40 +85,66 @@ export function applyAll() {
 }
 
 function resetDrafts(kind) {
+    if (!kind) for (const k of Object.keys(drafts)) delete drafts[k];
+    for (const k of kind ? [kind] : editableKinds()) drafts[k] = { ...appliedOf(k) };
+}
+
+// A burn added in the mission tree gets its draft when it is first shown.
+function draftOf(kind) {
+    if (!drafts[kind]) drafts[kind] = { ...appliedOf(kind) };
+    return drafts[kind];
+}
+
+// Removes a burn; the burns after it move up, and so do their unapplied edits.
+function deleteBurn(kind) {
+    const index = burnAt(kind);
     const mission = store.get('mission');
-    for (const k of kind ? [kind] : EDITABLE) drafts[k] = { ...mission[k] };
+    const kept = mission.burns.map((_, i) => drafts[`burn:${i}`]).filter((_, i) => i !== index);
+    for (const k of Object.keys(drafts)) if (isBurn(k)) delete drafts[k];
+    kept.forEach((draft, i) => { if (draft) drafts[`burn:${i}`] = draft; });
+    store.set({ mission: { ...mission, burns: mission.burns.filter((_, i) => i !== index) }, selection: 'propagator' });
 }
 
 function isDirty(kind) {
-    const applied = store.get('mission')[kind];
+    const applied = appliedOf(kind);
     return Object.keys(applied).some((key) => !Object.is(applied[key], drafts[kind][key]));
 }
 
 function render() {
     const selection = store.get('selection');
     const close = `<button class="icon-button inspector-close" type="button" data-action="close" aria-label="Close inspector">${icon('x')}</button>`;
-    if (EDITABLE.includes(selection)) root.innerHTML = renderForm(selection, close);
+    if (isEditable(selection)) root.innerHTML = renderForm(selection, close);
     else if (paneId()) root.innerHTML = renderViewForm(paneId(), close);
     else if (selection.startsWith('station:')) root.innerHTML = renderStation(Number(selection.split(':')[1]), close);
     else root.innerHTML = renderEmpty(close);
 }
 
+const KIND_LABELS = { spacecraft: 'Spacecraft', propagator: 'Integrator and force model' };
+
+function titleOf(kind, values) {
+    if (kind === 'spacecraft') return values.name || 'Spacecraft';
+    if (isBurn(kind)) return values.name || 'Burn';
+    return schemas[kind].title;
+}
+
 function renderForm(kind, close) {
-    const values = drafts[kind];
-    const errors = validate(schemas[kind], values);
+    const values = draftOf(kind);
+    const errors = validate(schemaOf(kind), values);
     const dirty = isDirty(kind);
-    const groups = renderGroups(schemas[kind], values, errors);
+    const groups = renderGroups(schemaOf(kind), values, errors);
+    const remove = isBurn(kind) ? `<button class="button" type="button" data-action="delete-burn">${icon('x')}Delete</button>` : '';
     return `
         <header class="inspector-head">
             <div>
-                <h2 class="inspector-title">${escapeHtml(kind === 'spacecraft' ? values.name || 'Spacecraft' : schemas[kind].title)}</h2>
-                <p class="inspector-kind">${kind === 'spacecraft' ? 'Spacecraft' : 'Integrator and force model'}</p>
+                <h2 class="inspector-title">${escapeHtml(titleOf(kind, values))}</h2>
+                <p class="inspector-kind">${isBurn(kind) ? `Impulsive burn ${burnAt(kind) + 1}, applied by Run` : KIND_LABELS[kind]}</p>
             </div>
             ${close}
         </header>
         <form class="inspector-body" data-kind="${kind}" novalidate>${groups}</form>
         <footer class="inspector-foot">
             <span class="inspector-state">${dirty ? 'Unapplied changes' : 'Applied'}</span>
+            ${remove}
             <button class="button" type="button" data-action="revert" ${dirty ? '' : 'disabled'}>${icon('rotate-ccw')}Revert</button>
             <button class="button button-primary" type="button" data-action="apply" ${dirty && !Object.keys(errors).length ? '' : 'disabled'}>${icon('check')}Apply</button>
         </footer>`;
@@ -257,13 +298,13 @@ function onChange(event) {
 
 // Updates errors and the Apply state in place, so typing never loses focus.
 function updateStatus(kind) {
-    const errors = validate(schemas[kind], drafts[kind]);
+    const errors = validate(schemaOf(kind), drafts[kind]);
     showErrors(errors);
     const dirty = isDirty(kind);
     root.querySelector('.inspector-state').textContent = dirty ? 'Unapplied changes' : 'Applied';
     root.querySelector('[data-action="revert"]').disabled = !dirty;
     root.querySelector('[data-action="apply"]').disabled = !dirty || Object.keys(errors).length > 0;
-    if (kind === 'spacecraft') root.querySelector('.inspector-title').textContent = drafts.spacecraft.name || 'Spacecraft';
+    if (kind === 'spacecraft' || isBurn(kind)) root.querySelector('.inspector-title').textContent = titleOf(kind, drafts[kind]);
 }
 
 function showErrors(errors) {
@@ -305,8 +346,9 @@ function onClick(event) {
     }
     if (action === 'apply') {
         const kind = store.get('selection');
-        if (Object.keys(validate(schemas[kind], drafts[kind])).length) return;
-        store.set({ mission: { ...store.get('mission'), [kind]: { ...drafts[kind] } } });
+        if (Object.keys(validate(schemaOf(kind), drafts[kind])).length) return;
+        store.set({ mission: withApplied(store.get('mission'), kind, drafts[kind]) });
         render();
     }
+    if (action === 'delete-burn') deleteBurn(store.get('selection'));
 }
