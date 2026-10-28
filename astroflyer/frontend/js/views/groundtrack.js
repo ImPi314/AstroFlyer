@@ -152,23 +152,54 @@ function drawNight(ctx, night, now, centerLon, ox, oy, w, h) {
 
 const wrap180 = (deg) => ((deg + 540) % 360) - 180;
 
-// Map centre that keeps the whole track on the map: the edge goes in the middle of the widest band
-// of longitude the track never crosses, rounded to 10 deg. A track over (nearly) every longitude
-// has no such band, so the map stays on Greenwich.
+// Map centre for a track, so as little of it as possible is cut at the map's edge. The edge goes on
+// the meridian the track crosses the fewest times: none for a loop over one region (a Tundra or
+// quasi-zenith figure eight, a drifting GEO), and for a track that goes round the world (LEO,
+// Molniya, GTO) a quick low pass rather than through an apogee loop, which it would cut several
+// times. Of those meridians, the one farthest from the track; then the centre is rounded to 10 deg
+// (or 5 deg) when that cuts no more and stays nearly as clear, and ties go to Greenwich.
 export function trackCenter(lon) {
-    const sorted = lon.map((l) => ((l % 360) + 360) % 360).sort((a, b) => a - b);
-    let gap = 0;
-    let from = 0;
-    for (let k = 0; k < sorted.length; k++) {
-        const next = k + 1 < sorted.length ? sorted[k + 1] : sorted[0] + 360;
-        if (next - sorted[k] > gap) {
-            gap = next - sorted[k];
-            from = sorted[k];
+    const at = Array.from(lon, (l) => ((l % 360) + 360) % 360).filter(Number.isFinite);
+    if (!at.length) return 0;
+    const crossings = new Array(360).fill(0);   // by edge meridian, whole degrees east
+    for (let k = 1; k < at.length; k++) {
+        let d = at[k] - at[k - 1];
+        d -= 360 * Math.round(d / 360);   // the short way round
+        // Meridians the segment reaches, counting its end but not its start, so a pass counts once.
+        const [from, to] = d >= 0 ? [Math.floor(at[k - 1]) + 1, Math.floor(at[k - 1] + d)] : [Math.ceil(at[k - 1] + d), Math.ceil(at[k - 1]) - 1];
+        for (let m = from; m <= to; m++) crossings[((m % 360) + 360) % 360]++;
+    }
+    const sorted = [...at].sort((p, q) => p - q);
+    const clearance = (edge) => {
+        let lo = 0;
+        let hi = sorted.length;
+        while (lo < hi) {
+            const mid = (lo + hi) >> 1;
+            if (sorted[mid] < edge) lo = mid + 1; else hi = mid;
+        }
+        const after = lo < sorted.length ? sorted[lo] - edge : sorted[0] + 360 - edge;
+        const before = lo > 0 ? edge - sorted[lo - 1] : edge - sorted[sorted.length - 1] + 360;
+        return Math.min(after, before);
+    };
+    const edgeOf = (center) => ((center + 180) % 360 + 360) % 360;
+    const offGreenwich = (center) => Math.abs(wrap180(center));
+
+    let best = 0;   // centre, whole degrees
+    for (let center = -179; center <= 180; center++) {
+        const [e, b] = [edgeOf(center), edgeOf(best)];
+        const fewer = crossings[e] - crossings[b];
+        const clearer = clearance(e) - clearance(b);
+        if (fewer < 0 || (fewer === 0 && (clearer > 1e-9 || (Math.abs(clearer) <= 1e-9 && offGreenwich(center) < offGreenwich(best))))) best = center;
+    }
+    const bestEdge = edgeOf(best);
+    for (const step of [10, 5]) {
+        const round = Math.round(best / step) * step;
+        const e = edgeOf(round);
+        if (crossings[e] === crossings[bestEdge] && clearance(e) >= Math.min(clearance(bestEdge) / 2, clearance(bestEdge) - 5)) {
+            return round === -180 ? 180 : round + 0;   // + 0 turns -0 into 0
         }
     }
-    if (gap < 60) return 0;
-    const center = Math.round(wrap180(from + gap / 2 + 180) / 10) * 10;
-    return center === -180 ? 180 : center;
+    return best === -180 ? 180 : best;
 }
 
 const centers = new WeakMap();   // run result -> its track centre
