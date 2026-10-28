@@ -2,7 +2,7 @@
 // or start from an HEO sample. Mission files are JSON holding the spacecraft and propagator.
 
 import * as store from './store.js';
-import { defaultMission, schemas, validate } from './mission.js';
+import { defaultMission, schemas, validate, withDefaults } from './mission.js';
 import { loadMission } from './inspector.js';
 import { log } from './messages.js';
 import { escapeHtml, icon, num, saveFile } from './format.js';
@@ -94,7 +94,7 @@ function onClick(event) {
         case 'new': start(structuredClone(defaultMission), null); break;
         case 'recent': {
             const r = readRecent()[index];
-            start(r.mission, r.file);
+            start(withDefaults(r.mission), r.file);
             break;
         }
         case 'sample': {
@@ -112,10 +112,7 @@ async function openFile(file) {
     try {
         const data = JSON.parse(await file.text());
         if (data?.format !== FORMAT) throw new Error('it is not an AstroFlyer mission file');
-        // Start from the defaults so files saved before a field existed still open, and keep
-        // only the fields AstroFlyer knows.
-        const pick = (kind) => Object.fromEntries(Object.entries(defaultMission[kind]).map(([key, fallback]) => [key, data.mission?.[kind]?.[key] ?? fallback]));
-        const mission = { spacecraft: pick('spacecraft'), propagator: pick('propagator') };
+        const mission = withDefaults(data.mission);
         const problems = ['spacecraft', 'propagator'].flatMap((kind) => Object.keys(validate(schemas[kind], mission[kind])));
         if (problems.length) throw new Error(`these values are missing or out of range: ${problems.join(', ')}`);
         start(mission, file.name);

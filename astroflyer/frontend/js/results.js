@@ -280,3 +280,23 @@ export function stateAt(result, t) {
         radiusKm: Math.hypot(...fixed),
     };
 }
+
+// What covariance steering and ECR-MF did in a run, one message line each; none for a plain run.
+export function innovationNotes(payload) {
+    const suite = payload?.innovations_suite ?? {};
+    const notes = [];
+    const steer = suite.covariance_steered_stepping;
+    if (steer) {
+        notes.push(`Covariance steering: ${steer.accepted_steps.toLocaleString('en-US')} steps, ${steer.limited_steps.toLocaleString('en-US')} shortened by the uncertainty cap; `
+            + `largest growth of the 1-sigma position uncertainty in one step ${(100 * steer.max_step_sigma_growth).toFixed(1)} % (limit ${(100 * steer.eta).toFixed(1)} %).`);
+    }
+    const ecr = suite.ecr_mf;
+    if (ecr) {
+        const degrees = ecr.tiers.map((t) => t.gravity_degree);
+        const list = degrees.length > 1 ? `${degrees.slice(0, -1).join(', ')} and ${degrees.at(-1)}` : `${degrees[0]}`;
+        const bound = Math.max(...ecr.tiers.map((t) => t.omitted_bound_ms2));
+        notes.push(`ECR-MF: gravity degree ${list} by altitude, ${ecr.switches.length} switches; certified bound on the omitted gravity `
+            + `${bound.toExponential(2)} m/s^2 (limit ${ecr.epsilon_ms2.toExponential(1)} m/s^2).`);
+    }
+    return notes;
+}

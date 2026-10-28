@@ -16,7 +16,8 @@ never silently replaced:
   epoch         ISO 8601, UTC unless tagged TAI/TT/TDB/UT1/GPS (default J2000.0)
   span          duration_s (0 to 30 days), else num_orbits (0.5 to 20)
   output        num_points, else points_per_orbit (kept between 200 and 3,600)
-  propagator    model, method, tolerance, step_s, steering, fidelity
+  propagator    model, method, tolerance, step_s, steering, fidelity, gravity_degree (2 to 70,
+                degree and order of the full model's EGM2008 field, default 8)
   forces        enable_drag, enable_third_body, enable_srp
   spacecraft    mass, dry_mass, fuel_mass (kg), cd, drag_area, cr, srp_area (m^2)
   preset        the mission's name, echoed in the report
@@ -51,7 +52,7 @@ _DEFAULTS = {
     "num_orbits": 3.0, "points_per_orbit": 400, "model": "coupled", "method": "DOP853",
     "tolerance": 1e-10, "enable_drag": True, "enable_third_body": True, "enable_srp": True,
     "mass": 1500.0, "dry_mass": 1000.0, "fuel_mass": 500.0, "cd": 2.2, "drag_area": 15.0,
-    "cr": 1.2, "srp_area": 15.0, "fidelity": "full", "preset": "Custom HEO",
+    "cr": 1.2, "srp_area": 15.0, "gravity_degree": 8, "fidelity": "full", "preset": "Custom HEO",
 }
 
 
@@ -100,6 +101,11 @@ def run(request):
     if fidelity not in ("full", "ecr_mf"):
         raise ValueError("fidelity must be 'full' or 'ecr_mf'")
     model, method, tol = q.text("model"), q.text("method"), q.number("tolerance")
+    degree = q.number("gravity_degree")
+    if not (2 <= degree <= 70 and float(degree).is_integer()):
+        raise ValueError("gravity_degree must be a whole number from 2 to 70")
+    full_model = model.lower() not in _ZONAL_DEGREE
+    degree = int(degree) if full_model else _ZONAL_DEGREE[model.lower()]
     forces_on = {k: q.boolean(k) for k in ("enable_drag", "enable_third_body", "enable_srp")}
 
     started = time.time()
@@ -108,7 +114,8 @@ def run(request):
         model=model, method=method, rtol=tol, atol=tol, **forces_on,
         b_star=cd * drag_area / mass,                               # Cd*A/m; the EOM applies the 1/2
         cr_area_over_m=cr * srp_area / mass,
-        fixed_step=q.number("step_s", 0.0) or None, steering=q.text("steering") or None, fidelity=fidelity)
+        fixed_step=q.number("step_s", 0.0) or None, steering=q.text("steering") or None, fidelity=fidelity,
+        **({"gravity_degree": degree, "gravity_order": degree} if full_model else {}))
     solve_s = time.time() - started
 
     config = {
@@ -121,6 +128,7 @@ def run(request):
         "orbital_period_hours": round(period / 3600.0, 3) if closed else None,
         "num_orbits": (num_orbits if duration_s is None else round(run_s / period, 6)) if closed else None,
         "duration_s": float(run_s), "initial_state": initial_state, "model": model, "integrator": method,
+        "gravity_degree": degree,
         "num_points": num_points, **forces_on, "spacecraft_mass_kg": mass, "drag_area_m2": drag_area,
         "cd": cd, "srp_area_m2": srp_area, "cr": cr, "solve_time_sec": round(solve_s, 3),
         "space_weather": (_space_weather_used(epoch, run_s)
@@ -260,11 +268,19 @@ def _closed_orbit_reports(sol, q, epoch, a_km, e, inc, raan, aop, ta, num_orbits
         "ccsds_interoperability": {"tle_string": tle["tle"] if tle else None, "opm_string": opm,
                                    "tle_fit": ({k: tle[k] for k in ("position_error_m", "velocity_error_ms")}
                                                if tle else None)},
-        "innovations_suite": {"ecr_mf": sol.get("ecr_mf"),
+        "innovations_suite": {"ecr_mf": _strict_json_tiers(sol.get("ecr_mf")),
                               "covariance_steered_stepping": steering_summary(sol.get("steps"))},
         "script_workbench": {"script_content": str(script)},
         **({} if tle else {"notes": [tle_note]}),
     }
+
+
+def _strict_json_tiers(ecr_mf):
+    """The ECR-MF report with the open outer tier's radius as None: strict JSON has no Infinity."""
+    if ecr_mf is None:
+        return None
+    tiers = [{**t, "r_outer_m": t["r_outer_m"] if math.isfinite(t["r_outer_m"]) else None} for t in ecr_mf["tiers"]]
+    return {**ecr_mf, "tiers": tiers}
 
 
 def steering_summary(steps):
@@ -286,6 +302,7 @@ def steering_summary(steps):
 
 
 _UNSET = object()
+_ZONAL_DEGREE = {"two_body": 0, "j2": 2, "j2_j3_j4": 4}     # the models with a fixed gravity field
 
 
 class _Request:

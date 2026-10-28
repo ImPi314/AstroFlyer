@@ -95,3 +95,20 @@ test('a run that stayed clear of the surface, or an older engine, has no impact'
     assert.equal(fromPayload(escape).impact, null);
     assert.equal(fromPayload({ ...escape, status: 'ok', impact: null }).impact, null);
 });
+
+test('a steered or ECR-MF run says what the method did', async () => {
+    const { innovationNotes } = await import('../../frontend/js/results.js');
+    assert.deepEqual(innovationNotes({}), []);
+    assert.deepEqual(innovationNotes({ innovations_suite: { ecr_mf: null, covariance_steered_stepping: null } }), []);
+    const [steer] = innovationNotes({ innovations_suite: { covariance_steered_stepping: {
+        eta: 0.02, accepted_steps: 1008, limited_steps: 700, max_step_sigma_growth: 0.0199, initial_1sigma_pos_m: 17.3, final_1sigma_pos_m: 1200 } } });
+    assert.match(steer, /Covariance steering/);
+    assert.match(steer, /1,008 steps/);
+    assert.match(steer, /2\.0 %/);
+    const [ecr] = innovationNotes({ innovations_suite: { ecr_mf: { epsilon_ms2: 1e-10, switches: [{}, {}, {}],
+        tiers: [{ gravity_degree: 70, omitted_bound_ms2: 0 }, { gravity_degree: 58, omitted_bound_ms2: 9.95e-11 }, { gravity_degree: 8, omitted_bound_ms2: 7.77e-11 }] } } });
+    assert.match(ecr, /ECR-MF/);
+    assert.match(ecr, /70, 58 and 8/);
+    assert.match(ecr, /3 switches/);
+    assert.match(ecr, /1e-10|10\^-10|1\.0e-10/);
+});

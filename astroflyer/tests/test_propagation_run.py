@@ -73,6 +73,31 @@ class PropagationRunTest(unittest.TestCase):
                                   position_km=[26600.0 * 0.26, 0.0, 0.0], velocity_kms=[0.0, 9.0, 0.0])
         self.assertEqual(len(report["times"]), 200)    # one a minute, raised to the 200-point minimum
 
+    def test_gravity_degree_and_ecr_mf_follow_the_request(self):
+        # The console's "Gravity field" and "Gravity fidelity" fields: ECR-MF on a 70 x 70 field cuts
+        # the degree by altitude and says so in the report
+        report = self.run_request(model="coupled", gravity_degree=70, fidelity="ecr_mf", num_points=200,
+                                  enable_drag=False)
+        self.assertEqual(report["active_orbit_config"]["gravity_degree"], 70)
+        tiers = report["innovations_suite"]["ecr_mf"]["tiers"]
+        self.assertEqual([t["gravity_degree"] for t in tiers], [70, 58, 8])
+        self.assertTrue(all(t["omitted_bound_ms2"] <= 1e-10 for t in tiers))
+        # The console reads the report as strict JSON, which has no Infinity: the open outer tier has no
+        # outer radius rather than an infinite one
+        import json
+        json.dumps(report["innovations_suite"], allow_nan=False)
+        self.assertIsNone(tiers[-1]["r_outer_m"])
+        self.assertEqual(self.run_request(model="coupled", num_points=200)["active_orbit_config"]["gravity_degree"], 8)
+        for bad in (1, 71, 8.5):
+            with self.assertRaisesRegex(ValueError, "gravity_degree"):
+                self.run_request(model="coupled", gravity_degree=bad)
+
+    def test_a_steered_run_reports_what_steering_did(self):
+        report = self.run_request(method="RKF78", steering="covariance", num_points=200)
+        steer = report["innovations_suite"]["covariance_steered_stepping"]
+        self.assertGreater(steer["accepted_steps"], 0)
+        self.assertLessEqual(steer["max_step_sigma_growth"], steer["eta"] * 1.0001)
+
     def test_apsis_altitudes_are_above_the_equatorial_radius(self):
         # The console states altitudes above the WGS-84 equatorial radius, as the engine's geodetic
         # altitudes are; the 6371 km mean radius put a 250 km x 35786 km GTO 7 km low

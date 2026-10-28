@@ -3,7 +3,7 @@
 import * as store from './store.js';
 import { propagate, propagateScript, EngineError } from './api.js';
 import { toPropagateRequest } from './mission.js';
-import { fromPayload, ignoredInputs, ORBIT_FIELDS } from './results.js';
+import { fromPayload, ignoredInputs, innovationNotes, ORBIT_FIELDS } from './results.js';
 import { log } from './messages.js';
 import { num } from './format.js';
 
@@ -43,7 +43,8 @@ async function execute(startMessage, body, call) {
     log('info', startMessage);
 
     try {
-        const result = { ...fromPayload(await call(mine.signal)), request: body };
+        const payload = await call(mine.signal);
+        const result = { ...fromPayload(payload), request: body };
         const ignored = ignoredInputs(body, result.summary);
         if (ignored.length) {
             throw new EngineError(`This engine does not support ${ignored.join(' or ')} and would have run a different orbit. Update AstroFlyer, or enter the orbit as elements and the run length in orbits.`);
@@ -55,6 +56,7 @@ async function execute(startMessage, body, call) {
         log('info', `Finished in ${num(result.summary.solve_s, 2)} s with ${num(result.summary.points)} points. ${shape}`);
         // The impact note says where the spacecraft came down: shown as a warning, not an error, since the run succeeded
         for (const note of result.notes) log(result.impact ? 'warning' : 'info', note);
+        for (const note of innovationNotes(payload)) log('info', note);
     } catch (err) {
         if (err.name === 'AbortError') {
             const hasResult = Boolean(store.get('result'));

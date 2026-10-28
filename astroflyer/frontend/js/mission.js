@@ -26,7 +26,10 @@ export const defaultMission = {
     propagator: {
         method: 'DOP853',
         tolerance: 1e-10,
+        steering: 'none',
         model: 'coupled',
+        gravity_degree: 8,
+        fidelity: 'full',
         enable_drag: true,
         enable_third_body: true,
         enable_srp: true,
@@ -42,6 +45,7 @@ const keplerian = (values) => values.orbitInput === 'keplerian';
 const cartesian = (values) => values.orbitInput === 'cartesian';
 const elements = (values) => !cartesian(values);
 const fullModel = (values) => values.model === 'coupled';
+const steerable = (values) => values.method === 'RKF78' || values.method === 'BS';
 const spanIn = (unit) => (values) => values.durationUnit === unit;
 
 const R_EARTH_KM = 6378.137;
@@ -100,12 +104,15 @@ export const schemas = {
                 fields: [
                     { key: 'method', label: 'Method', type: 'select', options: [['DOP853', 'Dormand-Prince 8(5,3)'], ['Radau', 'Radau IIA, implicit'], ['RKF78', 'Runge-Kutta-Fehlberg 7(8)'], ['BS', 'Bulirsch-Stoer'], ['RK4', 'Runge-Kutta 4, fixed 10 s step']], hint: 'Dormand-Prince is the integrator checked against Orekit and the quickest for these orbits. Radau is implicit, for stiff problems; it is five to six times slower here.' },
                     { key: 'tolerance', label: 'Tolerance', type: 'number', min: 1e-13, max: 1e-6, step: 'any', hint: 'Relative and absolute error per step, for example 1e-10.' },
+                    { key: 'steering', label: 'Step control', type: 'select', options: [['none', 'Error control only'], ['covariance', 'Covariance-steered']], when: steerable, hint: 'Covariance-steered also limits each step so that the propagated 1-sigma position uncertainty grows by at most 2 %. About three to five times slower; it bounds the uncertainty growth, it is not a general accuracy gain.' },
                 ],
             },
             {
                 title: 'Force model',
                 fields: [
                     { key: 'model', label: 'Gravity and forces', type: 'select', options: [['two_body', 'Two-body'], ['j2', 'Two-body with J2'], ['j2_j3_j4', 'Zonals J2 to J4'], ['coupled', 'Full model']] },
+                    { key: 'gravity_degree', label: 'Gravity field', unit: 'degree and order', type: 'number', min: 2, max: 70, step: 1, integer: true, when: fullModel, hint: 'EGM2008 up to 70 x 70. Every cross-check used 8 x 8.' },
+                    { key: 'fidelity', label: 'Gravity fidelity', type: 'select', options: [['full', 'Same degree on the whole orbit'], ['ecr_mf', 'ECR-MF: degree by altitude, certified']], when: fullModel, hint: 'ECR-MF lowers the degree above 2,000 and 20,000 km altitude only as far as the omitted gravity stays below 1e-10 m/s^2. It matters for fields above 8 x 8.' },
                     { key: 'enable_drag', label: 'Atmospheric drag', type: 'checkbox', when: fullModel },
                     { key: 'enable_third_body', label: 'Sun and Moon gravity', type: 'checkbox', when: fullModel },
                     { key: 'enable_srp', label: 'Solar radiation pressure', type: 'checkbox', when: fullModel },
@@ -170,6 +177,8 @@ export function validate(schema, values) {
                     errors[field.key] = 'Enter a number.';
                 } else if (value < field.min || value > field.max) {
                     errors[field.key] = `Use a value from ${field.min} to ${field.max}.`;
+                } else if (field.integer && !Number.isInteger(value)) {
+                    errors[field.key] = 'Enter a whole number.';
                 }
             }
         }
@@ -182,6 +191,13 @@ export function validate(schema, values) {
         errors.x = 'The position is inside the Earth. Its distance from the centre must exceed 6,378 km.';
     }
     return errors;
+}
+
+// A saved mission with every field AstroFlyer knows: fields saved before they existed take the
+// default, and fields it no longer knows are dropped.
+export function withDefaults(saved) {
+    const pick = (kind) => Object.fromEntries(Object.entries(defaultMission[kind]).map(([key, fallback]) => [key, saved?.[kind]?.[key] ?? fallback]));
+    return { spacecraft: pick('spacecraft'), propagator: pick('propagator') };
 }
 
 // The orbit part of the request: GCRF vectors, or elements with their angles.
@@ -206,6 +222,8 @@ export function toPropagateRequest(mission) {
         method: prop.method,
         tolerance: prop.tolerance,
         model: prop.model,
+        ...(steerable(prop) && prop.steering === 'covariance' ? { steering: 'covariance' } : {}),
+        ...(fullModel(prop) ? { gravity_degree: prop.gravity_degree, fidelity: prop.fidelity } : { fidelity: 'full' }),
         enable_drag: prop.enable_drag,
         enable_third_body: prop.enable_third_body,
         enable_srp: prop.enable_srp,
